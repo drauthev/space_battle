@@ -14,7 +14,6 @@ public interface ClientForGUI {
 	public void bindKey(String action, Integer key);			// billentyûzetbeállítás módosítása
 	public void setDifficulty(GameSkill gs);					// játék nehézségének változtatása
 	public void setSound(Boolean val);							// hang ki/be
-	public int getHighestScore();								// Legmagasabb pontszám lekérése (#bridge)
 	public void dispatchKeyEvent(KeyEvent e);					// GUI továbbítja a billentyûleütéseket
 	public void pauseRequest();									// Szünetet kértek
 	public void startRequest();									// Indulhat a játék

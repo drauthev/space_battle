@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.SortedMap;
 
+import server.Server;
 import enums.*;
 import gui.GUI;
 import interfaces.ClientForGUI;
@@ -50,8 +51,8 @@ public class Client implements ClientForGUI, ClientForServer {
 
 	public Client() {
 		gui = new GUI(this);
-		loadConfig();		
-
+		loadConfig();
+		
 		gui.setDifficulty(gameSkill);
 		gui.setSound(sounds);
 		gui.setRecentIPs(recentlyUsedIP);
@@ -141,7 +142,17 @@ public class Client implements ClientForGUI, ClientForServer {
 
 	@Override
 	public SortedMap<Integer, String> getHighScores() {
-		return server.getHighScores();
+		while (gameState == GameState.GAMEOVER_NEW_HIGHSCORE)
+		{
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return Server.getHighScores();
 	}
 
 
@@ -186,12 +197,6 @@ public class Client implements ClientForGUI, ClientForServer {
 			// No valid ObjectBuffer exists.
 			else return null;
 		}
-	}
-
-
-	@Override
-	public int getHighestScore() {
-		return server.getHighestScore();
 	}
 
 
@@ -306,4 +311,5 @@ public class Client implements ClientForGUI, ClientForServer {
 	public void sendName(String name) {
 		server.sendName(name);
 	}
+
 }

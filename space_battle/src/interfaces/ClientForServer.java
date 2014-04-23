@@ -1,5 +1,7 @@
 package interfaces;
 
+import java.util.SortedMap;
+
 import enums.*;
 
 public interface ClientForServer {

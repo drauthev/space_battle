@@ -478,24 +478,14 @@ public class Server implements ServerForClient, ServerForPlayerController
 
 
 	@Override
-	public SortedMap<Integer, String> getHighScores() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
 	public void sendName(String name) {
 		// TODO Auto-generated method stub
-		
+		// TODO A végén setGameState(GameState.NONE) !!!
 	}
-
-
-	@Override
-	public int getHighestScore() {
-		// TODO Auto-generated method stub
-		return 0;
+	
+	public static SortedMap<Integer, String> getHighScores()
+	{
+		// TODO Itt kell majd valami értelmes highscore táblát visszaadni...
+		return null;
 	}
-
-
 }
