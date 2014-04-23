@@ -304,7 +304,6 @@ public class Client implements ClientForGUI, ClientForServer {
 
 	@Override
 	public void sendName(String name) {
-		// TODO Auto-generated method stub
-		
+		server.sendName(name);
 	}
 }
