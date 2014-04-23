@@ -9,6 +9,7 @@ import enums.*;
 
 public interface ClientForGUI {
 	public SortedMap<Integer, String> getHighScores();			// SortedMap-ben score(K)-név(V) párok (#bridge)
+	public int getHighestScore();								// legmagasabb pontszám lekérése (#bridge)
 	public HashMap<String, Integer> getKeyboardSettings();		// HashMap-ben action(K)-KeyCode(V) párok
 	public ObjectBuffer getNewObjectBuffer();					// Request a friss object bufferre
 	public void bindKey(String action, Integer key);			// billentyûzetbeállítás módosítása

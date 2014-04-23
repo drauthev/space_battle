@@ -104,7 +104,6 @@ public class Client implements ClientForGUI, ClientForServer {
 		}
 	}
 
-
 	@Override
 	public void updateObjects(String JSONtext) {
 		int idx = -1;	// ObjectBuffer to work with.
@@ -140,12 +139,16 @@ public class Client implements ClientForGUI, ClientForServer {
 	}
 
 
+	/**
+	 * Blocking! 
+	 */
 	@Override
 	public SortedMap<Integer, String> getHighScores() {
+		// Wait for the remote server until it updates high scores.
 		while (gameState == GameState.GAMEOVER_NEW_HIGHSCORE)
 		{
 			try {
-				Thread.sleep(10);
+				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -153,6 +156,15 @@ public class Client implements ClientForGUI, ClientForServer {
 		}
 		
 		return Server.getHighScores();
+	}
+	
+	/**
+	 * Blocking!  
+	 */
+	@Override
+	public int getHighestScore()
+	{
+		return Server.getHighestScore();
 	}
 
 

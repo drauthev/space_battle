@@ -483,9 +483,33 @@ public class Server implements ServerForClient, ServerForPlayerController
 		// TODO A végén setGameState(GameState.NONE) !!!
 	}
 	
+	
+	
+	/* FTP szerveren lesznek tárolva a high score-ok, mondjuk egy highscores.txt
+	 * nevű állományban. Innen kell minden egyes függvényhívásnál leszedni, ha pedig 
+	 * van új high score, akkor azt beleírni egy új fájlba az FTP szerveren (más nevű fájl!),
+	 * majd átnevezni arra, ami a tényleges high score fájl. Azért kell így,
+	 * mert az átnevezés atomi művelet, viszont ha megszakadna a kapcsolat
+	 * a fájl feltöltése közben, akkor baszhatnánk a korábbi eredményeket.
+	 * 
+	 * A szerver adatai:
+	 * URL: ftp://drauthev.sch.bme.hu
+	 * user: space_battle
+	 * pw nincs!
+	 */
+	
+	
 	public static SortedMap<Integer, String> getHighScores()
 	{
 		// TODO Itt kell majd valami értelmes highscore táblát visszaadni...
+
+		// TODO return előtt setGameState(GameStates.NONE) !!!
 		return null;
+	}
+	
+	public static int getHighestScore()
+	{
+		// TODO Ezt is meg kell csinálni faszául.
+		return 0;
 	}
 }
