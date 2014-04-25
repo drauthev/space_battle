@@ -6,8 +6,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import enums.*;
-import interfaces.ServerForClient;
-import interfaces.ServerForPlayerController;
+import interfaces.AllServerInterfaces;
+import interfaces.ClientForServer;
 import server.game_elements.Fastener;
 import server.game_elements.HostileType1;
 import server.game_elements.HostileType2;
@@ -16,7 +16,7 @@ import server.game_elements.NPC;
 import server.game_elements.Player;
 import server.game_elements.Projectile;
 
-public class Server implements ServerForClient, ServerForPlayerController
+public class Server implements AllServerInterfaces
 {
 	// Game Options
 	private GameType type;
@@ -54,7 +54,8 @@ public class Server implements ServerForClient, ServerForPlayerController
 	
 
 	// Constructor
-	Server(GameType type, GameSkill difficulty){	// TODO: KIEG�?‰SZ�?�TENI A KLIENSEK REFERENCI�?�J�?�VAL
+	public Server(GameType type, GameSkill difficulty, ClientForServer cl1){
+		// TODO: kliens1-et tárolni, kliens2 a setClient2-ben, ekkor ugyanis még nem ismert!
 		this.type = type;
 		this.difficulty = difficulty;
 		score = 0;
@@ -511,5 +512,12 @@ public class Server implements ServerForClient, ServerForPlayerController
 	{
 		// TODO Ezt is meg kell csinálni faszául.
 		return 0;
+	}
+
+
+	@Override
+	public void setClient2(ClientForServer c2) {
+		// TODO Auto-generated method stub
+		
 	}
 }
