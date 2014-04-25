@@ -1,7 +1,7 @@
 package interfaces;
 
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.SortedMap;
 
 import client.ObjectBuffer;
@@ -10,12 +10,12 @@ import enums.*;
 public interface ClientForGUI {
 	public SortedMap<Integer, String> getHighScores();			// SortedMap-ben score(K)-név(V) párok (#bridge)
 	public int getHighestScore();								// legmagasabb pontszám lekérése (#bridge)
-	public HashMap<String, Integer> getKeyboardSettings();		// HashMap-ben action(K)-KeyCode(V) párok
+	public EnumMap<PlayerAction, Integer> getKeyboardSettings();// HashMap-ben action(K)-KeyCode(V) párok
 	public ObjectBuffer getNewObjectBuffer();					// Request a friss object bufferre
-	public void bindKey(String action, Integer key);			// billentyûzetbeállítás módosítása
+	public void bindKey(PlayerAction action, Integer key);		// billentyûzetbeállítás módosítása
 	public void setDifficulty(GameSkill gs);					// játék nehézségének változtatása
 	public void setSound(Boolean val);							// hang ki/be
-	public void dispatchKeyEvent(KeyEvent e);					// GUI továbbítja a billentyûleütéseket
+	public void dispatchKeyEvent(KeyEvent e, boolean pressed);	// GUI továbbítja a billentyûleütéseket
 	public void pauseRequest();									// Szünetet kértek
 	public void startRequest();									// Indulhat a játék
 	public void resetGameState();								// Befejezhetõ a jelenlegi játék
