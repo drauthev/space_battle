@@ -1,7 +1,5 @@
 package server.game_elements;
 
-import enums.*;
-
 public class HostileType1 extends NPC {
 	
 	private final static int hostileType1Width = 10;
