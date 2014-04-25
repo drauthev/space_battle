@@ -6,22 +6,28 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.SortedMap;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import server.Server;
+import sound.SoundSystem;
 import enums.*;
 import gui.GUI;
+import interfaces.AllServerInterfaces;
 import interfaces.ClientForGUI;
 import interfaces.ClientForServer;
 import interfaces.GUIForClient;
 import interfaces.ServerForClient;
 import interfaces.SoundSystemForClient;
-import network.SS_Network_Controller;
+import network.VirtualServer;
+import network.VirtualClient;
 
 public class Client implements ClientForGUI, ClientForServer {
 	private static final String configFile = "options.ini";
-	private static final boolean debugMode = true;
 	
 	private GameState gameState = GameState.NONE;
 	private GameSkill gameSkill = GameSkill.NORMAL;
@@ -30,14 +36,14 @@ public class Client implements ClientForGUI, ClientForServer {
 	private GUIForClient gui;
 	private SoundSystemForClient soundSys;
 	private ServerForClient server;
-	private SS_Network_Controller ssnc;	// Call terminate(), when server gets terminated after a network game.
+	private VirtualClient vc;	// Call terminate(), when server gets terminated after a network game.
 	private PlayerController[] playercontrollers;
-	private ObjectBuffer[] objectBuffer;
+	private ObjectBuffer[] objectBuffer = new ObjectBuffer[3];
 	private ObjectBufferState[] obStates = 
 		{ObjectBufferState.INVALID, ObjectBufferState.INVALID, ObjectBufferState.INVALID};
 	private Object objectBufferSyncObject = new Object();
 	private String[] recentlyUsedIP = new String[4];
-	private HashMap<String, Integer> keyboardSettings;
+	private EnumMap<PlayerAction, Integer> keyboardSettings;
 
 	private enum ObjectBufferState
 	{
@@ -45,7 +51,7 @@ public class Client implements ClientForGUI, ClientForServer {
 	}
 	
 	public static void main(String[] args) {
-		Client cl = new Client();
+		new Client();
 	}
 
 
@@ -56,7 +62,8 @@ public class Client implements ClientForGUI, ClientForServer {
 		gui.setDifficulty(gameSkill);
 		gui.setSound(sounds);
 		gui.setRecentIPs(recentlyUsedIP);
-		// TODO Instantiate GUI, start new thread. Instantiate SoundSystem.
+		
+		soundSys = new SoundSystem();
 		
 		Thread t = new Thread(gui);
 		t.run();
@@ -78,7 +85,7 @@ public class Client implements ClientForGUI, ClientForServer {
 			FileInputStream fis = new FileInputStream(configFile);
 			ObjectInputStream ois = new ObjectInputStream(fis);
 			
-			keyboardSettings = (HashMap<String, Integer>) ois.readObject();
+			keyboardSettings = (EnumMap<PlayerAction, Integer>) ois.readObject();
 			recentlyUsedIP = (String[]) ois.readObject();
 			gameSkill = (GameSkill) ois.readObject();
 			sounds = (Boolean) ois.readObject();
@@ -91,16 +98,15 @@ public class Client implements ClientForGUI, ClientForServer {
 			if (keyboardSettings != null)
 				return;
 			
-			keyboardSettings = new HashMap<String, Integer>(10);
+			keyboardSettings = new EnumMap<PlayerAction, Integer>(PlayerAction.class);
 			
 			// Load default keyboard configuration.
-			keyboardSettings.put("p1left", KeyEvent.VK_A);
-			keyboardSettings.put("p1right", KeyEvent.VK_D);
-			keyboardSettings.put("p1fire", KeyEvent.VK_SPACE);
-			keyboardSettings.put("p2left", KeyEvent.VK_LEFT);
-			keyboardSettings.put("p2right", KeyEvent.VK_RIGHT);
-			keyboardSettings.put("p2fire", KeyEvent.VK_NUMPAD0);
-			keyboardSettings.put("pause", KeyEvent.VK_P);
+			keyboardSettings.put(PlayerAction.P1LEFT, KeyEvent.VK_A);
+			keyboardSettings.put(PlayerAction.P1RIGHT, KeyEvent.VK_D);
+			keyboardSettings.put(PlayerAction.P1FIRE, KeyEvent.VK_SPACE);
+			keyboardSettings.put(PlayerAction.P2LEFT, KeyEvent.VK_LEFT);
+			keyboardSettings.put(PlayerAction.P2RIGHT, KeyEvent.VK_RIGHT);
+			keyboardSettings.put(PlayerAction.P2FIRE, KeyEvent.VK_NUMPAD0);
 		}
 	}
 
@@ -117,7 +123,63 @@ public class Client implements ClientForGUI, ClientForServer {
 			}
 		}
 		
-		// TODO Parse objects.
+		try {
+			JSONObject wrapper = new JSONObject(JSONtext);
+			
+			objectBuffer[idx].currentTick = (Long)wrapper.get("currentTick");
+			objectBuffer[idx].score = (Integer)wrapper.get("score");
+			
+			JSONArray npc = (JSONArray)wrapper.get("npcs");
+			for(int i = 0; i < npc.length(); ++i)
+			{
+				JSONObject curr = npc.getJSONObject(i);
+				
+				objectBuffer[idx].npc[i].className = (String)curr.get("className");
+				objectBuffer[idx].npc[i].x = (Integer)curr.get("x");
+				objectBuffer[idx].npc[i].y = (Integer)curr.get("y");
+				objectBuffer[idx].npc[i].creationTime = (Long)curr.get("creationTime");
+				objectBuffer[idx].npc[i].explosionTime = (Long)curr.get("explosionTime");
+				objectBuffer[idx].npc[i].hitTime = (Long)curr.get("hitTime");
+			}
+			
+			JSONArray player = (JSONArray)wrapper.get("players");
+			for(int i = 0; i < player.length(); ++i)
+			{
+				JSONObject curr = player.getJSONObject(i);
+				
+				objectBuffer[idx].player[i].className = (String)curr.get("className");
+				objectBuffer[idx].player[i].x = (Integer)curr.get("x");
+				objectBuffer[idx].player[i].y = (Integer)curr.get("y");
+				objectBuffer[idx].player[i].numberOfLives = (Integer)curr.get("numberOfLives");
+				objectBuffer[idx].player[i].explosionTime = (Long)curr.get("explosionTime");
+				objectBuffer[idx].player[i].hitTime = (Long)curr.get("hitTime");
+			}
+			
+			JSONArray proj = (JSONArray)wrapper.get("projectiles");
+			for(int i = 0; i < proj.length(); ++i)
+			{
+				JSONObject curr = proj.getJSONObject(i);
+				
+				objectBuffer[idx].proj[i].className = (String)curr.get("className");
+				objectBuffer[idx].proj[i].x = (Integer)curr.get("x");
+				objectBuffer[idx].proj[i].y = (Integer)curr.get("y");
+			}
+			
+			JSONArray mod = (JSONArray)wrapper.get("modifiers");
+			for(int i = 0; i < mod.length(); ++i)
+			{
+				JSONObject curr = mod.getJSONObject(i);
+				
+				objectBuffer[idx].mod[i].className = (String)curr.get("className");
+				objectBuffer[idx].mod[i].x = (Integer)curr.get("x");
+				objectBuffer[idx].mod[i].y = (Integer)curr.get("y");
+				objectBuffer[idx].mod[i].pickupTime = (Long)curr.get("pickupTime");
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
 		
 		synchronized (objectBufferSyncObject)
 		{
@@ -169,7 +231,7 @@ public class Client implements ClientForGUI, ClientForServer {
 
 
 	@Override
-	public HashMap<String, Integer> getKeyboardSettings() {
+	public EnumMap<PlayerAction, Integer> getKeyboardSettings() {
 		if (keyboardSettings == null)
 			loadConfig();
 		
@@ -213,10 +275,10 @@ public class Client implements ClientForGUI, ClientForServer {
 
 
 	@Override
-	public void dispatchKeyEvent(KeyEvent e) {
+	public void dispatchKeyEvent(KeyEvent e, boolean pressed) {
 		if (gameState == GameState.RUNNING)
 			for(int i = 0; i < playercontrollers.length; ++i)
-				playercontrollers[i].dispatchKeyEvent(e);
+				playercontrollers[i].dispatchKeyEvent(e, pressed);
 	}
 
 
@@ -275,10 +337,10 @@ public class Client implements ClientForGUI, ClientForServer {
 			server = null;
 		}
 		
-		if (ssnc != null)
+		if (vc != null)
 		{
-			ssnc.terminate();
-			ssnc = null;
+			vc.terminate();
+			vc = null;
 		}
 	}
 
@@ -286,7 +348,36 @@ public class Client implements ClientForGUI, ClientForServer {
 	@Override
 	public void newGame(GameType gt) {
 		resetGameState();
-		// TODO: instantiate/start the appropriate server
+		
+		AllServerInterfaces temp = new Server(gt, gameSkill, this);
+		
+		server = temp;
+		
+		if (gt == GameType.MULTI_NETWORK)
+		{
+			vc = new VirtualClient(temp, 47987, 100);
+
+			Thread t = new Thread(vc);
+			t.start();
+		}
+		
+		playercontrollers[0] = new PlayerController(temp);
+		playercontrollers[0].bindKey(PlayerAction.P1FIRE, keyboardSettings.get(PlayerAction.P1FIRE));
+		playercontrollers[0].bindKey(PlayerAction.P1LEFT, keyboardSettings.get(PlayerAction.P1LEFT));
+		playercontrollers[0].bindKey(PlayerAction.P1RIGHT, keyboardSettings.get(PlayerAction.P1RIGHT));
+		
+		if (gt == GameType.MULTI_LOCAL)
+		{
+				playercontrollers[1] = new PlayerController(temp);
+				playercontrollers[1].bindKey(PlayerAction.P2FIRE, keyboardSettings.get(PlayerAction.P2FIRE));
+				playercontrollers[1].bindKey(PlayerAction.P2LEFT, keyboardSettings.get(PlayerAction.P2LEFT));
+				playercontrollers[1].bindKey(PlayerAction.P2RIGHT, keyboardSettings.get(PlayerAction.P2RIGHT));
+		}	
+		else playercontrollers[1] = null;
+		
+		Thread t = new Thread(server);
+		t.start();
+		
 		server.startRequest();
 	}
 
@@ -297,12 +388,22 @@ public class Client implements ClientForGUI, ClientForServer {
 		System.arraycopy(recentlyUsedIP, 0, recentlyUsedIP, 1, 3);
 		recentlyUsedIP[0] = ipv4;
 		gui.setRecentIPs(recentlyUsedIP);
-		// TODO: instantiate/configure/start CS_Network_Controller. 
+		
+		VirtualServer vs = new VirtualServer(this, ipv4, 47987, 100);
+		server = vs;
+		
+		playercontrollers[0] = new PlayerController(vs);
+		playercontrollers[0].bindKey(PlayerAction.P1FIRE, keyboardSettings.get(PlayerAction.P1FIRE));
+		playercontrollers[0].bindKey(PlayerAction.P1LEFT, keyboardSettings.get(PlayerAction.P1LEFT));
+		playercontrollers[0].bindKey(PlayerAction.P1RIGHT, keyboardSettings.get(PlayerAction.P1RIGHT));
+		
+		Thread t = new Thread(vs);
+		t.start();
 	}
 
 
 	@Override
-	public void bindKey(String action, Integer key) {
+	public void bindKey(PlayerAction action, Integer key) {
 		keyboardSettings.put(action, key);
 	}
 
