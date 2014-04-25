@@ -1,11 +1,14 @@
 package sound;
 
+import interfaces.SoundSystemForClient;
+
 import java.io.File;
 import java.io.IOException;
+
 import javax.sound.sampled.*;
 
 // Java Sound can play sound formats with 8- or 16-bit samples with sample rates from 8000Hz to 48,000Hz. Also, it can play either mono or stereo sound. 
-public class SoundSystem {
+public class SoundSystem implements SoundSystemForClient {
 	
 	// Clips
 	private Clip shootClip1;
@@ -142,6 +145,13 @@ public class SoundSystem {
 			e.printStackTrace();
 		}
     }
+
+
+	@Override
+	public void playSound(String sound) {
+		// TODO Auto-generated method stub
+		
+	}
 
 //    public void Play(String soundName)
 //    {
