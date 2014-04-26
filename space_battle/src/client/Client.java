@@ -15,6 +15,7 @@ import org.json.JSONObject;
 
 import server.Server;
 import sound.SoundSystem;
+import sound.SoundType;
 import enums.*;
 import gui.GUI;
 import interfaces.AllServerInterfaces;
@@ -195,9 +196,9 @@ public class Client implements ClientForGUI, ClientForServer {
 
 
 	@Override
-	public void playSound(String sound) {
+	public void playSound(SoundType soundType) {
 		if (sounds)
-			soundSys.playSound(sound);
+			soundSys.playSound(soundType);
 	}
 
 

@@ -12,6 +12,7 @@ import java.util.TimerTask;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import sound.SoundType;
 import enums.*;
 import interfaces.ClientForServer;
 import interfaces.ServerForClient;
@@ -83,7 +84,7 @@ public class VirtualServer
 								client.updateObjects((String)temp.getValue());
 								break;
 							case "playSound":
-								client.playSound((String)temp.getValue());
+								client.playSound((SoundType)temp.getValue());
 								break;
 							case "changeGameState":
 								client.changeGameState((GameState)temp.getValue());

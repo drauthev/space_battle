@@ -1,5 +1,7 @@
 package interfaces;
 
+import sound.SoundType;
+
 public interface SoundSystemForClient {
-	public void playSound(String sound);	// adott nevû hang lejátszása
+	public void playSound(SoundType soundType);
 }

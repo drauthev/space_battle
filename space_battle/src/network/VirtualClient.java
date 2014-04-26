@@ -13,6 +13,7 @@ import java.util.TimerTask;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import sound.SoundType;
 import enums.*;
 import interfaces.AllServerInterfaces;
 import interfaces.ClientForServer;
@@ -145,7 +146,7 @@ public class VirtualClient implements ClientForServer, Runnable {
 	}
 
 	@Override
-	public void playSound(String sound) {
+	public void playSound(SoundType sound) {
 		synchronized (callQueue) { callQueue.add(new AbstractMap.SimpleEntry<String, Object>("playSound", sound)); }
 	}
 
