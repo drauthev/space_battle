@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.imageio.ImageIO;
 
 import sound.SoundSystem;
+import sound.SoundType;
 import client.CModifier;
 import client.CNPC;
 import client.CPlayer;
