@@ -1,7 +1,6 @@
 package client;
 
 import java.awt.event.KeyEvent;
-import java.util.EnumMap;
 import java.util.TreeMap;
 
 import enums.PlayerAction;
