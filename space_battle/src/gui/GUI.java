@@ -7,6 +7,11 @@ import java.awt.image.BufferedImage;
 import javax.swing.*;
 import javax.imageio.ImageIO;
 
+import sound.SoundSystem;
+import client.CModifier;
+import client.CNPC;
+import client.CPlayer;
+import client.CProjectile;
 import client.ObjectBuffer;
 import enums.*;
 import interfaces.*;
@@ -19,7 +24,8 @@ import java.net.URL;
 
 
 public class GUI extends JFrame implements KeyListener, MouseListener, GUIForClient {
-	
+
+	private SoundSystem localSound;
 	// GUI Window
 	private static final long serialVersionUID = 1L;
 	private static int frameWidth = 480;
@@ -28,12 +34,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int lastMenuHS;
 	// Starting Timer 
 	private Timer timer = new Timer(false);
-	
+
 	// Positioning background Image
 	private double backgroundImgY;
 	private static double backgroundSpeed = 0.2;
-
-	private ObjectBuffer localObjectBuffer;
 
 	private int isTextLine;
 	// Parameters for positioning the images
@@ -77,17 +81,14 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	// Tick Counters
 	private long localTick;
 	private long tickDiff_div;
-	
-	private boolean isEffectOn;
-	// Object Pool
-	//private static ObjectBuffer localObject;
 
-	// Game and Menu States
-	// private GameState previousGamestate;
-	private GameState currentGameState;
-	// private MenuState previousMenustate;
-	private MenuState currentMenuState;
+	private boolean isEffectOn;
 	
+	private ObjectBuffer localObjectBuffer;
+	
+	// Enums
+	private GameState currentGameState;
+	private MenuState currentMenuState;
 	private GameSkill currentGameSkill;
 
 	// Other variables
@@ -100,17 +101,23 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int mainDot;
 	private int optionsDot;
 	private int newGameDot;
-
 	private int keyCode;
-	private int keyCode2;
-
 	private int keyBoardChangeSelected;
-	
+
 	// Image Buffers
 	private static BufferedImage foregroundImg;
 	private static BufferedImage backgroundImg;
 	private static BufferedImage bulletImg1;
 	private static BufferedImage bulletImg2;
+	
+    private static BufferedImage enemyBlowImg1;
+	private static BufferedImage enemyBlowImg2;
+	private static BufferedImage enemyBlowImg3;
+	private static BufferedImage enemyBlowImg4;
+	private static BufferedImage enemyImg1;
+	private static BufferedImage enemyImg2;
+	private static BufferedImage enemyImg3;
+	
     private static BufferedImage enemyABlowImg1;
 	private static BufferedImage enemyABlowImg2;
 	private static BufferedImage enemyABlowImg3;
@@ -148,22 +155,39 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private static BufferedImage powerDownImg;
 
 	// Image widths and heights
-	private static int backgroundWidth;
-	private static int backgroundHeight;
-	private static int spaceShipHeight;
-	private static int spaceShipWidth;
-	private static int enemyAHeight;
-	private static int enemyAWidth;
-	private static int enemyBHeight;
-	private static int enemyBWidth;
-	private static int enemyCHeight;
-	private static int enemyCWidth;
-	private static int lifeImgHeight;
-	private static int lifeImgWidth;
-	private static int powerUpHeight;
-	private static int powerUpWidth;
-	private static int powerDownHeight;
-	private static int powerDownWidth;
+	private int backgroundWidth;
+	private int backgroundHeight;
+	private int spaceShipHeight;
+	private int spaceShipWidth;
+	private int spaceShipBombHeight;
+	private int spaceShipBombWidth;
+	
+	private int enemyHeight;
+	private int enemyWidth;
+	private int enemyBlowHeight;
+	private int enemyBlowWidth;
+	
+	private int enemyAHeight;
+	private int enemyAWidth;
+	private int enemyBHeight;
+	private int enemyBWidth;
+	private int enemyCHeight;
+	private int enemyCWidth;
+	private int enemyABlowHeight;
+	private int enemyABlowWidth;
+	private int enemyBBlowHeight;
+	private int enemyBBlowWidth;
+	private int enemyCBlowHeight;
+	private int enemyCBlowWidth;
+	
+	private int lifeImgHeight;
+	private int lifeImgWidth;
+	private int powerUpHeight;
+	private int powerUpWidth;
+	private int powerDownHeight;
+	private int powerDownWidth;
+	private int projectTileHeight;
+	private int projectTileWidth;
 
 	// Used for double buffering
 	Graphics bufferGraphics;  
@@ -174,79 +198,87 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		@Override
 		public void run() {
 			repaint();
-			//localTick += 16;
 		}
 	};
-	
+
 	private ClientForGUI client;
 
 	public GUI(ClientForGUI client_param)
 	{
-		// FIX: Ez így mûxik.
+		localSound = new SoundSystem();
+		
 		try {
 			String projdir = System.getProperty("user.dir");
-			backgroundImg	 = ImageIO.read(new File(projdir + "/res/backgroundImg.png"));
-			foregroundImg	 = ImageIO.read(new File(projdir + "/res/foregroundImg.png"));
-			bulletImg1 		 = ImageIO.read(new File(projdir + "/res/bulletImg1.png"));
-			bulletImg2 		 = ImageIO.read(new File(projdir + "/res/bulletImg2.png"));
-			enemyABlowImg1 	 = ImageIO.read(new File(projdir + "/res/1/enemyBlowImg1.png"));
-			enemyABlowImg2 	 = ImageIO.read(new File(projdir + "/res/1/enemyBlowImg2.png"));
-			enemyABlowImg3 	 = ImageIO.read(new File(projdir + "/res/1/enemyBlowImg3.png"));
-			enemyABlowImg4 	 = ImageIO.read(new File(projdir + "/res/1/enemyBlowImg4.png"));
-			enemyAImg1 		 = ImageIO.read(new File(projdir + "/res/1/enemyImg1.png"));
-			enemyAImg2 		 = ImageIO.read(new File(projdir + "/res/1/enemyImg2.png"));
-			enemyAImg3 		 = ImageIO.read(new File(projdir + "/res/1/enemyImg3.png"));
-			enemyBBlowImg1 	 = ImageIO.read(new File(projdir + "/res/2/enemyBlowImg1.png"));
-			enemyBBlowImg2 	 = ImageIO.read(new File(projdir + "/res/2/enemyBlowImg2.png"));
-			enemyBBlowImg3 	 = ImageIO.read(new File(projdir + "/res/2/enemyBlowImg3.png"));
-			enemyBBlowImg4 	 = ImageIO.read(new File(projdir + "/res/2/enemyBlowImg4.png"));
-			enemyBImg1 		 = ImageIO.read(new File(projdir + "/res/2/enemyImg1.png"));
-			enemyBImg2 		 = ImageIO.read(new File(projdir + "/res/2/enemyImg2.png"));
-			enemyBImg3 		 = ImageIO.read(new File(projdir + "/res/2/enemyImg3.png"));
-			enemyCBlowImg1 	 = ImageIO.read(new File(projdir + "/res/3/enemyBlowImg1.png"));
-			enemyCBlowImg2 	 = ImageIO.read(new File(projdir + "/res/3/enemyBlowImg2.png"));
-			enemyCBlowImg3 	 = ImageIO.read(new File(projdir + "/res/3/enemyBlowImg3.png"));
-			enemyCBlowImg4 	 = ImageIO.read(new File(projdir + "/res/3/enemyBlowImg4.png"));
-			enemyCImg1 		 = ImageIO.read(new File(projdir + "/res/3/enemyImg1.png"));
-			enemyCImg2 		 = ImageIO.read(new File(projdir + "/res/3/enemyImg2.png"));
-			enemyCImg3 		 = ImageIO.read(new File(projdir + "/res/3/enemyImg3.png"));
-			lifeImg			 = ImageIO.read(new File(projdir + "/res/lifeImg.png"));
-			spaceShipBombImg1 = ImageIO.read(new File(projdir + "/res/spaceShipBombImg1.png"));
-			spaceShipBombImg2 = ImageIO.read(new File(projdir + "/res/spaceShipBombImg2.png"));
-			spaceShipBombImg3 = ImageIO.read(new File(projdir + "/res/spaceShipBombImg3.png"));
-			spaceShipBombImg4 = ImageIO.read(new File(projdir + "/res/spaceShipBombImg4.png"));
-			spaceShipBombImg5 = ImageIO.read(new File(projdir + "/res/spaceShipBombImg5.png"));
-			spaceShipImg1 	 = ImageIO.read(new File(projdir + "/res/spaceShipImg1.png"));
-			spaceShipImg2 	 = ImageIO.read(new File(projdir + "/res/spaceShipImg2.png"));
-			spaceShipImg3 	 = ImageIO.read(new File(projdir + "/res/spaceShipImg3.png"));
-			spaceShipImg4 	 = ImageIO.read(new File(projdir + "/res/spaceShipImg4.png"));
-			spaceShipImg5	 = ImageIO.read(new File(projdir + "/res/spaceShipImg5.png"));
-			spaceShipImg6	 = ImageIO.read(new File(projdir + "/res/spaceShipImg6.png"));
-			powerUpImg	     = ImageIO.read(new File(projdir + "/res/powerUpImg.png"));
-			powerDownImg	     = ImageIO.read(new File(projdir + "/res/powerDownImg.png"));
+			backgroundImg	  = ImageIO.read(new File(projdir + "/res/sprites/backgroundImg.png"));
+			foregroundImg	  = ImageIO.read(new File(projdir + "/res/sprites/foregroundImg.png"));
+			bulletImg1 		  = ImageIO.read(new File(projdir + "/res/sprites/bulletImg1.png"));
+			bulletImg2 		  = ImageIO.read(new File(projdir + "/res/sprites/bulletImg2.png"));
+			enemyABlowImg1 	  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyBlowImg1.png"));
+			enemyABlowImg2 	  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyBlowImg2.png"));
+			enemyABlowImg3 	  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyBlowImg3.png"));
+			enemyABlowImg4 	  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyBlowImg4.png"));
+			enemyAImg1 		  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyImg1.png"));
+			enemyAImg2 		  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyImg2.png"));
+			enemyAImg3 		  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyImg3.png"));
+			enemyBBlowImg1 	  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyBlowImg1.png"));
+			enemyBBlowImg2 	  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyBlowImg2.png"));
+			enemyBBlowImg3 	  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyBlowImg3.png"));
+			enemyBBlowImg4 	  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyBlowImg4.png"));
+			enemyBImg1 		  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyImg1.png"));
+			enemyBImg2 		  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyImg2.png"));
+			enemyBImg3 		  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyImg3.png"));
+			enemyCBlowImg1 	  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyBlowImg1.png"));
+			enemyCBlowImg2 	  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyBlowImg2.png"));
+			enemyCBlowImg3 	  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyBlowImg3.png"));
+			enemyCBlowImg4 	  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyBlowImg4.png"));
+			enemyCImg1 		  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyImg1.png"));
+			enemyCImg2 		  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyImg2.png"));
+			enemyCImg3 		  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyImg3.png"));
+			lifeImg			  = ImageIO.read(new File(projdir + "/res/sprites/lifeImg.png"));
+			spaceShipBombImg1 = ImageIO.read(new File(projdir + "/res/sprites/spaceShipBombImg1.png"));
+			spaceShipBombImg2 = ImageIO.read(new File(projdir + "/res/sprites/spaceShipBombImg2.png"));
+			spaceShipBombImg3 = ImageIO.read(new File(projdir + "/res/sprites/spaceShipBombImg3.png"));
+			spaceShipBombImg4 = ImageIO.read(new File(projdir + "/res/sprites/spaceShipBombImg4.png"));
+			spaceShipBombImg5 = ImageIO.read(new File(projdir + "/res/sprites/spaceShipBombImg5.png"));
+			spaceShipImg1 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg1.png"));
+			spaceShipImg2 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg2.png"));
+			spaceShipImg3 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg3.png"));
+			spaceShipImg4 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg4.png"));
+			spaceShipImg5	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg5.png"));
+			spaceShipImg6	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg6.png"));
+			powerUpImg	      = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg.png"));
+			powerDownImg	  = ImageIO.read(new File(projdir + "/res/sprites/powerDownImg.png"));
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
-		backgroundHeight = backgroundImg.getHeight();
-		backgroundWidth  = backgroundImg.getWidth();
-		spaceShipHeight  = spaceShipImg1.getHeight();
-		spaceShipWidth   = spaceShipImg1.getWidth();
-		lifeImgWidth     = lifeImg.getWidth();
-		lifeImgHeight    = lifeImg.getHeight();
-		enemyAHeight      = enemyAImg1.getHeight();
-		enemyAWidth       = enemyAImg1.getWidth();
-		enemyBHeight      = enemyBImg1.getHeight();
-		enemyBWidth       = enemyBImg1.getWidth();
-		enemyCHeight      = enemyCImg1.getHeight();
-		enemyCWidth       = enemyCImg1.getWidth();
-		powerUpHeight     = powerUpImg.getHeight();
-		powerUpWidth      = powerUpImg.getWidth();
+
+		backgroundHeight 	= backgroundImg.getHeight();
+		backgroundWidth  	= backgroundImg.getWidth();
+		spaceShipHeight  	= spaceShipImg1.getHeight();
+		spaceShipWidth   	= spaceShipImg1.getWidth();
+		lifeImgWidth     	= lifeImg.getWidth();
+		lifeImgHeight    	= lifeImg.getHeight();
+		enemyAHeight      	= enemyAImg1.getHeight();
+		enemyAWidth       	= enemyAImg1.getWidth();
+		enemyBHeight      	= enemyBImg1.getHeight();
+		enemyBWidth       	= enemyBImg1.getWidth();
+		enemyCHeight      	= enemyCImg1.getHeight();
+		enemyCWidth       	= enemyCImg1.getWidth();
+		powerUpHeight     	= powerUpImg.getHeight();
+		powerUpWidth      	= powerUpImg.getWidth();
 		powerDownHeight     = powerDownImg.getHeight();
 		powerDownWidth      = powerDownImg.getWidth();
-
-		// getContentPane().setBackground(Color.BLACK);
+		spaceShipBombHeight = spaceShipBombImg1.getHeight();
+		spaceShipBombWidth 	= spaceShipBombImg1.getWidth();
+		enemyABlowHeight	= enemyABlowImg1.getHeight();
+		enemyABlowWidth 	= enemyABlowImg1.getWidth();
+		enemyBBlowHeight 	= enemyBBlowImg1.getHeight();
+		enemyBBlowWidth 	= enemyBBlowImg1.getWidth();
+		enemyCBlowHeight 	= enemyCBlowImg1.getHeight();
+		enemyCBlowWidth 	= enemyCBlowImg1.getWidth();
+		projectTileHeight   = bulletImg1.getHeight();
+		projectTileWidth    = bulletImg1.getWidth();
 
 		// Initializing fonts for writing strings to the monitor
 		scoreFont = new Font("monospscoreFont", Font.BOLD, scoreSize);
@@ -256,7 +288,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 		// Initialize Local variables
 		backgroundImgY = 0;
-		//localTick = 0;
 		mainDot = 1;
 		optionsDot = 1;
 		newGameDot = 1;
@@ -264,7 +295,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		textField = "";
 		keyBoardChangeSelected = 0;
 		setMenuState(MenuState.MAIN_MENU);
-		//setGameState(GameState.NONE);
 
 		addKeyListener(this);
 		addMouseListener(this); 
@@ -283,12 +313,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		// Manage Double Buffering
 		offscreen = createImage(frameWidth,frameHeight); 
 		bufferGraphics = offscreen.getGraphics();   
-		
+
 		client = client_param;
-		
-		// FIX: Ha close gombbal zárják a programot, akkor is kell terminate().
+
+		// Ha close gombbal zÃ¡rjÃ¡k a programot, akkor is kell terminate
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
-		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
 		        client.terminate();
 		    }
@@ -300,29 +329,46 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	void setMenuState(MenuState ms)
 	{
-		if      (currentMenuState == MenuState.MAIN_MENU)     mainDot = dotLine;
-		else if (currentMenuState == MenuState.PAUSED_MENU)  	  { mainDot = dotLine; System.out.println("mainDot loaded");}
+		if      (currentMenuState == MenuState.MAIN_MENU)     
+			mainDot = dotLine;
+		else if (currentMenuState == MenuState.PAUSED_MENU)  	 
+		{
+			mainDot = dotLine; 
+			System.out.println("mainDot loaded");
+		}
 		else if (currentMenuState == MenuState.OPTIONS_MENU) 
+		{
 			if   (ms == MenuState.KEYBOARD_SETTINGS_MENU) optionsDot = dotLine;
 			else optionsDot = 1;
+		}
 		else if (currentMenuState == MenuState.NEW_GAME_MENU) 
+		{
 			if (ms == MenuState.MULTI_MENU) newGameDot = dotLine;
 			else newGameDot = 1;
-
-		if      (ms == MenuState.MAIN_MENU)     dotLine = mainDot; 
-		else if (ms == MenuState.PAUSED_MENU)   {  dotLine = mainDot; System.out.println("dotLine loaded");}
-		else if (ms == MenuState.OPTIONS_MENU)  dotLine = optionsDot;
-		else if (ms == MenuState.NEW_GAME_MENU) dotLine = newGameDot;
-		else dotLine = 1;
+		}
+		
+		if      (ms == MenuState.MAIN_MENU)     
+			dotLine = mainDot; 
+		else if (ms == MenuState.PAUSED_MENU)
+		{
+			dotLine = mainDot; 
+			System.out.println("dotLine loaded");
+		}
+		else if (ms == MenuState.OPTIONS_MENU) 
+			dotLine = optionsDot;
+		else if (ms == MenuState.NEW_GAME_MENU)
+			dotLine = newGameDot;
+		else 
+			dotLine = 1;
 
 		currentMenuState = ms;
-		System.out.println("MenuState changed to "+currentMenuState);
+		System.out.println("MenuState changed to " + currentMenuState);
 	}
 
 	public void setGameState(GameState gs)	
 	{
 		currentGameState = gs;
-		System.out.println("GameState changed to "+currentGameState);
+		System.out.println("GameState changed to " + currentGameState);
 
 		textField = "";
 		dotLine = 1;
@@ -330,7 +376,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		optionsDot = 1;
 		newGameDot = 1;
 	}
-	
+
 	public void run() {
 		timer.scheduleAtFixedRate(reapaintTimer, 0, 1000/100);
 	}
@@ -345,7 +391,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		timer.cancel();
 	}
 
-	
+
 	public static void infoBox(String infoMessage)
     {
         JOptionPane.showMessageDialog(null, infoMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
@@ -361,91 +407,158 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 		// Draw Background
 		drawBackground();
+
 		
 		localObjectBuffer = client.getNewObjectBuffer();
 		localTick = localObjectBuffer.currentTick;
-		
 
-		if (currentGameState != GameState.NONE && currentGameState != GameState.PAUSED)
-		{		
-			
 			/*public CNPC[] npc;
 			public CPlayer[] player;
 			public CProjectile[] proj;
 			public CModifier[] mod;*/
 			
-			//numberOfLivesA = player.numberOfLives;
-			//numberOfLivesB = player.numberOfLives;
+		if (currentGameState != GameState.NONE && currentGameState != GameState.PAUSED)
+		{		
+		
+			int npcLength = localObjectBuffer.npc.length;
+			for (int i = 0; i < npcLength; i++)
+			{
+				CNPC localNPC = localObjectBuffer.npc[i];
+
+				if (localNPC.className == "HostileType1")
+				{
+				    enemyBlowImg1 	= enemyABlowImg1;
+					enemyBlowImg2 	= enemyABlowImg2;
+					enemyBlowImg3 	= enemyABlowImg3;
+					enemyBlowImg4 	= enemyABlowImg4;
+					enemyImg1 		= enemyAImg1;
+					enemyImg2 		= enemyAImg2;
+					enemyImg3 		= enemyAImg3;
+					
+					enemyHeight 	= enemyAHeight;
+					enemyWidth 		= enemyAWidth;
+					enemyBlowHeight = enemyABlowHeight;
+					enemyBlowWidth 	= enemyABlowWidth;
+				}
+				
+				else if (localNPC.className == "HostileType1")
+				{
+				    enemyBlowImg1 	= enemyBBlowImg1;
+					enemyBlowImg2 	= enemyBBlowImg2;
+					enemyBlowImg3 	= enemyBBlowImg3;
+					enemyBlowImg4 	= enemyBBlowImg4;
+					enemyImg1 		= enemyBImg1;
+					enemyImg2 		= enemyBImg2;
+					enemyImg3 		= enemyBImg3;
+					
+					enemyHeight 	= enemyBHeight;
+					enemyWidth 		= enemyBWidth;
+					enemyBlowHeight = enemyBBlowHeight;
+					enemyBlowWidth 	= enemyBBlowWidth;
+				}
+				
+				else if (localNPC.className == "HostileType1")
+				{
+				    enemyBlowImg1 	= enemyCBlowImg1;
+					enemyBlowImg2 	= enemyCBlowImg2;
+					enemyBlowImg3 	= enemyCBlowImg3;
+					enemyBlowImg4 	= enemyCBlowImg4;
+					enemyImg1 		= enemyCImg1;
+					enemyImg2 		= enemyCImg2;
+					enemyImg3 		= enemyCImg3;
+					
+					enemyHeight 	= enemyCHeight;
+					enemyWidth 		= enemyCWidth;
+					enemyBlowHeight = enemyCBlowHeight;
+					enemyBlowWidth 	= enemyCBlowWidth;
+				}
+
+				if (localNPC.explosionTime != 0) 
+				{
+					tickDiff_div = (localNPC.explosionTime-localTick)/2000;
+					if      (tickDiff_div == 0) bufferGraphics.drawImage(enemyBlowImg1		, localNPC.x	, localNPC.y	, enemyBlowWidth,enemyBlowHeight		, null);
+					else if (tickDiff_div == 1) bufferGraphics.drawImage(enemyBlowImg2		, localNPC.x	, localNPC.y	, enemyBlowWidth,enemyBlowHeight		, null);
+					else if (tickDiff_div == 2) bufferGraphics.drawImage(enemyBlowImg3		, localNPC.x	, localNPC.y	, enemyBlowWidth,enemyBlowHeight		, null);
+					else if (tickDiff_div == 3) bufferGraphics.drawImage(enemyBlowImg4		, localNPC.x	, localNPC.y	, enemyBlowWidth,enemyBlowHeight		, null);
+				}
+				else if (localNPC.hitTime != 0) 
+				{
+					if ((localNPC.hitTime - localTick) < 2000)
+					{
+						tickDiff_div = (localNPC.hitTime - localTick)/5000;
+						if      (tickDiff_div % 2 == 0) bufferGraphics.drawImage(enemyImg1		, localNPC.x	, localNPC.y	, enemyBlowWidth,enemyBlowHeight		, null);
+
+					}
+				}
+
+				else 
+				{
+					tickDiff_div = (localNPC.creationTime-localTick)/1000;
+					if      (tickDiff_div % 3 == 0) bufferGraphics.drawImage(enemyImg1		, localNPC.x	, localNPC.y	, enemyWidth,enemyHeight		, null);
+					else if (tickDiff_div % 3 == 1) bufferGraphics.drawImage(enemyImg2		, localNPC.x	, localNPC.y	, enemyWidth,enemyHeight		, null);
+					else 							bufferGraphics.drawImage(enemyImg3		, localNPC.x	, localNPC.y	, enemyWidth,enemyHeight		, null);
+				}
+			}
+
+
+	
+			int playerLength = localObjectBuffer.player.length;
+			for (int i = 0; i < playerLength; i++)
+			{
+				CPlayer localPlayer = localObjectBuffer.player[i];
+				// public long explosionTime;
+				// public long hitTime;
+				// public String className;
 			
-			//npc.creationTime
+				if (i == 0) numberOfLivesA = localPlayer.numberOfLives;
+				else if (i == 1) numberOfLivesB = localPlayer.numberOfLives;
 
 			
-			// mindkettõnek
-			//public long explosionTime;
-			//public long hitTime;
-			
-			
-			
-			//mod
-			
-			
-			//proj.pickupTime
-			
-			
-			//mindegyiknek
-			//public int x, y;
-			//public String className;
-			
-			
-			
+				if (localPlayer.explosionTime != 0 )
+				{
+					tickDiff_div = (localPlayer.explosionTime-localTick)/3000;
+					if      (tickDiff_div == 0) bufferGraphics.drawImage(spaceShipBombImg1		, localPlayer.x	, localPlayer.y	, spaceShipBombWidth,spaceShipBombHeight		, null);
+					else if (tickDiff_div == 1) bufferGraphics.drawImage(spaceShipBombImg2		, localPlayer.x	, localPlayer.y	, spaceShipBombWidth,spaceShipBombHeight		, null);
+					else if (tickDiff_div == 2) bufferGraphics.drawImage(spaceShipBombImg3		, localPlayer.x	, localPlayer.y	, spaceShipBombWidth,spaceShipBombHeight		, null);
+					else if (tickDiff_div == 3) bufferGraphics.drawImage(spaceShipBombImg4		, localPlayer.x	, localPlayer.y	, spaceShipBombWidth,spaceShipBombHeight		, null);
+					else if (tickDiff_div == 4) bufferGraphics.drawImage(spaceShipBombImg5		, localPlayer.x	, localPlayer.y	, spaceShipBombWidth,spaceShipBombHeight		, null);
+				}
+				else 
+					bufferGraphics.drawImage(spaceShipImg1		, localPlayer.x	, localPlayer.y	, spaceShipWidth,spaceShipHeight		, null);
 
-		   // for (int i = 0; i < localObjectBuffer.npc; i++)
-		    	
-			// {
-			// localObject = (listOfPlayers.get(i));
-			// if (localObject.className = "Player")	
-			// {
-			// if localObject.explosionTime != 0 
-			// {
-			// tickDiff_div = (explosionTime-localTick)/3000;
-			// if      (tickDiff_div == 0) bufferGraphics.drawImage(spaceShipBombImg1		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// else if (tickDiff_div == 1) bufferGraphics.drawImage(spaceShipBombImg2		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// else if (tickDiff_div == 2) bufferGraphics.drawImage(spaceShipBombImg3		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// else if (tickDiff_div == 3) bufferGraphics.drawImage(spaceShipBombImg4		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// else if (tickDiff_div == 4) bufferGraphics.drawImage(spaceShipBombImg5		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// }
-			// else 
-			// bufferGraphics.drawImage(spaceShipImg1		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// }
-
-			// else if (localObject.className = "NPC")	
-			// {
-			// if localObject.explosionTime != 0 
-			// {
-			// tickDiff_div = (explosionTime-localTick)/1000;
-			// if      (tickDiff_div == 0) bufferGraphics.drawImage(enemyBlowImg1		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// else if (tickDiff_div == 1) bufferGraphics.drawImage(enemyBlowImg2		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// else if (tickDiff_div == 2) bufferGraphics.drawImage(enemyBlowImg3		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// else if (tickDiff_div == 3) bufferGraphics.drawImage(enemyBlowImg4		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// }
-			// else 
-			// {
-			// tickDiff_div = (creationTime-localTick)/1000;
-			// if      (tickDiff_div mod 3 == 0) bufferGraphics.drawImage(enemyImg1		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// else if (tickDiff_div mod 3 == 1) bufferGraphics.drawImage(enemyImg2		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// else 							  bufferGraphics.drawImage(enemyImg3		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// }
-			// }
-
-			// else if (localObject.className = "Projectile")
-			// bufferGraphics.drawImage(bulletImg1		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-			// bufferGraphics.drawImage(bulletImg2		, localObject.x	, localObject.y	, enemyWidth,enemyHeight		, null);
-
-			// else if (localObject.className = "PowerUp")	
-
-			// }
-
-			//currentScore
+			}
+			
+			
+			
+			
+			
+			int projLength = localObjectBuffer.proj.length;
+			for (int i = 0; i < projLength; i++)
+			{
+				CProjectile localProjectile = localObjectBuffer.proj[i];
+				// String className;	
+				if (localProjectile.className == "ProjectileGoingUp")
+					bufferGraphics.drawImage(bulletImg1		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight		, null);
+				else //ProjectileGoingDown
+					bufferGraphics.drawImage(bulletImg2		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight		, null);
+			}
+			
+			
+			int modLength = localObjectBuffer.mod.length;
+			for (int i = 0; i < modLength; i++)
+			{
+				CModifier localModifier = localObjectBuffer.mod[i];
+				// public String className;
+				// pickupTime;		
+				
+				if (localModifier.className == "PowerDown")
+					bufferGraphics.drawImage(powerDownImg		, localModifier.x	, localModifier.y	, powerUpWidth,powerDownWidth		, null);
+				else //PowerUp
+					bufferGraphics.drawImage(powerUpImg		, localModifier.x	, localModifier.y	, powerUpWidth,powerDownWidth		, null);
+			
+			}
+			
+			
 			
 			testDrawing();
 
@@ -514,10 +627,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				if (currentGameSkill == GameSkill.EASY) levelString = "Easy";
 				else if (currentGameSkill == GameSkill.NORMAL) levelString = "Normal";
 				else levelString = "Hard";
-				
+
 				String effectString = "Off";
 				if (isEffectOn == true) effectString = "On";
-				
+
 				drawTitle("OPTIONS");
 				drawOptionsLine(1,"Effects",effectString);
 				drawOptionsLine(2,"Level",levelString);
@@ -528,19 +641,19 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			else if (currentMenuState == MenuState.HIGH_SCORES_MENU)
 			{
 				drawTitle("HIGH SCORE");
-				//drawOptionsLine(1,"Józsika","53512");
+				//drawOptionsLine(1,"JÃ³zsika","53512");
 				//drawOptionsLine(2,"Valami","43210");
 				//drawOptionsLine(3,"Valami2222","43210");
-				
-				
+
+
 				SortedMap<Integer,String> sm=new TreeMap<Integer, String>();
-				
+
 				Set s=sm.entrySet();
 
 			    // Using iterator in SortedMap 
 			    Iterator i=s.iterator();
 			       int j= 1;
-			       
+
 				while(i.hasNext())
 		        {
 		            Map.Entry m =(Map.Entry)i.next();
@@ -551,7 +664,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					drawOptionsLine(j,value,""+key);
 					j++;
 		        }
-				
+
 				drawMenuLine   (j,"Back");
 				lastMenuHS = j;
 			}
@@ -584,26 +697,24 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			else if (currentMenuState == MenuState.KEYBOARD_SETTINGS_MENU)
 			{
 				int TimerOszott = (int)localTick/1000; 
+
+				EnumMap<PlayerAction, Integer> asd = client.getKeyboardSettings().clone(); //TODO kell?		// HashMap-ben action(K)-KeyCode(V) pÃ¡rok
 				
-				HashMap<String, Integer> asd = new HashMap<String, Integer> ();
-				asd = client.getKeyboardSettings();		// HashMap-ben action(K)-KeyCode(V) párok
-				
-				keyCode1Left = asd.get("p1left");
-				keyCode1Right = asd.get("p1right");
-				keyCode1Fire = asd.get("p1fire");
-				
-				keyCode2Left = asd.get("p2left");
-				keyCode2Right = asd.get("p2right");
-				keyCode2Fire = asd.get("p2fire");
-				
+				keyCode1Left = asd.get(PlayerAction.P1LEFT);
+				keyCode1Right = asd.get(PlayerAction.P1RIGHT);
+				keyCode1Fire = asd.get(PlayerAction.P1FIRE);
+
+				keyCode2Left = asd.get(PlayerAction.P2LEFT);
+				keyCode2Right = asd.get(PlayerAction.P2RIGHT);
+				keyCode2Fire = asd.get(PlayerAction.P2FIRE);
 				String String1Left = KeyEvent.getKeyText(asd.get("p1left"));
 				String String1Right = KeyEvent.getKeyText(asd.get("p1right"));
 				String String1Fire = KeyEvent.getKeyText(asd.get("p1fire"));
-				
+
 				String String2Left = KeyEvent.getKeyText(asd.get("p2left"));
 				String String2Right = KeyEvent.getKeyText(asd.get("p2right"));
 				String String2Fire = KeyEvent.getKeyText(asd.get("p2fire"));
-				
+
 				if ((keyBoardChangeSelected == 1) && (TimerOszott % 2 == 1)) 
 				{
 					if (dotLine == 1) String1Left = "";
@@ -613,7 +724,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					else if (dotLine == 5) String2Right = "";
 					else if (dotLine == 6) String2Fire = "";
 				}
-				
+
 				drawTitle("SET KEYBOARD");
 				drawOptionsLine(1,"Player 1 Left",String1Left);
 				drawOptionsLine(2,"Player 1 Right",String1Right);
@@ -735,7 +846,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 		bufferGraphics.drawImage(enemyCImg3		, 320	, 300	, enemyCWidth		,enemyCHeight		, null);
 		bufferGraphics.drawImage(enemyCImg3		, 390	, 300	, enemyCWidth		,enemyCHeight		, null);
-		
+
 		bufferGraphics.drawImage(powerUpImg		, 300	, 200	, powerUpWidth		,powerUpHeight		, null);
 		bufferGraphics.drawImage(powerDownImg		, 190	, 400	, powerDownWidth		,powerDownHeight		, null);
 	}
@@ -745,7 +856,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		bufferGraphics.setColor(Color.YELLOW);
 		bufferGraphics.drawString("SCORE" ,    GUI.frameWidth/8,    44);
 		bufferGraphics.drawString("HIGHSCORE", GUI.frameWidth/3+12, 44);
-		
+
 		bufferGraphics.setFont(scoreFont);
 		bufferGraphics.setColor(Color.GREEN); 
 		bufferGraphics.drawString(Integer.toString(curr),    GUI.frameWidth/8,    62);
@@ -834,7 +945,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				if (currentLine == getLastLine()) 
 				{
 					setMenuState(MenuState.OPTIONS_MENU);
-					// leküld...
+					// lekÃ¼ld...
 				}
 				else keyBoardChangeSelected = 1;
 
@@ -863,10 +974,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				}
 
 
-				//else if (currentLine == 1) jatek indul felsot elkülld + elment
+				//else if (currentLine == 1) jatek indul felsot elkÃ¼lld + elment
 				//else
 				//	for (int i = 0; i < 3; i++)
-				//			if (currentLine == i+1) jatek indul, IP cim elküld
+				//			if (currentLine == i+1) jatek indul, IP cim elkÃ¼ld
 			}
 		}
 		else if (currentGameState == GameState.GAMEOVER_NEW_HIGHSCORE) 
@@ -882,18 +993,14 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 		keyCode = e.getKeyCode();
 
-		if (currentGameState == GameState.RUNNING && keyCode != KeyEvent.VK_ESCAPE)
-			client.dispatchKeyEvent(e);
-		else if (((currentMenuState == MenuState.JOIN_GAME_MENU && (currentGameState == GameState.NONE || currentGameState == GameState.PAUSED) && dotLine == 1) || (currentGameState == GameState.GAMEOVER_NEW_HIGHSCORE)) == true) isTextLine = 1; else isTextLine = 0;
-
-		/*if 		(keyCode == KeyEvent.VK_A) setMenuState(MenuState.MAIN_MENU);
-		else if (keyCode == KeyEvent.VK_S) setMenuState(MenuState.NEW_GAME_MENU);
-		else if (keyCode == KeyEvent.VK_D) setMenuState(MenuState.MULTI_MENU);
-		else if (keyCode == KeyEvent.VK_F) setMenuState(MenuState.JOIN_GAME_MENU);
-		else if (keyCode == KeyEvent.VK_G) setMenuState(MenuState.OPTIONS_MENU);
-		else if (keyCode == KeyEvent.VK_H) setMenuState(MenuState.KEYBOARD_SETTINGS_MENU);
-		else if (keyCode == KeyEvent.VK_J) setMenuState(MenuState.HIGH_SCORES_MENU);
-
+		if 		(keyCode == KeyEvent.VK_A) localSound.playSound(SoundType.beepA);
+		else if (keyCode == KeyEvent.VK_S) localSound.playSound(SoundType.beepB);
+		else if (keyCode == KeyEvent.VK_D) localSound.playSound(SoundType.enemyExplosion);
+		else if (keyCode == KeyEvent.VK_F) localSound.playSound(SoundType.spaceShiftExplosion);
+		else if (keyCode == KeyEvent.VK_G) localSound.playSound(SoundType.powerUp);
+		else if (keyCode == KeyEvent.VK_H) localSound.playSound(SoundType.powerDown);
+		else if (keyCode == KeyEvent.VK_J) localSound.playSound(SoundType.shoot);
+/*
 		else if (keyCode == KeyEvent.VK_Q) setGameState(GameState.RUNNING);
 		else if (keyCode == KeyEvent.VK_W) setGameState(GameState.PAUSED);
 		else if (keyCode == KeyEvent.VK_E) setGameState(GameState.WANITING);
@@ -909,15 +1016,15 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		else if (keyCode == KeyEvent.VK_3) setGameState(GameState.NEW_HIGH_SCORE);
 		else if (keyCode == KeyEvent.VK_4) setGameState(GameState.RUNNING);
 
-
-		else*/ if ((keyCode == KeyEvent.VK_BACK_SPACE && !(isTextLine == 1 && textField.length() != 0)) || keyCode == KeyEvent.VK_ESCAPE) //ESCAPE
+*/
+		else if ((keyCode == KeyEvent.VK_BACK_SPACE && !(isTextLine == 1 && textField.length() != 0)) || keyCode == KeyEvent.VK_ESCAPE) //ESCAPE
 		{
 			if (currentGameState == GameState.NONE || currentGameState == GameState.PAUSED)
 			{
 				if      (currentMenuState == MenuState.MAIN_MENU || currentMenuState == MenuState.PAUSED_MENU)
 				{
 					if (currentMenuState == MenuState.MAIN_MENU && keyCode == KeyEvent.VK_ESCAPE)				
-						System.exit(0);	// FIXME: Hát itt azért ne lépjen ki, csak ugorjon az Exit pontra.
+						dotLine = getLastLine();
 				}
 				else if (currentMenuState == MenuState.MULTI_MENU) 
 					setMenuState(MenuState.NEW_GAME_MENU);
@@ -956,15 +1063,14 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		{
 			if (keyBoardChangeSelected == 1)
 			{
-				if      (dotLine == 1) client.bindKey("p1left", keyCode);
-				else if (dotLine == 2) client.bindKey("p1right", keyCode);
-				else if (dotLine == 3) client.bindKey("p1fire", keyCode);
-				else if (dotLine == 4) client.bindKey("p2left", keyCode);
-				else if (dotLine == 5) client.bindKey("p2right", keyCode);
-				else if (dotLine == 6) client.bindKey("p2fire", keyCode);
-				
+				if      (dotLine == 1) client.bindKey(PlayerAction.P1LEFT, keyCode);
+				else if (dotLine == 2) client.bindKey(PlayerAction.P1RIGHT, keyCode);
+				else if (dotLine == 3) client.bindKey(PlayerAction.P1FIRE, keyCode);
+				else if (dotLine == 4) client.bindKey(PlayerAction.P2LEFT, keyCode);
+				else if (dotLine == 5) client.bindKey(PlayerAction.P2RIGHT, keyCode);
+				else if (dotLine == 6) client.bindKey(PlayerAction.P2FIRE, keyCode);
 				keyBoardChangeSelected = 0;
-				//majd struktúra szerint...
+				//majd struktÃºra szerint...
 			}
 			else
 			{
@@ -1114,8 +1220,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	@Override
 	public void setRecentIPs(String[] iparr) {
-		// TODO Itt majd vedd át, tárold õket!
+		// TODO Itt majd vedd Ã¡t, tÃ¡rold Ãµket!
 	}
 }
 
-//egybõl ne dobja fe a menut
+//egybÃµl ne dobja fe a menut
