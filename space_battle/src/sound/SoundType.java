@@ -1,5 +1,5 @@
 package sound;
 
 public enum SoundType {
-	shoot, enemyExplosion, spaceShiftExplosion, beepA, beepB, powerUp, powerDown
+	shoot, enemyExplosion, spaceShipExplosion, beepA, beepB, powerUp, powerDown
 }
