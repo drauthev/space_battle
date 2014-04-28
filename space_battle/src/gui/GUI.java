@@ -396,6 +396,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	public void terminate() {
 		timer.cancel();
+		setVisible(false);
+		dispose();
 	}
 
 
