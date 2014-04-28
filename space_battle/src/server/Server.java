@@ -351,8 +351,8 @@ public class Server implements AllServerInterfaces
 		JSONArray playersJSON = new JSONArray();
 		Player temp = list.get(0);
 		try {
-		currentPlayer.put("className", "Player"); // TODO: minek?
-
+		currentPlayer.put("className", "Player"); // ososztalyban van Andrasnal a className, azer kell csak
+		currentPlayer.put("id", 0);
 		currentPlayer.put("numberOfLives", temp.getLives());
 		currentPlayer.put("x", temp.getCoordX());
 		currentPlayer.put("y", temp.getCoordY());
@@ -362,7 +362,8 @@ public class Server implements AllServerInterfaces
 		
 		if(type == GameType.MULTI_LOCAL || type == GameType.MULTI_NETWORK){
 			temp = list.get(1);
-			currentPlayer.put("className", "Player"); //TODO: minek?
+			currentPlayer.put("className", "Player");
+			currentPlayer.put("id", 1);
 			currentPlayer.put("numberOfLives", temp.getLives());
 			currentPlayer.put("x", temp.getCoordX());
 			currentPlayer.put("y", temp.getCoordY());
