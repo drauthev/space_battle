@@ -7,7 +7,7 @@ public class Constants {
     
 	//public static enum powerUpWhatIsInside {}
 	
-	// constants according to game difficulty -- DOUBLE KELLENE! 16 pixeleket ugrálni egy framen KURVA SZAR LENNE :D
+	// constants according to game difficulty --
 	public final static int modifierSpeedSlowIfEasy = 1; // is this good practice?
 	public final static int modifierSpeedSlowIfMedium = 2;
 	public final static int modifierSpeedSlowIfHard = 3;

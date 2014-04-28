@@ -5,6 +5,10 @@ import java.util.SortedMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import enums.*;
 import interfaces.AllServerInterfaces;
 import interfaces.ClientForServer;
@@ -51,13 +55,16 @@ public class Server implements AllServerInterfaces
 	private boolean aggressiveHostiles;
 	private boolean noAmmo;
 	private boolean halfScores;
-	
+	// Client interfaces
+	private ClientForServer client1;
+	private ClientForServer client2;
 
 	// Constructor
 	public Server(GameType type, GameSkill difficulty, ClientForServer cl1){
 		// TODO: kliens1-et tárolni, kliens2 a setClient2-ben, ekkor ugyanis még nem ismert!
 		this.type = type;
 		this.difficulty = difficulty;
+		client1 = cl1;
 		score = 0;
 		isRunning = false;
 		player1MovingLeft = false;
@@ -97,11 +104,8 @@ public class Server implements AllServerInterfaces
 		detectHits();
 		detectModifierPickUps();
 				
-		
-		playersJSON = playersToJSON(listOfPlayers);
-		npcsJSON = npcsToJSON(listOfNPCs);
-		projectilesJSON = projectilesToJSON(listOfProjectiles);
-		// megh�?­vni az updateGameState-et TODO
+		client1.updateObjects(allToJSON(listOfPlayers, listOfNPCs));
+		// meghivni az updateGameState-et TODO
 		
 		isGameOver();
 
@@ -125,7 +129,6 @@ public class Server implements AllServerInterfaces
 	private void controlPlayers(){
 		// Player 1
 		if(player1MovingLeft){//player1MovingLeft == 
-			System.out.println("fasz");
 			listOfPlayers.get(0).moveLeft(); // 0th index is player1
 		}
 		if(player1MovingRight)
@@ -227,83 +230,91 @@ public class Server implements AllServerInterfaces
 	// Game experience modifier functions
 	
 	// JSON converters
-	public String playersToJSON(List<Player> list){ //TODO: private-t�?© tenni
-		Player temp = list.get(0);
-		String json = "[\n{\n\"ID\": 1,\n\"x: " + temp.getCoordX() + ",\n\"y\": " 
-				+ temp.getCoordY() + ",\n\"lives\": " 
-				+ temp.getLives() + ",\n\"hitTime\": " 
-				+ temp.getHitTime() + ",\n\"explosionTime\": "
-				+ temp.getExplosionTime() + "\n}";
+	public String allToJSON(List<Player> listOfPlayers, List<NPC> listOfNPCs){
+		JSONObject all = new JSONObject();
 		
-		if( type==(GameType.MULTI_LOCAL) || type==(GameType.MULTI_NETWORK) ){
-			temp = list.get(1);
-			json += ",\n{\n\"ID\": 2,\n\"x\": " + temp.getCoordX() + ",\n\"y\": " 
-					+ temp.getCoordY() + ",\n\"lives\": " 
-					+ temp.getLives() + ",\n\"hitTime\": " 
-					+ temp.getHitTime() + ",\n\"explosionTime\": "
-					+ temp.getExplosionTime() + "\n}\n]";
+		playersToJSON(listOfPlayers);
+		try {
+			all.put("score", score);
+			all.put("tick", java.lang.System.currentTimeMillis());
+			// Putting all JSONArray to a big JSONObject
+			all.put("Players", playersToJSON(listOfPlayers));
+			all.put("NPCs", npcsToJSON(listOfNPCs));
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		else{
-			json += "\n]";
-		}
-		return json;
+		
+		return all.toString();
 	}
 	
-	public String npcsToJSON(List<NPC> list){ //TODO: private-t�?©
-		NPC temp;
-		String json = "[\n";
-		int listSize = list.size();
+	public JSONArray playersToJSON(List<Player> list){
+		JSONObject currentPlayer = new JSONObject();
+		ArrayList<JSONObject> playerList = new ArrayList<>();
+		JSONArray playersJSON = new JSONArray();
+		Player temp = list.get(0);
+		try {
+		currentPlayer.put("ID", 1);
+
+		currentPlayer.put("lives", temp.getLives());
+		currentPlayer.put("x", temp.getCoordX());
+		currentPlayer.put("y", temp.getCoordY());
+		currentPlayer.put("hitTime", temp.getHitTime());
+		currentPlayer.put("explosionTime", temp.getExplosionTime());
+		playerList.add(currentPlayer); // player1 added
 		
-		if(listSize == 0){
-			json += "]";
-			}
-		else{
-			for( int i=0; i<listSize-1; i++){ // this cycle is left out if size==1
-			temp = list.get(i);
-			
-			if(temp instanceof HostileType1) json += "{\n\"type\": 1,\n";	// type for GUI to choose the proper skin
-			else if(temp instanceof HostileType2) json += "{\n\"type\": 2,\n";
-			else json += "{\n\"type\": 2,\n";
-			
-			json += "\"x\": " + temp.getCoordX() + ",\n\"y\": " 
-					+ temp.getCoordY() + ",\n\"hitTime\": "
-					+ temp.getHitTime() + ",\n\"explosionTime\": "
-					+ temp.getExplosionTime() + "\n},\n";
-			}
-			// concatenating the last NPC from the list manually, because no comma needed there
-			temp = list.get(listSize-1);
-			if(temp instanceof HostileType1) json += "{\n\"type\": 1,\n";	// type for GUI to choose the proper skin
-			else if(temp instanceof HostileType2) json += "{\n\"type\": 2,\n";
-			else json += "{\n\"type\": 2,\n";
-			
-			json += "\"x\": " + temp.getCoordX() + ",\n\"y\": " 
-					+ temp.getCoordY() + ",\n\"hitTime\": "
-					+ temp.getHitTime() + ",\n\"explosionTime\": "
-					+ temp.getExplosionTime() + "\n}\n]";
-			}
-		return json;
+		if(type == GameType.MULTI_LOCAL || type == GameType.MULTI_NETWORK){
+			temp = list.get(1);
+			currentPlayer.put("ID", 2);
+			currentPlayer.put("lives", temp.getLives());
+			currentPlayer.put("x", temp.getCoordX());
+			currentPlayer.put("y", temp.getCoordY());
+			currentPlayer.put("hitTime", temp.getHitTime());
+			currentPlayer.put("explosionTime", temp.getExplosionTime());
+			playerList.add(currentPlayer); // player2 added
 		}
+		
+		playersJSON = new JSONArray( playerList );
+		}
+		catch (JSONException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		}
+		return playersJSON;
+	}
 	
-	public String projectilesToJSON(List<Projectile> list){
-		Projectile temp;
-		String json = "[\n";
-		int listSize = list.size();
-		
-		if(listSize == 0){
-			json += "]";
-			}
-		else{
-			for( int i=0; i<listSize-1; i++){ // this cycle is left out if size==1
+	private JSONArray npcsToJSON(List<NPC> list){
+		JSONObject currentNPC = new JSONObject();
+		ArrayList<JSONObject> npcList = new ArrayList<>();
+		JSONArray npcsJSON = new JSONArray();
+		NPC temp;
+		try {
+			int listSize = list.size();
+			for( int i=0; i<listSize-1; i++){
 				temp = list.get(i);
-				json += "{\n\"x\": " + temp.getCoordX() + ",\n\"y\": " 
-						+ temp.getCoordY() + "\n},\n";
+				// type for GUI to paint the proper skin
+				if( temp instanceof HostileType1)
+					currentNPC.put("type", 1);
+				else if( temp instanceof HostileType2)
+					currentNPC.put("type", 2);
+				else
+					currentNPC.put("type", 3);
+				
+				currentNPC.put("x", temp.getCoordX());
+				currentNPC.put("y", temp.getCoordY());
+				currentNPC.put("hitTime", temp.getHitTime());
+				currentNPC.put("explosionTime", temp.getExplosionTime());
+				// add each NPC JSONObject to the arraylist<JSONObject>
+				npcList.add(currentNPC);
 			}
-			// concatenating the last Projectile from the list manually, because no comma needed there
-			temp = list.get(listSize-1);
-			json += "{\n\"x\": " + temp.getCoordX() + ",\n\"y\": " 
-					+ temp.getCoordY() + "\n}\n]";
+			// each NPC JSONObject to the JSONArray
+			npcsJSON = new JSONArray(npcList);
 		}
-		return json;
+		catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			}
+		return npcsJSON;
 	}
 	
 	// Implementing ServerForClient Interface
@@ -517,7 +528,6 @@ public class Server implements AllServerInterfaces
 
 	@Override
 	public void setClient2(ClientForServer c2) {
-		// TODO Auto-generated method stub
-		
+		client2 = c2;	
 	}
 }
