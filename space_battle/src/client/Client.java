@@ -312,7 +312,7 @@ public class Client implements ClientForGUI, ClientForServer {
 		{	
 			case RUNNING:
 			case WAITING:
-				server.pauseRequest();
+				server.pauseRequest(this);
 			default:
 		}
 	}
@@ -323,7 +323,7 @@ public class Client implements ClientForGUI, ClientForServer {
 		switch (gameState)
 		{
 			case PAUSED:
-				server.startRequest();
+				server.startRequest(this);
 			default:
 		}
 	}
@@ -379,7 +379,7 @@ public class Client implements ClientForGUI, ClientForServer {
 		Thread t = new Thread(server);
 		t.start();
 		
-		server.startRequest();
+		server.startRequest(this);
 	}
 
 

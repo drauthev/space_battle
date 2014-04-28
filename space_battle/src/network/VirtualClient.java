@@ -29,6 +29,8 @@ public class VirtualClient implements ClientForServer, Runnable {
 	private ArrayList<java.util.Map.Entry<String,Object>> callQueue = new ArrayList<>();
 	private boolean isShuttingDown = false;
 	private int cmdRate;
+	
+	private ClientForServer thisClient = this;
 
 	@Override
 	public void run() {
@@ -107,9 +109,9 @@ public class VirtualClient implements ClientForServer, Runnable {
 							case "disconnect":
 								server.disconnect(); break;
 							case "pauseRequest":
-								server.pauseRequest(); break;
+								server.pauseRequest(thisClient); break;
 							case "startRequest":
-								server.startRequest(); break;
+								server.startRequest(thisClient); break;
 							case "sendName":
 								server.sendName((String)temp.getValue());
 								break;

@@ -179,12 +179,12 @@ public class VirtualServer
 	}
 
 	@Override
-	public void pauseRequest() {
+	public void pauseRequest(ClientForServer c) {
 		synchronized (callQueue) { callQueue.add(new AbstractMap.SimpleEntry<String, Object>("pauseRequest", null)); }
 	}
 
 	@Override
-	public void startRequest() {
+	public void startRequest(ClientForServer c) {
 		synchronized (callQueue) { callQueue.add(new AbstractMap.SimpleEntry<String, Object>("startRequest", null)); }
 	}
 
