@@ -7,14 +7,14 @@ public abstract class Modifier extends NonShootingObject{
 	//
 	private long explosionTime;
 	private long pickUpTime;	// to animate what's in it
-	private long spawnTime;		// only changes if the modifier was created from another modifier by shooting it.. for animation reasons
+	private long creationTime;		// only changes if the modifier was created from another modifier by shooting it.. for animation reasons
 	
 	Modifier(int x, int y){
 		super(x, y);
 		super.setHitBox(new HitBox(modifierWidth, modifierHeigth, this));
 		explosionTime = 0;
 		pickUpTime = 0;
-		spawnTime = 0;
+		creationTime = 0;
 	}
 	
 	// Getters, setters
@@ -35,11 +35,11 @@ public abstract class Modifier extends NonShootingObject{
 	}
 
 	public long getSpawnTime() {
-		return spawnTime;
+		return creationTime;
 	}
 
 	public void setSpawnTime(long spawnTime) {
-		this.spawnTime = spawnTime;
+		this.creationTime = spawnTime;
 	}
 
 	public static int getModifierwidth() {

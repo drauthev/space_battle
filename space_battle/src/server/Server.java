@@ -61,6 +61,9 @@ public class Server implements AllServerInterfaces
 	// Client interfaces
 	private ClientForServer client1;
 	private ClientForServer client2;
+	//
+	private boolean initState = true; // at the start of the game, has to call client1.updateObjects(), before changing GameState to RUNNING; or else the GUI cannot draw
+	private Timer timer;
 
 	// Constructor
 	public Server(GameType type, GameSkill difficulty, ClientForServer cl1){
@@ -266,7 +269,6 @@ public class Server implements AllServerInterfaces
 	}
 	
 	private void detectModifierPickUps(){
-		
 		for(int i=0; i<listOfModifiers.size(); i++){
 			Modifier tempMod = listOfModifiers.get(i);
 			if( tempMod.getHitBox().isCollision(listOfPlayers.get(0))){
@@ -331,10 +333,10 @@ public class Server implements AllServerInterfaces
 		playersToJSON(listOfPlayers);
 		try {
 			all.put("score", score);
-			all.put("tick", java.lang.System.currentTimeMillis());
+			all.put("currentTick", java.lang.System.currentTimeMillis()); // FIXME: CAUSES exception at Client.updateObjects, it its; game doesn't start
 			// Putting all JSONArray to a big JSONObject
-			all.put("Players", playersToJSON(listOfPlayers));
-			all.put("NPCs", npcsToJSON(listOfNPCs));
+			all.put("players", playersToJSON(listOfPlayers));
+			all.put("npcs", npcsToJSON(listOfNPCs));
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -349,9 +351,9 @@ public class Server implements AllServerInterfaces
 		JSONArray playersJSON = new JSONArray();
 		Player temp = list.get(0);
 		try {
-		currentPlayer.put("ID", 1);
+		currentPlayer.put("className", "Player"); // TODO: minek?
 
-		currentPlayer.put("lives", temp.getLives());
+		currentPlayer.put("numberOfLives", temp.getLives());
 		currentPlayer.put("x", temp.getCoordX());
 		currentPlayer.put("y", temp.getCoordY());
 		currentPlayer.put("hitTime", temp.getHitTime());
@@ -360,8 +362,8 @@ public class Server implements AllServerInterfaces
 		
 		if(type == GameType.MULTI_LOCAL || type == GameType.MULTI_NETWORK){
 			temp = list.get(1);
-			currentPlayer.put("ID", 2);
-			currentPlayer.put("lives", temp.getLives());
+			currentPlayer.put("className", "Player"); //TODO: minek?
+			currentPlayer.put("numberOfLives", temp.getLives());
 			currentPlayer.put("x", temp.getCoordX());
 			currentPlayer.put("y", temp.getCoordY());
 			currentPlayer.put("hitTime", temp.getHitTime());
@@ -389,14 +391,15 @@ public class Server implements AllServerInterfaces
 				temp = list.get(i);
 				// type for GUI to paint the proper skin
 				if( temp instanceof HostileType1)
-					currentNPC.put("type", 1);
+					currentNPC.put("className", "HostileType1");
 				else if( temp instanceof HostileType2)
-					currentNPC.put("type", 2);
+					currentNPC.put("className", "HostileType2");
 				else
-					currentNPC.put("type", 3);
+					currentNPC.put("className", "HostileType3");
 				
 				currentNPC.put("x", temp.getCoordX());
 				currentNPC.put("y", temp.getCoordY());
+				currentNPC.put("creationTime", temp.getCreationTime());
 				currentNPC.put("hitTime", temp.getHitTime());
 				currentNPC.put("explosionTime", temp.getExplosionTime());
 				// add each NPC JSONObject to the arraylist<JSONObject>
@@ -406,7 +409,6 @@ public class Server implements AllServerInterfaces
 			npcsJSON = new JSONArray(npcList);
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			}
 		return npcsJSON;
@@ -436,7 +438,7 @@ public class Server implements AllServerInterfaces
 				if(isRunning){
 				int x;
 				x = (int)(Math.random()*(Constants.gameFieldWidth - HostileType1.getHostiletype1width()));
-				x += HostileType1.getHostiletype1width()/2;	// perem�?©rt�?©kek �?­gy x=0+hostileType1Width/2 �?‰S x=gameFieldWidth-hostileType1Width/2
+				x += HostileType1.getHostiletype1width()/2;	// peremertekek �?­gy x=0+hostileType1Width/2 �?‰S x=gameFieldWidth-hostileType1Width/2
 				listOfNPCs.add( new HostileType1(x,Constants.gameFieldHeigth-HostileType1.getHostiletype1heigth(), difficulty) );	// TODO: az Å±rhaj�?³k be�?ºsz�?¡sa miatt t�?ºlsk�?¡l�?¡zni
 				}
 			}
@@ -464,7 +466,7 @@ public class Server implements AllServerInterfaces
 		};
 		
 		// Starting Timer 
-		Timer timer = new Timer(false);	// nem d�?©monk�?©nt indul, capable of keeping the application from termination
+		timer = new Timer(false);	// nem d�?©monk�?©nt indul, capable of keeping the application from termination
 		
 		// Update game state at a given rate
         timer.scheduleAtFixedRate(taskTrackChanges, 0, 1000/Constants.framePerSecond);	// 33.3333 millisecundumunk van megcsin�?¡lni, megjelen�?­teni mindent
@@ -476,11 +478,20 @@ public class Server implements AllServerInterfaces
 	
 	@Override
 	public void terminate(){
-		client2.terminate();
+		// deleting timer thread
+		timer.cancel();
+		// terminating second client if exists
+		if(type == GameType.MULTI_NETWORK){
+			client2.terminate();
+		}
 	}
 	
 	@Override
 	public void startRequest(ClientForServer c){
+		if(initState == true){
+			initState = false;
+			client1.updateObjects(allToJSON(listOfPlayers, listOfNPCs));
+		}
 		if(type == GameType.SINGLE || type == GameType.MULTI_LOCAL){
 			isRunning = true;
 			client1.changeGameState(GameState.RUNNING);
