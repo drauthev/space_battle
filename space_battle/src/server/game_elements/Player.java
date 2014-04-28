@@ -9,7 +9,7 @@ public class Player extends ShootingObject {
 	private final static int playerHeight = 10;
 	// static variables changing according to game difficulty/modifiers
 	private static int horizontalMoveQuantity = 1;
-	private static int playerLivesAtStart;
+	private static int playerLivesAtStart = 3;
 	//
 	private int ID;	// for player identification in case of Multi-player mode
 	private int lives;

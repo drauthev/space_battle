@@ -280,11 +280,13 @@ public class Server implements AllServerInterfaces
 	
 	private void removeNonExistentObjects(){ // removes objects after a certain time, for animation purposes
 		long currentTime = java.lang.System.currentTimeMillis();
+		long explosionTime;
 		
 		// Remove exploded NPCs
 		for(int i=0; i<listOfNPCs.size(); i++){
 			// removing from list, if !!3sec!!? is lated since explosion
-			if(currentTime - listOfNPCs.get(i).getExplosionTime() > 3000){
+			explosionTime = listOfNPCs.get(i).getExplosionTime();
+			if( (currentTime - explosionTime > 3000) && explosionTime!=0 ){//TODO: hany masodperc utan?
 				listOfNPCs.remove(i);
 			}
 		}
@@ -292,7 +294,8 @@ public class Server implements AllServerInterfaces
 		// Remove exploded Players
 		for(int i=0; i<listOfPlayers.size(); i++){
 			// removing from list, if !!3sec!!? is lated since explosion
-			if(currentTime - listOfPlayers.get(i).getExplosionTime() > 3000){
+			explosionTime = listOfPlayers.get(i).getExplosionTime();
+			if( (currentTime -  explosionTime > 3000) && explosionTime!=0 ){//TODO: hany masodperc utan?
 				listOfPlayers.remove(i);
 			}
 		}
@@ -351,34 +354,24 @@ public class Server implements AllServerInterfaces
 		JSONObject currentPlayer = new JSONObject();
 		ArrayList<JSONObject> playerList = new ArrayList<>();
 		JSONArray playersJSON = new JSONArray();
-		Player temp = list.get(0);
+		Player temp;
 		try {
-		currentPlayer.put("className", "Player"); // ososztalyban van Andrasnal a className, azer kell csak
-		currentPlayer.put("id", 0);
-		currentPlayer.put("numberOfLives", temp.getLives());
-		currentPlayer.put("x", temp.getCoordX());
-		currentPlayer.put("y", temp.getCoordY());
-		currentPlayer.put("hitTime", temp.getHitTime());
-		currentPlayer.put("explosionTime", temp.getExplosionTime());
-		playerList.add(currentPlayer); // player1 added
-		
-		if(type == GameType.MULTI_LOCAL || type == GameType.MULTI_NETWORK){
-			temp = list.get(1);
-			currentPlayer.put("className", "Player");
-			currentPlayer.put("id", 1);
-			currentPlayer.put("numberOfLives", temp.getLives());
-			currentPlayer.put("x", temp.getCoordX());
-			currentPlayer.put("y", temp.getCoordY());
-			currentPlayer.put("hitTime", temp.getHitTime());
-			currentPlayer.put("explosionTime", temp.getExplosionTime());
-			playerList.add(currentPlayer); // player2 added
-		}
-		
+			for(int i=0; i<list.size(); i++){
+				temp = list.get(i);
+				currentPlayer.put("className", "Player"); // ososztalyban van Andrasnal a className, azer kell csak
+				currentPlayer.put("id", temp.getID());
+				currentPlayer.put("numberOfLives", temp.getLives());
+				currentPlayer.put("x", temp.getCoordX());
+				currentPlayer.put("y", temp.getCoordY());
+				currentPlayer.put("hitTime", temp.getHitTime());
+				currentPlayer.put("explosionTime", temp.getExplosionTime());
+				playerList.add(currentPlayer); // player1 added
+			}
 		playersJSON = new JSONArray( playerList );
 		}
 		catch (JSONException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return playersJSON;
 	}
