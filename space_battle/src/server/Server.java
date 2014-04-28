@@ -337,11 +337,13 @@ public class Server implements AllServerInterfaces
 			// Putting all JSONArray to a big JSONObject
 			all.put("players", playersToJSON(listOfPlayers));
 			all.put("npcs", npcsToJSON(listOfNPCs));
+			all.put("projectiles", projectilesToJSON(listOfProjectiles));
+			all.put("modifiers", modifiersToJSON(listOfModifiers));
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		System.out.println(all.toString());
 		return all.toString();
 	}
 	
@@ -415,6 +417,17 @@ public class Server implements AllServerInterfaces
 		return npcsJSON;
 	}
 	
+	private JSONArray projectilesToJSON(List<Projectile> list){
+		JSONArray projectilesJSON = new JSONArray();
+		return projectilesJSON;
+		//TODO: csak dummy
+	}
+	
+	private JSONArray modifiersToJSON(List<Modifier> list){
+		JSONArray modifiersJSON = new JSONArray();
+		return modifiersJSON;
+		//TODO: csak dummy
+	}
 	// Implementing ServerForClient Interface
 	// ------------------------------------------------------------------------------------------------------------------
 	@Override
