@@ -66,6 +66,23 @@ public class Client implements ClientForGUI, ClientForServer {
 		
 		soundSys = new SoundSystem();
 		
+		for(int i = 0; i < 3; ++i)
+		{
+			objectBuffer[i] = new ObjectBuffer();
+			
+			for(int j = 0; j < objectBuffer[i].npc.length; ++j)
+				objectBuffer[i].npc[j] = new CNPC();
+			
+			for(int j = 0; j < objectBuffer[i].player.length; ++j)
+				objectBuffer[i].player[j] = new CPlayer();
+			
+			for(int j = 0; j < objectBuffer[i].mod.length; ++j)
+				objectBuffer[i].mod[j] = new CModifier();
+			
+			for(int j = 0; j < objectBuffer[i].proj.length; ++j)
+				objectBuffer[i].proj[j] = new CProjectile();
+		}
+		
 		Thread t = new Thread(gui);
 		t.run();
 	}
@@ -131,6 +148,7 @@ public class Client implements ClientForGUI, ClientForServer {
 			objectBuffer[idx].score = wrapper.getInt("score");
 			
 			JSONArray npc = wrapper.getJSONArray("npcs");
+			objectBuffer[idx].npcCount = npc.length();
 			for(int i = 0; i < npc.length(); ++i)
 			{
 				JSONObject curr = npc.getJSONObject(i);
@@ -144,6 +162,7 @@ public class Client implements ClientForGUI, ClientForServer {
 			}
 			
 			JSONArray player = wrapper.getJSONArray("players");
+			objectBuffer[idx].playerCount = player.length();
 			for(int i = 0; i < player.length(); ++i)
 			{
 				JSONObject curr = player.getJSONObject(i);
@@ -158,6 +177,7 @@ public class Client implements ClientForGUI, ClientForServer {
 			}
 			
 			JSONArray proj = wrapper.getJSONArray("projectiles");
+			objectBuffer[idx].projCount = proj.length();
 			for(int i = 0; i < proj.length(); ++i)
 			{
 				JSONObject curr = proj.getJSONObject(i);
@@ -168,6 +188,7 @@ public class Client implements ClientForGUI, ClientForServer {
 			}
 			
 			JSONArray mod = wrapper.getJSONArray("modifiers");
+			objectBuffer[idx].modCount = mod.length();
 			for(int i = 0; i < mod.length(); ++i)
 			{
 				JSONObject curr = mod.getJSONObject(i);
