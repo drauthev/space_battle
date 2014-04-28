@@ -362,6 +362,12 @@ public class Client implements ClientForGUI, ClientForServer {
 			t.start();
 		}
 		
+		if (gt == GameType.MULTI_LOCAL)
+		{
+			playercontrollers = new PlayerController[2];
+		}
+		else playercontrollers = new PlayerController[1];
+		
 		playercontrollers[0] = new PlayerController(temp);
 		playercontrollers[0].bindKey(PlayerAction.P1FIRE, keyboardSettings.get(PlayerAction.P1FIRE));
 		playercontrollers[0].bindKey(PlayerAction.P1LEFT, keyboardSettings.get(PlayerAction.P1LEFT));
@@ -373,8 +379,7 @@ public class Client implements ClientForGUI, ClientForServer {
 				playercontrollers[1].bindKey(PlayerAction.P2FIRE, keyboardSettings.get(PlayerAction.P2FIRE));
 				playercontrollers[1].bindKey(PlayerAction.P2LEFT, keyboardSettings.get(PlayerAction.P2LEFT));
 				playercontrollers[1].bindKey(PlayerAction.P2RIGHT, keyboardSettings.get(PlayerAction.P2RIGHT));
-		}	
-		else playercontrollers[1] = null;
+		}
 		
 		Thread t = new Thread(server);
 		t.start();
@@ -392,6 +397,8 @@ public class Client implements ClientForGUI, ClientForServer {
 		
 		VirtualServer vs = new VirtualServer(this, ipv4, 47987, 100);
 		server = vs;
+		
+		playercontrollers = new PlayerController[1];
 		
 		playercontrollers[0] = new PlayerController(vs);
 		playercontrollers[0].bindKey(PlayerAction.P1FIRE, keyboardSettings.get(PlayerAction.P1FIRE));
