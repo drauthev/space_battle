@@ -21,6 +21,7 @@ import server.game_elements.Player;
 import server.game_elements.Projectile;
 import server.game_elements.ProjectileGoingDown;
 import server.game_elements.ProjectileGoingUp;
+import sound.SoundType;
 
 public class Server implements AllServerInterfaces
 {
@@ -99,7 +100,7 @@ public class Server implements AllServerInterfaces
 	
 	
 	// Timer-driven methods
-	private void trackChanges(){	//TODO
+	private void trackChanges(){
 		moveNPCs();
 		controlPlayers();	// move/shoot with players according to the pushed buttons
 		detectCollision();	// between players and hostiles
@@ -139,10 +140,14 @@ public class Server implements AllServerInterfaces
 		if(player1Shooting){
 			Projectile shot = listOfPlayers.get(0).shoot();
 			listOfProjectiles.add(shot);
-			//playSound(shot);//TODO
+			// playing sounds
+			client1.playSound(SoundType.shoot);
+			if(type == GameType.MULTI_NETWORK){
+				client2.playSound(SoundType.shoot);
+			}
 		}
 		// Player 2 if multiplayer
-		if( type==(GameType.MULTI_LOCAL) || type==GameType.MULTI_NETWORK){
+		if( type==GameType.MULTI_LOCAL || type==GameType.MULTI_NETWORK){
 			if(player2MovingLeft)
 				listOfPlayers.get(1).moveLeft();	// 1st index is player1
 			if(player2MovingRight)
@@ -150,7 +155,11 @@ public class Server implements AllServerInterfaces
 			if(player2Shooting){
 				Projectile shot = listOfPlayers.get(1).shoot();
 				listOfProjectiles.add(shot);
-				//playSound(shot);
+				// playing sounds
+				client1.playSound(SoundType.shoot);
+				if(type == GameType.MULTI_NETWORK){
+					client2.playSound(SoundType.shoot);
+				}
 			}
 		}
 	}
@@ -298,14 +307,18 @@ public class Server implements AllServerInterfaces
 			if(listOfPlayers.get(0).getLives() == 0){
 				//TODO: HIGHSCORE eseten GAMEOVER_HIGHSCORE-t hivni!
 				client1.changeGameState(GameState.GAMEOVER);
-				client2.changeGameState(GameState.GAMEOVER); //TODO: mind2ot meg kell hivni?
+				if(type == GameType.MULTI_NETWORK){
+					client2.changeGameState(GameState.GAMEOVER); //TODO: mind2ot meg kell hivni?
+				}
 			}
 		}
 		else // multi
 			if(listOfPlayers.get(0).getLives() == 0 || listOfPlayers.get(1).getLives() == 0){
 				//TODO: HIGHSCORE eseten GAMEOVER_HIGHSCORE-t hivni!
 				client1.changeGameState(GameState.GAMEOVER);
-				client2.changeGameState(GameState.GAMEOVER); //TODO: mind2ot meg kell hivni?
+				if(type == GameType.MULTI_NETWORK){
+					client2.changeGameState(GameState.GAMEOVER); //TODO: mind2ot meg kell hivni?
+				}
 			}
 	}
 	
@@ -463,25 +476,39 @@ public class Server implements AllServerInterfaces
 	
 	@Override
 	public void terminate(){
-		
+		client2.terminate();
 	}
 	
-	public void startRequest(){
-		isRunning = true;
-		// TODO: visszajelezni a klienseknek
+	@Override
+	public void startRequest(ClientForServer c){
+		if(type == GameType.SINGLE || type == GameType.MULTI_LOCAL){
+			isRunning = true;
+			client1.changeGameState(GameState.RUNNING);
+		}
+		else{ // network, 2 clients
+			//TODO vizsgalni, h mely kliens hivott, ready, wait stb
+		}
 	}
 	
-	public void pauseRequest(){
-		isRunning = false;	
-		// TODO: visszajelezni a klienseknek
+	@Override
+	public void pauseRequest(ClientForServer c){
+		if(type == GameType.SINGLE || type == GameType.MULTI_LOCAL){
+			isRunning = false;
+			client1.changeGameState(GameState.PAUSED);
+		}
+		else{
+		// TODO:
+		}	
 	}
 	
+	@Override
 	public void disconnect(){
 		//TODO
 	}
 
 	// Implementing ServerForPlayerController Interface
 	// ------------------------------------------------------------------------------------------------------------------
+	@Override
 	public void moveLeft(int playerID){	
 		if(playerID == 1)
 			player1MovingLeft = true;
@@ -490,6 +517,7 @@ public class Server implements AllServerInterfaces
 
 	}
 	
+	@Override
 	public void releaseLeft(int playerID){
 		if(playerID == 1)
 			player1MovingLeft = false;
@@ -497,6 +525,7 @@ public class Server implements AllServerInterfaces
 			player2MovingLeft = false;
 	}
 	
+	@Override
 	public void moveRight(int playerID){
 		if(playerID == 1)
 			player1MovingRight = true;
@@ -504,6 +533,7 @@ public class Server implements AllServerInterfaces
 			player2MovingRight = true;
 	}
 	
+	@Override
 	public void releaseRight(int playerID){
 		if(playerID == 1)
 			player1MovingRight = false;
@@ -511,6 +541,7 @@ public class Server implements AllServerInterfaces
 			player2MovingRight = false;
 	}
 	
+	@Override
 	public void fire(int playerID){
 		if(playerID == 1)
 			player1Shooting = true;
@@ -518,6 +549,7 @@ public class Server implements AllServerInterfaces
 			player2Shooting = true;
 	}
 	
+	@Override
 	public void releaseFire(int playerID){
 		if(playerID == 1)
 			player1Shooting = false;
@@ -530,37 +562,6 @@ public class Server implements AllServerInterfaces
 	public int getScore() {
 		return score;
 	}
-
-	public List<Player> getListOfPlayers() {
-		return listOfPlayers;
-	}
-	
-	public List<Projectile> getListOfProjectiles() {
-		return listOfProjectiles;
-	}
-	
-	public List<NPC> getListOfNPCs() {
-		return listOfNPCs;
-	}
-	
-	public List<Modifier> getListOfModifiers() {
-		return listOfModifiers;
-	}
-
-
-	public String getPlayersJSON() {
-		return playersJSON;
-	}
-
-	public String getNpcsJSON() {
-		return npcsJSON;
-	}
-
-
-	public String getProjectilesJSON() {
-		return projectilesJSON;
-	}
-
 
 	@Override
 	public void sendName(String name) {
@@ -583,7 +584,6 @@ public class Server implements AllServerInterfaces
 	 * pw nincs!
 	 */
 	
-	
 	public static SortedMap<Integer, String> getHighScores()
 	{
 		// TODO Itt kell majd valami értelmes highscore táblát visszaadni...
@@ -603,4 +603,5 @@ public class Server implements AllServerInterfaces
 	public void setClient2(ClientForServer c2) {
 		client2 = c2;	
 	}
+
 }
