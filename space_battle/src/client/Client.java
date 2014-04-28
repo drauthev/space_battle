@@ -127,54 +127,55 @@ public class Client implements ClientForGUI, ClientForServer {
 		try {
 			JSONObject wrapper = new JSONObject(JSONtext);
 			
-			objectBuffer[idx].currentTick = (Long)wrapper.get("currentTick");
-			objectBuffer[idx].score = (Integer)wrapper.get("score");
+			objectBuffer[idx].currentTick = wrapper.getLong("currentTick");
+			objectBuffer[idx].score = wrapper.getInt("score");
 			
-			JSONArray npc = (JSONArray)wrapper.get("npcs");
+			JSONArray npc = wrapper.getJSONArray("npcs");
 			for(int i = 0; i < npc.length(); ++i)
 			{
 				JSONObject curr = npc.getJSONObject(i);
 				
-				objectBuffer[idx].npc[i].className = (String)curr.get("className");
-				objectBuffer[idx].npc[i].x = (Integer)curr.get("x");
-				objectBuffer[idx].npc[i].y = (Integer)curr.get("y");
-				objectBuffer[idx].npc[i].creationTime = (Long)curr.get("creationTime");
-				objectBuffer[idx].npc[i].explosionTime = (Long)curr.get("explosionTime");
-				objectBuffer[idx].npc[i].hitTime = (Long)curr.get("hitTime");
+				objectBuffer[idx].npc[i].className = curr.getString("className");
+				objectBuffer[idx].npc[i].x = curr.getInt("x");
+				objectBuffer[idx].npc[i].y = curr.getInt("y");
+				objectBuffer[idx].npc[i].creationTime = curr.getLong("creationTime");
+				objectBuffer[idx].npc[i].explosionTime = curr.getLong("explosionTime");
+				objectBuffer[idx].npc[i].hitTime = curr.getLong("hitTime");
 			}
 			
-			JSONArray player = (JSONArray)wrapper.get("players");
+			JSONArray player = wrapper.getJSONArray("players");
 			for(int i = 0; i < player.length(); ++i)
 			{
 				JSONObject curr = player.getJSONObject(i);
 				
-				objectBuffer[idx].player[i].className = (String)curr.get("className");
-				objectBuffer[idx].player[i].x = (Integer)curr.get("x");
-				objectBuffer[idx].player[i].y = (Integer)curr.get("y");
-				objectBuffer[idx].player[i].numberOfLives = (Integer)curr.get("numberOfLives");
-				objectBuffer[idx].player[i].explosionTime = (Long)curr.get("explosionTime");
-				objectBuffer[idx].player[i].hitTime = (Long)curr.get("hitTime");
+				objectBuffer[idx].player[i].className = curr.getString("className");
+				objectBuffer[idx].player[i].x = curr.getInt("x");
+				objectBuffer[idx].player[i].y = curr.getInt("y");
+				objectBuffer[idx].player[i].numberOfLives = curr.getInt("numberOfLives");
+				objectBuffer[idx].player[i].explosionTime = curr.getLong("explosionTime");
+				objectBuffer[idx].player[i].hitTime = curr.getLong("hitTime");
+				objectBuffer[idx].player[i].id = curr.getInt("id");
 			}
 			
-			JSONArray proj = (JSONArray)wrapper.get("projectiles");
+			JSONArray proj = wrapper.getJSONArray("projectiles");
 			for(int i = 0; i < proj.length(); ++i)
 			{
 				JSONObject curr = proj.getJSONObject(i);
 				
-				objectBuffer[idx].proj[i].className = (String)curr.get("className");
-				objectBuffer[idx].proj[i].x = (Integer)curr.get("x");
-				objectBuffer[idx].proj[i].y = (Integer)curr.get("y");
+				objectBuffer[idx].proj[i].className = curr.getString("className");
+				objectBuffer[idx].proj[i].x = curr.getInt("x");
+				objectBuffer[idx].proj[i].y = curr.getInt("y");
 			}
 			
-			JSONArray mod = (JSONArray)wrapper.get("modifiers");
+			JSONArray mod = wrapper.getJSONArray("modifiers");
 			for(int i = 0; i < mod.length(); ++i)
 			{
 				JSONObject curr = mod.getJSONObject(i);
 				
-				objectBuffer[idx].mod[i].className = (String)curr.get("className");
-				objectBuffer[idx].mod[i].x = (Integer)curr.get("x");
-				objectBuffer[idx].mod[i].y = (Integer)curr.get("y");
-				objectBuffer[idx].mod[i].pickupTime = (Long)curr.get("pickupTime");
+				objectBuffer[idx].mod[i].className = curr.getString("className");
+				objectBuffer[idx].mod[i].x = curr.getInt("x");
+				objectBuffer[idx].mod[i].y = curr.getInt("y");
+				objectBuffer[idx].mod[i].pickupTime = curr.getLong("pickupTime");
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
