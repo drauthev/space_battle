@@ -9,6 +9,9 @@ public abstract class Projectile extends NonShootingObject {
 	Projectile(int x, int y){
 		super(x,y);				// HITBOX ASDASDASD
 	}
+	
+	 public abstract boolean isHit(GameElement object);
+	 
 }
 //	Projectile(int x, int y){
 //		this.coordX = x;

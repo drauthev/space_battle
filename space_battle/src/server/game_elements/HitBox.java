@@ -5,7 +5,7 @@ public class HitBox{
 	private int width, heigth;
 	GameElement owner;
 	
-	// KÃ?â€°RDÃ…ï¿½JEL::: HA PARAMÃ?â€°TERKÃ?â€°NT Ã?ï¿½TADOK EGY OJJEKTUMOT, MÃ?ï¿½SOLAT KÃ?â€°SZÃ?Å“L, VAGY REFERENCIA?
+	
 	HitBox(int width, int heigth, GameElement owner){
 		this.setWidth(width);
 		this.setHeigth(heigth);
@@ -13,13 +13,13 @@ public class HitBox{
 	}
 		
 	public boolean isCollision(GameElement otherElement){
-		// TODO, hatÃ?Â©konyabb eljÃ?Â¡rÃ?Â¡st csinÃ?Â¡lni..
-		int thisX = owner.getCoordX() - width/2;	// normÃ?Â¡lÃ?Â¡s a bal felsÃ…â€? sarokba, onnan indul majd a ciklus
+		// TODO, hatekonyabb eljaras..
+		int thisX = owner.getCoordX() - width/2;	// normalas a bal felso sarokba, onnan indul majd a ciklus
 		int thisY = owner.getCoordY() + heigth/2;
 		int otherX = otherElement.getCoordX() - width/2;
 		int otherY = otherElement.getCoordY() + heigth/2;
 
-		for(int i=thisX; i < thisX+width; i++){	// hatÃ?Â¡rokat MEGGONDOLNI
+		for(int i=thisX; i < thisX+width; i++){	// hatarokat meggondolni
 			for(int j=otherX; j<otherX+width; j++){
 				if(i==j){
 					for(int k=thisY; k > thisY-heigth; k--){

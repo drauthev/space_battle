@@ -19,6 +19,8 @@ import server.game_elements.Modifier;
 import server.game_elements.NPC;
 import server.game_elements.Player;
 import server.game_elements.Projectile;
+import server.game_elements.ProjectileGoingDown;
+import server.game_elements.ProjectileGoingUp;
 
 public class Server implements AllServerInterfaces
 {
@@ -103,9 +105,10 @@ public class Server implements AllServerInterfaces
 		detectCollision();	// between players and hostiles
 		detectHits();
 		detectModifierPickUps();
+		
+		removeNonExistentObjects();
 				
 		client1.updateObjects(allToJSON(listOfPlayers, listOfNPCs));
-		// meghivni az updateGameState-et TODO
 		
 		isGameOver();
 
@@ -190,7 +193,7 @@ public class Server implements AllServerInterfaces
 					else
 						tempPlayer.setHitTime(java.lang.System.currentTimeMillis());
 					
-					// changing the list elements to the modified ones
+					// changing the list elements to the modified ones //TODO: is this needed or the get() method gives references?
 					listOfPlayers.set(1, tempPlayer);
 					listOfNPCs.set(i, tempNPC);
 				}
@@ -200,7 +203,57 @@ public class Server implements AllServerInterfaces
 	}
 	
 	private void detectHits(){
-		
+		for(int i=0; i<listOfProjectiles.size(); i++){
+			
+			Projectile proj = listOfProjectiles.get(i);
+			// Projectile is shot by a player
+			if( proj instanceof ProjectileGoingUp ){
+				
+				for(int j=0; j<listOfNPCs.size(); j++){
+					NPC npc = listOfNPCs.get(j);
+					int npcLives = npc.getLives();
+					
+					if ( proj.isHit(npc) ){ // Given NPC is hit
+						npcLives--;
+						if( npcLives == 0 ){
+							npc.setExplosionTime(java.lang.System.currentTimeMillis());
+						}
+						else{
+							npc.setHitTime(java.lang.System.currentTimeMillis());
+							npc.setLives(npcLives);
+							// decreasing lives is unnecessary as only explosionTime is propagated to the GUI
+						}
+						listOfNPCs.set(j, npc);
+						listOfProjectiles.remove(i); // remove projectile which hit
+					}
+					// nothing to do if there is no hit
+				}
+			}
+			
+			// Projectile is shot by an NPC
+			else{ 
+				if( proj instanceof ProjectileGoingDown ){
+					for(int j=0; j<listOfPlayers.size(); j++){
+						Player player = listOfPlayers.get(j);
+						int playerLives = player.getLives();
+						
+						if (proj.isHit(player) ){//TODO: lehet, hogy y coordot itt kellene nezni, ProjGoingDown isHit()-jeben nem, es csak azokra meghivni
+							player.setLives(--playerLives);
+							if( playerLives == 0 ){
+								player.setExplosionTime(java.lang.System.currentTimeMillis());
+							}
+							else{
+								player.setHitTime(java.lang.System.currentTimeMillis());
+							}
+							listOfPlayers.set(j, player);
+							listOfProjectiles.remove(i); // remove projectile which hit
+						}
+						// nothing to do if there is no hit
+					}
+				}
+				
+			}
+		}
 	}
 	
 	private void detectModifierPickUps(){
@@ -214,23 +267,52 @@ public class Server implements AllServerInterfaces
 		
 	}
 	
+	private void removeNonExistentObjects(){ // removes objects after a certain time, for animation purposes
+		long currentTime = java.lang.System.currentTimeMillis();
+		
+		// Remove exploded NPCs
+		for(int i=0; i<listOfNPCs.size(); i++){
+			// removing from list, if !!3sec!!? is lated since explosion
+			if(currentTime - listOfNPCs.get(i).getExplosionTime() > 3000){
+				listOfNPCs.remove(i);
+			}
+		}
+		
+		// Remove exploded Players
+		for(int i=0; i<listOfPlayers.size(); i++){
+			// removing from list, if !!3sec!!? is lated since explosion
+			if(currentTime - listOfPlayers.get(i).getExplosionTime() > 3000){
+				listOfPlayers.remove(i);
+			}
+		}
+		
+		// Remove picked-up modifiers
+		//TODO
+		
+		
+	}
+	
 	private void isGameOver(){ //TODO
 		
 		if(type == GameType.SINGLE){
 			if(listOfPlayers.get(0).getLives() == 0){
-				//CALL CLIENT'S GAMEOVER() !
+				//TODO: HIGHSCORE eseten GAMEOVER_HIGHSCORE-t hivni!
+				client1.changeGameState(GameState.GAMEOVER);
+				client2.changeGameState(GameState.GAMEOVER); //TODO: mind2ot meg kell hivni?
 			}
 		}
 		else // multi
 			if(listOfPlayers.get(0).getLives() == 0 || listOfPlayers.get(1).getLives() == 0){
-				//CALL CLIENT'S GAMEOVER() !
+				//TODO: HIGHSCORE eseten GAMEOVER_HIGHSCORE-t hivni!
+				client1.changeGameState(GameState.GAMEOVER);
+				client2.changeGameState(GameState.GAMEOVER); //TODO: mind2ot meg kell hivni?
 			}
 	}
 	
 	// Game experience modifier functions
 	
 	// JSON converters
-	public String allToJSON(List<Player> listOfPlayers, List<NPC> listOfNPCs){
+	private String allToJSON(List<Player> listOfPlayers, List<NPC> listOfNPCs){
 		JSONObject all = new JSONObject();
 		
 		playersToJSON(listOfPlayers);
@@ -248,7 +330,7 @@ public class Server implements AllServerInterfaces
 		return all.toString();
 	}
 	
-	public JSONArray playersToJSON(List<Player> list){
+	private JSONArray playersToJSON(List<Player> list){
 		JSONObject currentPlayer = new JSONObject();
 		ArrayList<JSONObject> playerList = new ArrayList<>();
 		JSONArray playersJSON = new JSONArray();

@@ -5,12 +5,30 @@ public class ProjectileGoingDown extends Projectile {
 
 	ProjectileGoingDown(int x, int y) {
 		super(x,y);
-		//TODO: lehet, h a projectile-t nem is hitbox-szal kellene, hanem
-		//mindegyikre külön isHit()-t írni, és a legalsó v legfelső stb koordinátáját vizsgálni
 	}
 	
 	public void autoMove(){
 		super.setCoordY(super.getCoordY() - verticalMoveQuantity);
+	}
+
+	@Override
+	public boolean isHit(GameElement object) { //TODO: lehet, hogy y coordot itt nem is kellene nezni, hanem csak azokra hivni meg, amikre okes
+		// projectile-related
+		int bottom = getCoordY() - projectileHeight;
+		int projX = getCoordX();
+		// object-related
+		int objWidth = object.getHitBox().getWidth();
+		int objHeight = object.getHitBox().getHeigth();
+		int objX = object.getCoordX();
+		int objY = object.getCoordY();
+		
+		if( bottom < objY + objHeight/2 ){ // match in Y dimension
+			if ( (projX > objX - objWidth/2) && (projX < objX + objWidth/2) )
+				return true;
+			else return false; // match in Y dim, but no match in X dimension
+		}
+		else return false; 
+		
 	}
 
 }
