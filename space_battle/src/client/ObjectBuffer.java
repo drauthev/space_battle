@@ -13,6 +13,11 @@ public class ObjectBuffer {
 	public long currentTick;
 	public int score;
 	
+	public int npcCount;
+	public int playerCount;
+	public int projCount;
+	public int modCount;
+	
 	/*
 	ObjectBuffer(int npcs, int players, int projs, int mods)
 	{
