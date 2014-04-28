@@ -1,5 +1,8 @@
 package server.game_elements;
 
+import server.Constants;
+import enums.GameSkill;
+
 public class HostileType2 extends NPC {
 	
 	// constants
@@ -14,9 +17,19 @@ public class HostileType2 extends NPC {
 	private static int shootingFrequency = 3000; //double inkább?
 	private static int spawningFrequency = 5000; //double inkább?
 	
-	HostileType2(int x, int y){
+	HostileType2(int x, int y, GameSkill difficulty){
 		super(x,y);
 		super.setHitBox(new HitBox(hostileType2Width, hostileType2Heigth, this));
+		// setting NPC's lives
+		if(difficulty == GameSkill.EASY){
+			super.setLives(Constants.hostileType2livesIfEasy);
+		}
+		else if(difficulty == GameSkill.NORMAL){
+			super.setLives(Constants.hostileType2livesIfNormal);
+		}
+		else{
+			super.setLives(Constants.hostileType2livesIfHard);
+		}
 	}
 	
 	public void autoMove(){

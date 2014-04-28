@@ -131,7 +131,7 @@ public class Server implements AllServerInterfaces
 	
 	private void controlPlayers(){
 		// Player 1
-		if(player1MovingLeft){//player1MovingLeft == 
+		if(player1MovingLeft){		
 			listOfPlayers.get(0).moveLeft(); // 0th index is player1
 		}
 		if(player1MovingRight)
@@ -139,7 +139,7 @@ public class Server implements AllServerInterfaces
 		if(player1Shooting){
 			Projectile shot = listOfPlayers.get(0).shoot();
 			listOfProjectiles.add(shot);
-			//playSound(shot);
+			//playSound(shot);//TODO
 		}
 		// Player 2 if multiplayer
 		if( type==(GameType.MULTI_LOCAL) || type==GameType.MULTI_NETWORK){
@@ -292,7 +292,7 @@ public class Server implements AllServerInterfaces
 		
 	}
 	
-	private void isGameOver(){ //TODO
+	private void isGameOver(){
 		
 		if(type == GameType.SINGLE){
 			if(listOfPlayers.get(0).getLives() == 0){
@@ -424,7 +424,7 @@ public class Server implements AllServerInterfaces
 				int x;
 				x = (int)(Math.random()*(Constants.gameFieldWidth - HostileType1.getHostiletype1width()));
 				x += HostileType1.getHostiletype1width()/2;	// perem�?©rt�?©kek �?­gy x=0+hostileType1Width/2 �?‰S x=gameFieldWidth-hostileType1Width/2
-				listOfNPCs.add( new HostileType1(x,Constants.gameFieldHeigth-HostileType1.getHostiletype1heigth()) );	// TODO: az Å±rhaj�?³k be�?ºsz�?¡sa miatt t�?ºlsk�?¡l�?¡zni
+				listOfNPCs.add( new HostileType1(x,Constants.gameFieldHeigth-HostileType1.getHostiletype1heigth(), difficulty) );	// TODO: az Å±rhaj�?³k be�?ºsz�?¡sa miatt t�?ºlsk�?¡l�?¡zni
 				}
 			}
 		};
@@ -482,17 +482,12 @@ public class Server implements AllServerInterfaces
 
 	// Implementing ServerForPlayerController Interface
 	// ------------------------------------------------------------------------------------------------------------------
-	
-	//TODO: AZ AL�?�BB KOMMENTEZETT SZAROKAT BERAKNI A TIMER TASKOKHOZ%!!!
 	public void moveLeft(int playerID){	
 		if(playerID == 1)
 			player1MovingLeft = true;
 		else if(playerID == 2)
 			player2MovingLeft = true;
-//		int x = listOfPlayers.get(playerID).getCoordX();
-//		
-//		if( x >= (0 + Player.getPlayerwidth()/2 + Player.getHorizontalMoveQuantity()) )	// moving left only till reaching the edge
-//			listOfPlayers.get(playerID).moveLeft();
+
 	}
 	
 	public void releaseLeft(int playerID){
@@ -507,10 +502,6 @@ public class Server implements AllServerInterfaces
 			player1MovingRight = true;
 		else if(playerID == 2)
 			player2MovingRight = true;
-//		int x = this.getListOfPlayers().get(playerID).getCoordX();
-//		
-//		if (x <= gameFieldWidth - Player.getPlayerwidth()/2 - Player.getHorizontalMoveQuantity())
-//			this.getListOfPlayers().get(playerID).moveRight();
 	}
 	
 	public void releaseRight(int playerID){

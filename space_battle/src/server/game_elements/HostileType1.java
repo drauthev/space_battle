@@ -1,5 +1,9 @@
 package server.game_elements;
 
+import server.Constants;
+import enums.GameSkill;
+import enums.GameType;
+
 public class HostileType1 extends NPC {
 	
 	private final static int hostileType1Width = 10;
@@ -11,19 +15,19 @@ public class HostileType1 extends NPC {
 	private static int spawningFrequency = 5000; // 5 secenként
 	
 	
-	public HostileType1(int x, int y){
+	public HostileType1(int x, int y, GameSkill difficulty){
 		super(x,y);
 		super.setHitBox(new HitBox(hostileType1Width, hostileType1Heigth, this));
-		
-		// Setting lives according to game difficulty
-		/*if(Global.skill == GameSkill.EASY)
-			super.setLives(Global.hostileType1livesIfEasy);
-		else if(Global.skill == GameSkill.NORMAL)
-			super.setLives(Global.hostileType1livesIfMedium);
-		else if(Global.skill == GameSkill.HARD)
-			super.setLives(Global.hostileType1livesIfHard);*/
-		
-		// FIXME: Ehhez nem kell global, konstruktorban el lehet intézni... 
+		// setting NPC's lives
+		if(difficulty == GameSkill.EASY){
+			super.setLives(Constants.hostileType1livesIfEasy);
+		}
+		else if(difficulty == GameSkill.NORMAL){
+			super.setLives(Constants.hostileType1livesIfNormal);
+		}
+		else{
+			super.setLives(Constants.hostileType1livesIfHard);
+		}
 	}
 	
 	public void autoMove(){
