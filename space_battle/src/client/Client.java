@@ -110,8 +110,8 @@ public class Client implements ClientForGUI, ClientForServer {
 			
 			ois.close();
 		} catch (IOException | ClassNotFoundException e) {
-			e.printStackTrace();
-			gui.error("Error while loading configuration file!");
+			//e.printStackTrace();
+			//gui.error("Error while loading configuration file!");
 		} finally {			
 			if (keyboardSettings != null)
 				return;
@@ -119,8 +119,8 @@ public class Client implements ClientForGUI, ClientForServer {
 			keyboardSettings = new EnumMap<PlayerAction, Integer>(PlayerAction.class);
 			
 			// Load default keyboard configuration.
-			keyboardSettings.put(PlayerAction.P1LEFT, KeyEvent.VK_A);
-			keyboardSettings.put(PlayerAction.P1RIGHT, KeyEvent.VK_D);
+			keyboardSettings.put(PlayerAction.P1LEFT, KeyEvent.VK_J);
+			keyboardSettings.put(PlayerAction.P1RIGHT, KeyEvent.VK_L);
 			keyboardSettings.put(PlayerAction.P1FIRE, KeyEvent.VK_SPACE);
 			keyboardSettings.put(PlayerAction.P2LEFT, KeyEvent.VK_LEFT);
 			keyboardSettings.put(PlayerAction.P2RIGHT, KeyEvent.VK_RIGHT);
