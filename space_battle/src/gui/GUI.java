@@ -7,8 +7,6 @@ import java.awt.image.BufferedImage;
 import javax.swing.*;
 import javax.imageio.ImageIO;
 
-import com.sun.org.apache.bcel.internal.generic.ISTORE;
-
 import sound.SoundSystem;
 import sound.SoundType;
 import client.CModifier;
@@ -23,7 +21,6 @@ import java.util.*;
 import java.util.Timer;
 import java.io.File;
 import java.io.IOException;
-
 
 public class GUI extends JFrame implements KeyListener, MouseListener, GUIForClient {
 
@@ -90,7 +87,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	// Other variables
 	private String textField;
-	private int currentScore;
 	private int numberOfLivesA;
 	private int numberOfLivesB;
 	private int dotLine;
@@ -202,12 +198,14 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private ClientForGUI client;
 	private String IPtoSend;
 	private String[] ipAddresses = null;
+	
 	private String string1Left;
 	private String string1Right;
 	private String string1Fire;
 	private String string2Left;
 	private String string2Right;
 	private String string2Fire;
+	private int ipAddresseslength = 0;
 
 	public GUI(ClientForGUI client_param)
 	{
@@ -510,25 +508,25 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				if (localNPC.explosionTime != 0) 
 				{
 					tickDiff_div = (localNPC.explosionTime-serverTick)/2000;
-					if      (tickDiff_div == 0) drawImg(enemyBlowImg1, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
-					else if (tickDiff_div == 1) drawImg(enemyBlowImg2, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
-					else if (tickDiff_div == 2) drawImg(enemyBlowImg3, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
-					else if (tickDiff_div == 3) drawImg(enemyBlowImg4, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
+					if      (tickDiff_div == 0) drawObject(enemyBlowImg1, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
+					else if (tickDiff_div == 1) drawObject(enemyBlowImg2, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
+					else if (tickDiff_div == 2) drawObject(enemyBlowImg3, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
+					else if (tickDiff_div == 3) drawObject(enemyBlowImg4, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
 				}
 				else if (localNPC.hitTime != 0) 
 				{
 					if ((localNPC.hitTime - serverTick) < 2000)
 					{
 						tickDiff_div = (localNPC.creationTime-serverTick)/5000;
-						if  (tickDiff_div % 2 == 0) drawImg(enemyImg1, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
+						if  (tickDiff_div % 2 == 0) drawObject(enemyImg1, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
 					}	
 				}
 				else 
 				{
 					tickDiff_div = (localNPC.creationTime-serverTick)/1000;
-					if      (tickDiff_div % 3 == 0) drawImg(enemyImg1, localNPC.x, localNPC.y, enemyWidth,enemyHeight);
-					else if (tickDiff_div % 3 == 1) drawImg(enemyImg2, localNPC.x, localNPC.y, enemyWidth,enemyHeight);
-					else 							drawImg(enemyImg3, localNPC.x, localNPC.y, enemyWidth,enemyHeight);
+					if      (tickDiff_div % 3 == 0) drawObject(enemyImg1, localNPC.x, localNPC.y, enemyWidth,enemyHeight);
+					else if (tickDiff_div % 3 == 1) drawObject(enemyImg2, localNPC.x, localNPC.y, enemyWidth,enemyHeight);
+					else 							drawObject(enemyImg3, localNPC.x, localNPC.y, enemyWidth,enemyHeight);
 				}
 			}
 
@@ -542,14 +540,14 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				if (localPlayer.explosionTime != 0 )
 				{
 					tickDiff_div = (localPlayer.explosionTime-serverTick)/3000;
-					if      (tickDiff_div == 0) drawImg(spaceShipBombImg1, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
-					else if (tickDiff_div == 1) drawImg(spaceShipBombImg2, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
-					else if (tickDiff_div == 2) drawImg(spaceShipBombImg3, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
-					else if (tickDiff_div == 3) drawImg(spaceShipBombImg4, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
-					else if (tickDiff_div == 4) drawImg(spaceShipBombImg5, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
+					if      (tickDiff_div == 0) drawObject(spaceShipBombImg1, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
+					else if (tickDiff_div == 1) drawObject(spaceShipBombImg2, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
+					else if (tickDiff_div == 2) drawObject(spaceShipBombImg3, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
+					else if (tickDiff_div == 3) drawObject(spaceShipBombImg4, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
+					else if (tickDiff_div == 4) drawObject(spaceShipBombImg5, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
 				}
 				else 
-					drawImg(spaceShipImg1, localPlayer.x, localPlayer.y, spaceShipWidth, spaceShipHeight);
+					drawObject(spaceShipImg1, localPlayer.x, localPlayer.y, spaceShipWidth, spaceShipHeight);
 
 			}
 			
@@ -558,9 +556,9 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				CProjectile localProjectile = localObjectBuffer.proj[i];
 
 				if (localProjectile.className == "ProjectileGoingUp")
-					drawImg(bulletImg1		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+					drawObject(bulletImg1		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
 				else //ProjectileGoingDown
-					drawImg(bulletImg2		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+					drawObject(bulletImg2		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
 			}
 			
 			for (int i = 0; i < localObjectBuffer.modCount; i++)
@@ -569,9 +567,9 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				if (localModifier.pickupTime == 0 || (localModifier.pickupTime - serverTick > 5000) || ((localModifier.pickupTime - serverTick)/1000) % 2 == 0) ;
 				{
 					if (localModifier.className == "PowerDown")
-						drawImg(powerDownImg	, localModifier.x	, localModifier.y	, powerUpWidth,powerDownWidth);
+						drawObject(powerDownImg	, localModifier.x	, localModifier.y	, powerUpWidth,powerDownWidth);
 					else //PowerUp
-						drawImg(powerUpImg		, localModifier.x	, localModifier.y	, powerUpWidth,powerDownWidth);
+						drawObject(powerUpImg		, localModifier.x	, localModifier.y	, powerUpWidth,powerDownWidth);
 				}
 			}
 			
@@ -705,7 +703,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				drawMenuLine   (1,"Please Give Us the IP Address!");
 				drawWritingLine(2,textField);
 				
-				for (int i = 0; i < ipAddresses.length; i++)
+				for (int i = 0; i < ipAddresseslength /*ipAddresses.length*/; i++)
 					drawMenuLine   (i+3,ipAddresses[i]);
 				
 				drawMenuLine   (getLastLine(),"Back");
@@ -746,7 +744,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		}
 	}
 
-	private void drawImg(BufferedImage img, int x, int y,
+	private void drawObject(BufferedImage img, int x, int y,
 			int width, int height) {
 		bufferGraphics.drawImage(img ,x-width/2 , y-height/2, width, height, null);
 	}
@@ -754,7 +752,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	public void drawForeground(int width, int height)
 	{
-		drawImg(foregroundImg	, (frameWidth)/2-150	, 165	, 300	,200);
+		bufferGraphics.drawImage(foregroundImg, (frameWidth)/2-150, 165, 300, 200, null);
 	}
 
 	public void drawBackground()
@@ -790,7 +788,13 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	{
 		bufferGraphics.setFont(menuFont);
 		bufferGraphics.setColor(menuColor);
+		
 		CoordinateX = frameWidth/2 - bufferGraphics.getFontMetrics().stringWidth(content)/2;
+		
+		/*if (content.length() == 0)
+			CoordinateX = frameWidth/2;
+		else
+			CoordinateX = frameWidth/2 - bufferGraphics.getFontMetrics().stringWidth(content)/2;*/
 		CoordinateY = firstLineY + lineNumber * lineHeight;
 		//localTick
 		if (localTick/1000 % 2 == 0) bufferGraphics.drawString(content,      CoordinateX, CoordinateY);
@@ -833,44 +837,44 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	public void drawLives()
 	{
 		for (int i = 0; i < numberOfLivesA; i++)
-			drawImg(lifeImg	, 40 + 40*i	, 600	, lifeImgWidth	,lifeImgHeight);
+			drawObject(lifeImg	, 40 + 40*i	, 600	, lifeImgWidth	,lifeImgHeight);
 
 		for (int i = 0; i < numberOfLivesB; i++)
-			drawImg(lifeImg	, frameWidth - 45 -  40*i	, 600	, lifeImgWidth	,lifeImgHeight);
+			drawObject(lifeImg	, frameWidth - 45 -  40*i	, 600	, lifeImgWidth	,lifeImgHeight);
 	}		
 
 	public void testDrawing()
 	{
-		drawImg(spaceShipImg1	, 200	, 500	, spaceShipWidth	,spaceShipHeight);
-		drawImg(spaceShipImg2	, 300	, 500	, spaceShipWidth	,spaceShipHeight);
+		drawObject(spaceShipImg1	, 200	, 500	, spaceShipWidth	,spaceShipHeight);
+		drawObject(spaceShipImg2	, 300	, 500	, spaceShipWidth	,spaceShipHeight);
 
-		drawImg(enemyAImg1		, 80	, 300	, enemyAWidth		,enemyAHeight);
-		drawImg(enemyBImg1		, 150	, 300	, enemyBWidth		,enemyBHeight);
-		drawImg(enemyCImg1		, 220	, 300	, enemyCWidth		,enemyCHeight);
-		drawImg(enemyCImg1		, 130	, 370	, enemyCWidth		,enemyCHeight);
-		drawImg(enemyCImg1		, 190	, 350	, enemyCWidth		,enemyCHeight);
+		drawObject(enemyAImg1		, 80	, 300	, enemyAWidth		,enemyAHeight);
+		drawObject(enemyBImg1		, 150	, 300	, enemyBWidth		,enemyBHeight);
+		drawObject(enemyCImg1		, 220	, 300	, enemyCWidth		,enemyCHeight);
+		drawObject(enemyCImg1		, 130	, 370	, enemyCWidth		,enemyCHeight);
+		drawObject(enemyCImg1		, 190	, 350	, enemyCWidth		,enemyCHeight);
 
-		drawImg(enemyCImg2		, 30	, 100	, enemyCWidth		,enemyCHeight);
-		drawImg(enemyCImg2		, 100	, 100	, enemyCWidth		,enemyCHeight);
-		drawImg(enemyCImg2		, 180	, 100	, enemyCWidth		,enemyCHeight);
+		drawObject(enemyCImg2		, 30	, 100	, enemyCWidth		,enemyCHeight);
+		drawObject(enemyCImg2		, 100	, 100	, enemyCWidth		,enemyCHeight);
+		drawObject(enemyCImg2		, 180	, 100	, enemyCWidth		,enemyCHeight);
 
-		drawImg(enemyCImg3		, 320	, 300	, enemyCWidth		,enemyCHeight);
-		drawImg(enemyCImg3		, 390	, 300	, enemyCWidth		,enemyCHeight);
+		drawObject(enemyCImg3		, 320	, 300	, enemyCWidth		,enemyCHeight);
+		drawObject(enemyCImg3		, 390	, 300	, enemyCWidth		,enemyCHeight);
 
-		drawImg(powerUpImg		, 300	, 200	, powerUpWidth		,powerUpHeight);
-		drawImg(powerDownImg		, 190	, 400	, powerDownWidth		,powerDownHeight);
+		drawObject(powerUpImg		, 300	, 200	, powerUpWidth		,powerUpHeight);
+		drawObject(powerDownImg		, 190	, 400	, powerDownWidth		,powerDownHeight);
 	}
 
 	public void drawTopScores(int curr, int high)
 	{
 		bufferGraphics.setColor(Color.YELLOW);
-		bufferGraphics.drawString("SCORE" ,    GUI.frameWidth/8,    44);
-		bufferGraphics.drawString("HIGHSCORE", GUI.frameWidth/3+12, 44);
+		bufferGraphics.drawString("SCORE",    GUI.frameWidth/8, 46);
+		bufferGraphics.drawString("HIGHSCORE", GUI.frameWidth/3+12, 46);
 
 		bufferGraphics.setFont(scoreFont);
 		bufferGraphics.setColor(Color.GREEN); 
-		bufferGraphics.drawString(Integer.toString(curr),    GUI.frameWidth/8,    62);
-		bufferGraphics.drawString(Integer.toString(high),       GUI.frameWidth/3+60, 62);
+		bufferGraphics.drawString(Integer.toString(curr), GUI.frameWidth/8, 64);
+		bufferGraphics.drawString(Integer.toString(high), GUI.frameWidth/3+60, 64);
 
 	}
 
@@ -884,7 +888,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		else if (currentMenuState == MenuState.HIGH_SCORES_MENU) return lastMenuHS;
 		else if (currentMenuState == MenuState.OPTIONS_MENU) return 4;
 		else if (currentMenuState == MenuState.KEYBOARD_SETTINGS_MENU) return 7;
-		else if (currentMenuState == MenuState.JOIN_GAME_MENU) return ipAddresses.length + 3;
+		else if (currentMenuState == MenuState.JOIN_GAME_MENU) return ipAddresseslength /*ipAddresses.length */ + 3;
 		else return 1;
 	}
 
@@ -1230,26 +1234,15 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	// When the Mouse leaves the window
 	public void mouseExited (MouseEvent me) {} 
 
-	//public static void main(String[] args) {
-	//	GUI f = new GUI();
-	//	SwingUtilities.invokeLater(f);
-	//}
-
-	@Override
 	public void setSound(Boolean val) {
 		isEffectOn = val;
 	}
-
 
 	public void setDifficulty(GameSkill gs) {
 		currentGameSkill = gs;
 	}
 
-
-	@Override
 	public void setRecentIPs(String[] iparr) {
 		ipAddresses = iparr.clone(); //TODO ez }gy jó?
 	}
 }
-
-//egybõl ne dobja fe a menut
