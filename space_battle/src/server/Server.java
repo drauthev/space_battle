@@ -90,15 +90,12 @@ public class Server implements AllServerInterfaces
 		
 		// Spawning player/players
 		if( type == GameType.SINGLE ){
-			listOfPlayers.add(new Player(Constants.gameFieldWidth/2, Player.getPlayerheight()/2 + 2, 1));	// the only player to the middle..with playerID==1
+			listOfPlayers.add(new Player(Constants.gameFieldWidth/2, (Constants.gameFieldHeigth-Player.getPlayerheight()/2 - 30), 0));	// the only player to the middle..with playerID==1
 		}
 		else if( type==(GameType.MULTI_LOCAL) || type==(GameType.MULTI_NETWORK) ){
-			listOfPlayers.add(new Player(Constants.gameFieldWidth/4, Player.getPlayerheight()/2 + 2, 1));	// with playerID==1
-			listOfPlayers.add(new Player(Constants.gameFieldWidth/4*3, Player.getPlayerheight()/2 + 2, 2)); // with playerID==2
+			listOfPlayers.add(new Player(Constants.gameFieldWidth/4, Player.getPlayerheight()/2 + 2, 0));	// with playerID==1
+			listOfPlayers.add(new Player(Constants.gameFieldWidth/4*3, Player.getPlayerheight()/2 + 2, 1)); // with playerID==2
 		}
-		
-		//TODO: registrating clients
-
 	};
 	
 	
@@ -282,6 +279,33 @@ public class Server implements AllServerInterfaces
 		long currentTime = java.lang.System.currentTimeMillis();
 		long explosionTime;
 		
+		// Remove GameElements which have left the track
+		// NPCs
+		for(int i=0; i<listOfNPCs.size(); i++){
+			NPC temp = listOfNPCs.get(i);
+			if( temp.getCoordY()-35 > Constants.gameFieldHeigth ){ //TODO: kicsit hack.. h lehetne szepen NPC "abstract static variable"
+				listOfNPCs.remove(i);
+			}
+		}
+		// Projectiles
+		for(int i=0; i<listOfProjectiles.size(); i++){
+			Projectile temp = listOfProjectiles.get(i);
+			int y = temp.getCoordY();
+			int x = temp.getCoordX();
+			int height = Projectile.getProjectileheight();
+			if( y-height/2 > Constants.gameFieldHeigth || y+height/2<0 || x<0 || x>Constants.gameFieldWidth){ //TODO: x koordinatak atgondol atlosra
+				listOfProjectiles.remove(i);
+			}
+		}
+		// Modifiers
+		for(int i=0; i<listOfModifiers.size(); i++){
+			Modifier temp = listOfModifiers.get(i);
+			if( temp.getCoordY()-Modifier.getModifierheigth()/2 > Constants.gameFieldHeigth ){
+				listOfModifiers.remove(i);
+			}
+		}
+
+		
 		// Remove exploded NPCs
 		for(int i=0; i<listOfNPCs.size(); i++){
 			// removing from list, if !!3sec!!? is lated since explosion
@@ -346,18 +370,19 @@ public class Server implements AllServerInterfaces
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//System.out.println(all.toString());
+		System.out.println(all.toString()); // PRINTING
 		return all.toString();
 	}
 	
 	private JSONArray playersToJSON(List<Player> list){
-		JSONObject currentPlayer = new JSONObject();
+		JSONObject currentPlayer;
 		ArrayList<JSONObject> playerList = new ArrayList<>();
 		JSONArray playersJSON = new JSONArray();
 		Player temp;
 		try {
 			for(int i=0; i<list.size(); i++){
 				temp = list.get(i);
+				currentPlayer = new JSONObject();
 				currentPlayer.put("className", "Player"); // ososztalyban van Andrasnal a className, azer kell csak
 				currentPlayer.put("id", temp.getID());
 				currentPlayer.put("numberOfLives", temp.getLives());
@@ -377,7 +402,7 @@ public class Server implements AllServerInterfaces
 	}
 	
 	private JSONArray npcsToJSON(List<NPC> list){
-		JSONObject currentNPC = new JSONObject();
+		JSONObject currentNPC;
 		ArrayList<JSONObject> npcList = new ArrayList<>();
 		JSONArray npcsJSON = new JSONArray();
 		NPC temp;
@@ -385,6 +410,7 @@ public class Server implements AllServerInterfaces
 			int listSize = list.size();
 			for( int i=0; i<listSize-1; i++){
 				temp = list.get(i);
+				currentNPC = new JSONObject();
 				// type for GUI to paint the proper skin
 				if( temp instanceof HostileType1)
 					currentNPC.put("className", "HostileType1");
@@ -411,15 +437,48 @@ public class Server implements AllServerInterfaces
 	}
 	
 	private JSONArray projectilesToJSON(List<Projectile> list){
+		JSONObject currentProjectile;
+		ArrayList<JSONObject> projectileList = new ArrayList<>();
 		JSONArray projectilesJSON = new JSONArray();
-		return projectilesJSON;
+		Projectile temp;
+		//return projectilesJSON;
 		//TODO: csak dummy
+		try {
+			int listSize = list.size();
+			for( int i=0; i<listSize-1; i++){
+				temp = list.get(i);
+				currentProjectile = new JSONObject();
+				// type for GUI to paint the proper skin
+				if( temp instanceof ProjectileGoingUp)
+					currentProjectile.put("className", "ProjectileGoingUp");
+				else if( temp instanceof ProjectileGoingDown)
+					currentProjectile.put("className", "ProjectileGoingDown");
+				else//TODO: goingdiagonallyLeft..
+					currentProjectile.put("className", "HostileType3");
+				
+				currentProjectile.put("x", temp.getCoordX());
+				currentProjectile.put("y", temp.getCoordY());
+				// add each Projectile JSONObject to the arraylist<JSONObject>
+				projectileList.add(currentProjectile);
+			}
+			// each NPC JSONObject to the JSONArray
+			projectilesJSON = new JSONArray(projectileList);
+		}
+		catch (JSONException e) {
+			e.printStackTrace();
+			}
+		return projectilesJSON;
+		
 	}
 	
 	private JSONArray modifiersToJSON(List<Modifier> list){
+		JSONObject currentModifier;
+		ArrayList<JSONObject> modifierList = new ArrayList<>();
 		JSONArray modifiersJSON = new JSONArray();
+		Modifier temp;
 		return modifiersJSON;
 		//TODO: csak dummy
+
 	}
 	// Implementing ServerForClient Interface
 	// ------------------------------------------------------------------------------------------------------------------
@@ -446,7 +505,7 @@ public class Server implements AllServerInterfaces
 				int x;
 				x = (int)(Math.random()*(Constants.gameFieldWidth - HostileType1.getHostiletype1width()));
 				x += HostileType1.getHostiletype1width()/2;	// peremertekek �?­gy x=0+hostileType1Width/2 �?‰S x=gameFieldWidth-hostileType1Width/2
-				listOfNPCs.add( new HostileType1(x,Constants.gameFieldHeigth-HostileType1.getHostiletype1heigth(), difficulty) );	// TODO: az Å±rhaj�?³k be�?ºsz�?¡sa miatt t�?ºlsk�?¡l�?¡zni
+				listOfNPCs.add( new HostileType1(x, HostileType1.getHostiletype1heigth()+100, difficulty) );	// TODO: az Å±rhaj�?³k be�?ºsz�?¡sa miatt t�?ºlsk�?¡l�?¡zni
 				}
 			}
 		};
@@ -547,6 +606,7 @@ public class Server implements AllServerInterfaces
 	
 	@Override
 	public void moveRight(int playerID){
+		System.out.println("player moving right");
 		if(playerID == 0)
 			player1MovingRight = true;
 		else if(playerID == 1)
@@ -555,6 +615,7 @@ public class Server implements AllServerInterfaces
 	
 	@Override
 	public void releaseRight(int playerID){
+		System.out.println("player released right");
 		if(playerID == 0)
 			player1MovingRight = false;
 		else if(playerID == 1)

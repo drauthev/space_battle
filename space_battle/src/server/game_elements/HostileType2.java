@@ -6,8 +6,8 @@ import enums.GameSkill;
 public class HostileType2 extends NPC {
 	
 	// constants
-	private final static int hostileType2Width = 10;
-	private final static int hostileType2Heigth = 10;
+	private final static int hostileType2Width = 49;
+	private final static int hostileType2Heigth = 32;
 	// static variables which depend on the game difficulty and modifiers
 	private static int scoreIfDestroyed = 20;	// majd Controlból a beállított nehézségi szintre beállítani
 	

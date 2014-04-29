@@ -6,8 +6,8 @@ import enums.GameType;
 
 public class HostileType1 extends NPC {
 	
-	private final static int hostileType1Width = 10;
-	private final static int hostileType1Heigth = 10;
+	private final static int hostileType1Width = 34;
+	private final static int hostileType1Heigth = 22;
 	// static variables which depend on the game difficulty and modifiers
 	private static int scoreIfDestroyed = 10;	// teszt; majd Controlból a beállított nehézségi szintre beállítani
 	private static int verticalMoveQuantity = 1;
@@ -31,7 +31,7 @@ public class HostileType1 extends NPC {
 	}
 	
 	public void autoMove(){
-		super.setCoordY(super.getCoordY() - verticalMoveQuantity);
+		super.setCoordY(super.getCoordY() + verticalMoveQuantity);
 	}
 	
 	public Projectile shoot(){

@@ -2,8 +2,8 @@ package server.game_elements;
 
 public abstract class Modifier extends NonShootingObject{
 	// constants
-	private final static int modifierWidth = 10;
-	private final static int modifierHeigth = 10;
+	private final static int modifierWidth = 40;
+	private final static int modifierHeigth = 40;
 	//
 	private long explosionTime;
 	private long pickUpTime;	// to animate what's in it

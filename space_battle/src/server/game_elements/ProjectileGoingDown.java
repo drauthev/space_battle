@@ -8,7 +8,7 @@ public class ProjectileGoingDown extends Projectile {
 	}
 	
 	public void autoMove(){
-		super.setCoordY(super.getCoordY() - verticalMoveQuantity);
+		super.setCoordY(super.getCoordY() + verticalMoveQuantity); // (x,y)=(0,0) is the top-left corner of gamespace
 	}
 
 	@Override

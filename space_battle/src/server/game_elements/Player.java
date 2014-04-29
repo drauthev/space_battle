@@ -5,8 +5,8 @@ import server.Constants;
 public class Player extends ShootingObject {
 	
 	// constants
-	private final static int playerWidth = 10;
-	private final static int playerHeight = 10;
+	private final static int playerWidth = 34;
+	private final static int playerHeight = 42;
 	// static variables changing according to game difficulty/modifiers
 	private static int horizontalMoveQuantity = 1;
 	private static int playerLivesAtStart = 3;
@@ -32,7 +32,7 @@ public class Player extends ShootingObject {
 	}
 	
 	public Projectile shoot(){
-		ProjectileGoingUp shot = new ProjectileGoingUp(this.getCoordX(), this.getCoordY() + Player.playerHeight/2 + Projectile.projectileHeight/2);
+		ProjectileGoingUp shot = new ProjectileGoingUp(this.getCoordX(), this.getCoordY() - Player.playerHeight/2 - Projectile.projectileHeight/2);
 		return shot;
 	}
 	
