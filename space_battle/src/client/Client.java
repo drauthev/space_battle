@@ -43,7 +43,7 @@ public class Client implements ClientForGUI, ClientForServer {
 	private ObjectBufferState[] obStates = 
 		{ObjectBufferState.INVALID, ObjectBufferState.INVALID, ObjectBufferState.INVALID};
 	private Object objectBufferSyncObject = new Object();
-	private String[] recentlyUsedIP = new String[4];
+	private String[] recentlyUsedIP = {"127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1"};
 	private EnumMap<PlayerAction, Integer> keyboardSettings;
 
 	private enum ObjectBufferState
@@ -112,7 +112,7 @@ public class Client implements ClientForGUI, ClientForServer {
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 			gui.error("Error while loading configuration file!");
-		} finally {
+		} finally {			
 			if (keyboardSettings != null)
 				return;
 			
