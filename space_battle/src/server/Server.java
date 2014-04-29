@@ -346,7 +346,7 @@ public class Server implements AllServerInterfaces
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(all.toString());
+		//System.out.println(all.toString());
 		return all.toString();
 	}
 	
@@ -527,51 +527,55 @@ public class Server implements AllServerInterfaces
 	// Implementing ServerForPlayerController Interface
 	// ------------------------------------------------------------------------------------------------------------------
 	@Override
-	public void moveLeft(int playerID){	
-		if(playerID == 1)
+	public void moveLeft(int playerID){
+		System.out.println("player moving left");
+		if(playerID == 0)
 			player1MovingLeft = true;
-		else if(playerID == 2)
+		else if(playerID == 1)
 			player2MovingLeft = true;
 
 	}
 	
 	@Override
 	public void releaseLeft(int playerID){
-		if(playerID == 1)
+		System.out.println("player released left");
+		if(playerID == 0)
 			player1MovingLeft = false;
-		else if(playerID == 2)
+		else if(playerID == 1)
 			player2MovingLeft = false;
 	}
 	
 	@Override
 	public void moveRight(int playerID){
-		if(playerID == 1)
+		if(playerID == 0)
 			player1MovingRight = true;
-		else if(playerID == 2)
+		else if(playerID == 1)
 			player2MovingRight = true;
 	}
 	
 	@Override
 	public void releaseRight(int playerID){
-		if(playerID == 1)
+		if(playerID == 0)
 			player1MovingRight = false;
-		else if(playerID == 2)
+		else if(playerID == 1)
 			player2MovingRight = false;
 	}
 	
 	@Override
 	public void fire(int playerID){
-		if(playerID == 1)
+		System.out.println("shooting");
+		if(playerID == 0)
 			player1Shooting = true;
-		else if(playerID == 2)
+		else if(playerID == 1)
 			player2Shooting = true;
 	}
 	
 	@Override
 	public void releaseFire(int playerID){
-		if(playerID == 1)
+		System.out.println("shooting released");
+		if(playerID == 0)
 			player1Shooting = false;
-		else if(playerID == 2)
+		else if(playerID == 1)
 			player2Shooting = false;
 	}
 	

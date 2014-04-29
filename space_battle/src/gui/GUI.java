@@ -567,7 +567,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			
 			
 			
-			testDrawing();
+			//testDrawing();
 
 			drawLives();
 
