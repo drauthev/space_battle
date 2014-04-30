@@ -141,7 +141,7 @@ public class Server implements AllServerInterfaces
 		long currentTime;
 		for(int i=0; i<listOfNPCs.size(); i++){
 			temp = listOfNPCs.get(i);
-			if(temp.getLives() != 0){ // "dead" hostiles are in the list for some time because of the explosion effect; this make sure they don't shoot
+			if(temp.getLives() > 0){ // "dead" hostiles are in the list for some time because of the explosion effect; this make sure they don't shoot
 				lastShotTime = temp.getLastShotTime();
 				currentTime = java.lang.System.currentTimeMillis();
 				if(currentTime - lastShotTime > temp.getShootingFrequency()){ // shoot only if enough time has lasted
@@ -728,29 +728,39 @@ public class Server implements AllServerInterfaces
 	@Override
 	public void fire(int playerID){
 		if(playerID == 0){
-			player1Shooting = true;
-			// Shooting one projectile here; for the reason if the player presses the button for a very short amount of time
-			// otherwise it can happen, if in the TimerTask, playerShooting flag will already be false and no shooting happen
-			player1ShootTime = java.lang.System.currentTimeMillis();
-			Projectile shot = listOfPlayers.get(0).shoot();
-			listOfProjectiles.add(shot);
-			// playing sounds
-			client1.playSound(SoundType.shoot);
-			if(type == GameType.MULTI_NETWORK){
-				client2.playSound(SoundType.shoot);
+			if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==0 ){
+				player1Shooting = true;
+				// Shooting one projectile here; for the reason if the player presses the button for a very short amount of time
+				// otherwise it can happen, if in the TimerTask, playerShooting flag will already be false and no shooting happen
+				long currentTime = java.lang.System.currentTimeMillis();
+				if(currentTime - player1ShootTime > Constants.timeBetweenShots){
+					player1ShootTime = java.lang.System.currentTimeMillis();
+					Projectile shot = listOfPlayers.get(0).shoot();
+					listOfProjectiles.add(shot);
+					// playing sounds
+					client1.playSound(SoundType.shoot);
+					if(type == GameType.MULTI_NETWORK){
+						client2.playSound(SoundType.shoot);
+					}
+				}
 			}
 		}
 		else if(playerID == 1 && (type == GameType.MULTI_LOCAL || type == GameType.MULTI_NETWORK)){
-			player2Shooting = true;
-			// Shooting one projectile here; for the reason if the player presses the button for a very short amount of time
-			// otherwise it can happen, if in the TimerTask, playerShooting flag will already be false and no shooting happen
-			player2ShootTime = java.lang.System.currentTimeMillis();
-			Projectile shot = listOfPlayers.get(1).shoot();
-			listOfProjectiles.add(shot);
-			// playing sounds
-			client1.playSound(SoundType.shoot);
-			if(type == GameType.MULTI_NETWORK){
-				client2.playSound(SoundType.shoot);
+			if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==1){
+				player2Shooting = true;
+				// Shooting one projectile here; for the reason if the player presses the button for a very short amount of time
+				// otherwise it can happen, if in the TimerTask, playerShooting flag will already be false and no shooting happen
+				long currentTime = java.lang.System.currentTimeMillis();
+				if(currentTime - player2ShootTime > Constants.timeBetweenShots){
+					player2ShootTime = java.lang.System.currentTimeMillis();
+					Projectile shot = listOfPlayers.get(1).shoot();
+					listOfProjectiles.add(shot);
+					// playing sounds
+					client1.playSound(SoundType.shoot);
+					if(type == GameType.MULTI_NETWORK){
+						client2.playSound(SoundType.shoot);
+					}
+				}
 			}
 		}
 	}
