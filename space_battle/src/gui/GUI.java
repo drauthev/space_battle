@@ -984,7 +984,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						client.joinGame(textField);
 					}
 					else error ("Invalid IP Address");
-					//setGameState(GameState.WAITING);
+					//setGameState(GameState.WAITING);  
 				}
 				else
 					client.joinGame(ipAddresses[currentLine-3]);
