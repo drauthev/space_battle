@@ -989,8 +989,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				else
 					client.joinGame(ipAddresses[currentLine-3]);
 
-
-
 				//else if (currentLine == 1) jatek indul felsot elkülld + elment
 				//else
 				//	for (int i = 0; i < 3; i++)
