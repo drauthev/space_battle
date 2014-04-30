@@ -18,35 +18,32 @@ import enums.*;
 import interfaces.*;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.io.File;
 import java.io.IOException;
 
 public class GUI extends JFrame implements KeyListener, MouseListener, GUIForClient {
 
-//	private SoundSystem localSound;
+	//	private SoundSystem localSound;
 	// GUI Window
 	private static final long serialVersionUID = 1L;
-	private static int frameWidth = 480;
-	private static int frameHeight = 640;
-
-	private int lastMenuHS;
-	// Starting Timer 
-	private Timer timer = new Timer(false);
+	private static final int frameWidth = 480;
+	private static final int frameHeight = 640;
 
 	// Positioning background Image
-	private double backgroundImgY;
-	private static double backgroundSpeed = 0.2;
+	private double backgroundImgY = 0;
+	private static final double backgroundSpeed = 0.2;
 
 	// Parameters for positioning the images
 	private int CoordinateX;
 	private int CoordinateY;
-	private static int optionsAX = frameWidth/4+30;
-	private static int optionsBX = 3*frameWidth/4-30;
-	private static int middleX   = frameWidth/2;
+	private static final int optionsAX = frameWidth/4+30;
+	private static final int optionsBX = 3*frameWidth/4-30;
+	private static final int middleX   = frameWidth/2;
 	private int dotCorX; 
-	private static int firstLineY = 150;
-	private static int lineHeight = 50;
+	private static final int firstLineY = 150;
+	private static final int lineHeight = 50;
 
 	// Fonts
 	private static Font scoreFont;
@@ -54,31 +51,21 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private static Font menuFont;
 	private static Font stateFont;
 
-	// The X-coordinate and Y-coordinate of the last click. 
-	private int xpos; 
-	private int ypos;
-
 	// Font Sizes
-	private static int scoreSize = 22;
-	private static int titleSize = 42;
-	private static int menuSize  = 26;
-	private static int stateSize = 26;
+	private static final int scoreSize = 22;
+	private static final int titleSize = 42;
+	private static final int menuSize  = 26;
+	private static final int stateSize = 26;
 
 	// Font Colors
-	private static Color titleColor = Color.WHITE;
-	private static Color menuColor  = Color.WHITE;
-	private static Color stateColor = Color.WHITE;
+	private static final Color titleColor = Color.WHITE;
+	private static final Color menuColor  = Color.WHITE;
+	private static final Color stateColor = Color.WHITE;
 
 	// Tick Counters
 	private long serverTick;
 	private long localTick = 0;
-	
-	
 	private long tickDiff_div;
-
-	private boolean isEffectOn;
-	
-	private ObjectBuffer localObjectBuffer;
 	
 	// Enums
 	private GameState currentGameState;
@@ -95,23 +82,23 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int optionsDot;
 	private int newGameDot;
 	private int keyCode;
-	private int keyBoardChangeSelected;
+	private int keyBoardChangeSelected = 0;
 
 	// Image Buffers
 	private static BufferedImage foregroundImg;
 	private static BufferedImage backgroundImg;
 	private static BufferedImage bulletImg1;
 	private static BufferedImage bulletImg2;
-	
-    private static BufferedImage enemyBlowImg1;
+
+	private static BufferedImage enemyBlowImg1;
 	private static BufferedImage enemyBlowImg2;
 	private static BufferedImage enemyBlowImg3;
 	private static BufferedImage enemyBlowImg4;
 	private static BufferedImage enemyImg1;
 	private static BufferedImage enemyImg2;
 	private static BufferedImage enemyImg3;
-	
-    private static BufferedImage enemyABlowImg1;
+
+	private static BufferedImage enemyABlowImg1;
 	private static BufferedImage enemyABlowImg2;
 	private static BufferedImage enemyABlowImg3;
 	private static BufferedImage enemyABlowImg4;
@@ -140,10 +127,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private static BufferedImage spaceShipBombImg5;
 	private static BufferedImage spaceShipImg1;
 	private static BufferedImage spaceShipImg2;
-//	private static BufferedImage spaceShipImg3;
-//	private static BufferedImage spaceShipImg4;
-//	private static BufferedImage spaceShipImg5;
-//	private static BufferedImage spaceShipImg6;
+	//	private static BufferedImage spaceShipImg3;
+	//	private static BufferedImage spaceShipImg4;
+	//	private static BufferedImage spaceShipImg5;
+	//	private static BufferedImage spaceShipImg6;
 	private static BufferedImage powerUpImg;
 	private static BufferedImage powerDownImg;
 
@@ -154,12 +141,12 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int spaceShipWidth;
 	private int spaceShipBombHeight;
 	private int spaceShipBombWidth;
-	
+
 	private int enemyHeight;
 	private int enemyWidth;
 	private int enemyBlowHeight;
 	private int enemyBlowWidth;
-	
+
 	private int enemyAHeight;
 	private int enemyAWidth;
 	private int enemyBHeight;
@@ -172,7 +159,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int enemyBBlowWidth;
 	private int enemyCBlowHeight;
 	private int enemyCBlowWidth;
-	
+
 	private int lifeImgHeight;
 	private int lifeImgWidth;
 	private int powerUpHeight;
@@ -195,22 +182,39 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		}
 	};
 
-	private ClientForGUI client;
-	private String IPtoSend;
-	private String[] ipAddresses = null;
-	
+	//Strings containing Keyboard settings
 	private String string1Left;
 	private String string1Right;
 	private String string1Fire;
 	private String string2Left;
 	private String string2Right;
 	private String string2Fire;
+	
+	//Client
+	private ClientForGUI client;
+	
+	// IP handling
+	private String IPtoSend;
+	private String[] ipAddresses = null;
 	private int ipAddresseslength = 0;
 
+	// Timer
+	private Timer timer = new Timer(false);
+
+	//Objectbuffer
+	private ObjectBuffer localObjectBuffer;
+
+	//Others
+	private boolean isEffectOn;
+	private int lastMenuHS = 1;
+	private String highScoreValues[] = new String[10];
+	private String highScoreString[] = new String[10];
+
+	
 	public GUI(ClientForGUI client_param)
 	{
 		//localSound = new SoundSystem();
-		
+
 		try {
 			String projdir = System.getProperty("user.dir");
 			backgroundImg	  = ImageIO.read(new File(projdir + "/res/sprites/backgroundImg.png"));
@@ -246,10 +250,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			spaceShipBombImg5 = ImageIO.read(new File(projdir + "/res/sprites/spaceShipBombImg5.png"));
 			spaceShipImg1 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg1.png"));
 			spaceShipImg2 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg2.png"));
-//			spaceShipImg3 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg3.png"));
-//			spaceShipImg4 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg4.png"));
-//			spaceShipImg5	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg5.png"));
-//			spaceShipImg6	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg6.png"));
+			//			spaceShipImg3 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg3.png"));
+			//			spaceShipImg4 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg4.png"));
+			//			spaceShipImg5	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg5.png"));
+			//			spaceShipImg6	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg6.png"));
 			powerUpImg	      = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg.png"));
 			powerDownImg	  = ImageIO.read(new File(projdir + "/res/sprites/powerDownImg.png"));
 		} catch (IOException e1) {
@@ -284,7 +288,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		projectTileHeight   = bulletImg1.getHeight();
 		projectTileWidth    = bulletImg1.getWidth();
 
-/*
+		/*
 		System.out.println("WidthandHeightofelements");
 		System.out.println("backgroundWidth: "+backgroundWidth);
 		System.out.println("backgroundHeight: "+backgroundHeight);
@@ -312,8 +316,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		System.out.println("powerDownWidth: "+powerDownWidth);
 		System.out.println("projectTileHeight: "+projectTileHeight);
 		System.out.println("projectTileWidth: "+projectTileWidth);
-*/
-		
+		 */
+
 		// Initializing fonts for writing strings to the monitor
 		scoreFont = new Font("monospscoreFont", Font.BOLD, scoreSize);
 		titleFont = new Font("monospscoreFont", Font.BOLD, titleSize);
@@ -321,17 +325,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		stateFont = new Font("monospscoreFont", Font.BOLD, stateSize);
 
 		// Initialize Local variables
-		backgroundImgY = 0;
-		mainDot = 1;
-		optionsDot = 1;
-		newGameDot = 1;
-		dotLine = 1;
-		textField = "";
-		keyBoardChangeSelected = 0;
+		setGameState(GameState.NONE);
 		setMenuState(MenuState.MAIN_MENU);
-
-		addKeyListener(this);
-		addMouseListener(this); 
 
 		// Generate Window
 		setTitle("Space Battle GUI");
@@ -348,20 +343,21 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		offscreen = createImage(frameWidth,frameHeight); 
 		bufferGraphics = offscreen.getGraphics();   
 
+		// Client
 		client = client_param;
 
-		// Ha close gombbal zárják a programot, akkor is kell terminate
-		this.addWindowListener(new java.awt.event.WindowAdapter() {
-		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-		        client.terminate();
-		    }
+		// Add listeners
+		addKeyListener(this);
+		addMouseListener(this); 
+		addWindowListener(new java.awt.event.WindowAdapter() {
+			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				client.terminate();
+			}
 		});
-		
-		setGameState(GameState.NONE);
-		
+
 		// Get Keyboard settings
 		EnumMap<PlayerAction, Integer> asd = client.getKeyboardSettings().clone(); //TODO kell?		// HashMap-ben action(K)-KeyCode(V) párok
-				
+
 		string1Left = KeyEvent.getKeyText(asd.get(PlayerAction.P1LEFT));
 		string1Right = KeyEvent.getKeyText(asd.get(PlayerAction.P1RIGHT));
 		string1Fire = KeyEvent.getKeyText(asd.get(PlayerAction.P1FIRE));
@@ -369,7 +365,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		string2Left = KeyEvent.getKeyText(asd.get(PlayerAction.P2LEFT));
 		string2Right = KeyEvent.getKeyText(asd.get(PlayerAction.P2RIGHT));
 		string2Fire = KeyEvent.getKeyText(asd.get(PlayerAction.P2FIRE));
-		
+
 	}
 
 
@@ -391,8 +387,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			if (ms == MenuState.MULTI_MENU) newGameDot = dotLine;
 			else newGameDot = 1;
 		}
-		
-		
+
+
 		if      (ms == MenuState.MAIN_MENU || ms == MenuState.PAUSED_MENU)   
 			dotLine = mainDot; 
 		else if (ms == MenuState.OPTIONS_MENU) 
@@ -401,10 +397,43 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			dotLine = newGameDot;
 		else 
 			dotLine = 1;
+		
+		if (ms == MenuState.HIGH_SCORES_MENU)
+			refresHighScore();
 
 		currentMenuState = ms;
 		System.out.println("MenuState changed to " + currentMenuState);
 	}
+
+
+	private void refresHighScore() {
+
+		SortedMap<Integer,String> localSortedMap = client.getHighScores();	
+
+		if (localSortedMap != null)
+		{
+			Set<Entry<Integer, String>> s=localSortedMap.entrySet();
+
+
+			// Using iterator in SortedMap 
+			Iterator<Entry<Integer, String>> i=s.iterator();
+			int j= 0;
+
+			while(i.hasNext())
+			{
+				Entry<Integer, String> m =i.next();
+
+				highScoreValues[j]    = Integer.toString((Integer)m.getKey());
+				highScoreString[j]    = (String)m.getValue();
+
+				j++;
+			}
+
+			lastMenuHS = j+1;}
+		else lastMenuHS = 1;
+
+	}
+
 
 	public void setGameState(GameState gs)	
 	{
@@ -434,9 +463,9 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 
 	public static void infoBox(String infoMessage)
-    {
-        JOptionPane.showMessageDialog(null, infoMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
-    }
+	{
+		JOptionPane.showMessageDialog(null, infoMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
+	}
 
 
 	/**************** GRAPHICAL PROCEDURES **************************/
@@ -444,61 +473,60 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	public void paint(Graphics g)
 	{
 		g.drawImage(offscreen,0,0,this);
-
-		// Draw Background
+		
 		drawBackground();
-			
+
 		if (currentGameState != GameState.NONE && currentGameState != GameState.PAUSED)
 		{		
 			localObjectBuffer = client.getNewObjectBuffer();
 			serverTick = localObjectBuffer.currentTick;
-			
+
 			for (int i = 0; i < localObjectBuffer.npcCount; i++)
 			{
 				CNPC localNPC = localObjectBuffer.npc[i];
 
 				if (localNPC.className == "HostileType1")
 				{
-				    enemyBlowImg1 	= enemyABlowImg1;
+					enemyBlowImg1 	= enemyABlowImg1;
 					enemyBlowImg2 	= enemyABlowImg2;
 					enemyBlowImg3 	= enemyABlowImg3;
 					enemyBlowImg4 	= enemyABlowImg4;
 					enemyImg1 		= enemyAImg1;
 					enemyImg2 		= enemyAImg2;
 					enemyImg3 		= enemyAImg3;
-					
+
 					enemyHeight 	= enemyAHeight;
 					enemyWidth 		= enemyAWidth;
 					enemyBlowHeight = enemyABlowHeight;
 					enemyBlowWidth 	= enemyABlowWidth;
 				}
-				
+
 				else if (localNPC.className == "HostileType2")
 				{
-				    enemyBlowImg1 	= enemyBBlowImg1;
+					enemyBlowImg1 	= enemyBBlowImg1;
 					enemyBlowImg2 	= enemyBBlowImg2;
 					enemyBlowImg3 	= enemyBBlowImg3;
 					enemyBlowImg4 	= enemyBBlowImg4;
 					enemyImg1 		= enemyBImg1;
 					enemyImg2 		= enemyBImg2;
 					enemyImg3 		= enemyBImg3;
-					
+
 					enemyHeight 	= enemyBHeight;
 					enemyWidth 		= enemyBWidth;
 					enemyBlowHeight = enemyBBlowHeight;
 					enemyBlowWidth 	= enemyBBlowWidth;
 				}
-				
+
 				else if (localNPC.className == "HostileType3")
 				{
-				    enemyBlowImg1 	= enemyCBlowImg1;
+					enemyBlowImg1 	= enemyCBlowImg1;
 					enemyBlowImg2 	= enemyCBlowImg2;
 					enemyBlowImg3 	= enemyCBlowImg3;
 					enemyBlowImg4 	= enemyCBlowImg4;
 					enemyImg1 		= enemyCImg1;
 					enemyImg2 		= enemyCImg2;
 					enemyImg3 		= enemyCImg3;
-					
+
 					enemyHeight 	= enemyCHeight;
 					enemyWidth 		= enemyCWidth;
 					enemyBlowHeight = enemyCBlowHeight;
@@ -533,7 +561,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			for (int i = 0; i < localObjectBuffer.playerCount; i++)
 			{
 				CPlayer localPlayer = localObjectBuffer.player[i];
-			
+
 				if (i == 0) numberOfLivesA = localPlayer.numberOfLives;
 				else if (i == 1) numberOfLivesB = localPlayer.numberOfLives;
 
@@ -550,7 +578,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					drawObject(spaceShipImg1, localPlayer.x, localPlayer.y, spaceShipWidth, spaceShipHeight);
 
 			}
-			
+
 			for (int i = 0; i < localObjectBuffer.projCount; i++)
 			{
 				CProjectile localProjectile = localObjectBuffer.proj[i];
@@ -560,7 +588,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				else //ProjectileGoingDown
 					drawObject(bulletImg2		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
 			}
-			
+
 			for (int i = 0; i < localObjectBuffer.modCount; i++)
 			{
 				CModifier localModifier = localObjectBuffer.mod[i];	
@@ -572,7 +600,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						drawObject(powerUpImg		, localModifier.x	, localModifier.y	, powerUpWidth,powerDownWidth);
 				}
 			}
-			
+
 			//testDrawing();
 
 			drawLives();
@@ -621,7 +649,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				drawMenuLine(4,"High Scores");
 				drawMenuLine(5,"Exit");
 			}
-		
+
 			else if (currentMenuState == MenuState.PAUSED_MENU)
 			{
 				drawTitle("PAUSED");
@@ -633,7 +661,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				drawMenuLine(6,"High Scores");
 				drawMenuLine(7,"Exit");
 			}
-		
+
 			else if (currentMenuState == MenuState.OPTIONS_MENU)
 			{
 				String levelString;
@@ -650,36 +678,15 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				drawMenuLine   (3,"Set Keyboard");
 				drawMenuLine   (4,"Back");
 			}
-			
+
 			else if (currentMenuState == MenuState.HIGH_SCORES_MENU)
 			{
 				drawTitle("HIGH SCORE");
-				//drawOptionsLine(1,"Józsika","53512");
-				//drawOptionsLine(2,"Valami","43210");
-				//drawOptionsLine(3,"Valami2222","43210");
 
-
-				SortedMap<Integer,String> sm=new TreeMap<Integer, String>();
-
-				Set s=sm.entrySet();
-
-			    // Using iterator in SortedMap 
-			    Iterator i=s.iterator();
-			       int j= 1;
-
-				while(i.hasNext())
-		        {
-		            Map.Entry m =(Map.Entry)i.next();
-
-		            int key = (Integer)m.getKey();
-		            String value=(String)m.getValue();
-
-					drawOptionsLine(j,value,""+key);
-					j++;
-		        }
-
-				drawMenuLine   (j,"Back");
-				lastMenuHS = j;
+				for(int j = 0; j < lastMenuHS-1; j++) 
+				drawOptionsLine(j,highScoreString[j],highScoreValues[j]);
+			
+				drawMenuLine   (lastMenuHS,"Back");
 			}
 
 			else if (currentMenuState == MenuState.NEW_GAME_MENU)
@@ -702,10 +709,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				drawTitle("NETWORK GAME");
 				drawMenuLine   (1,"Please Give Us the IP Address!");
 				drawWritingLine(2,textField);
-				
-				for (int i = 0; i < ipAddresseslength /*ipAddresses.length*/; i++)
+
+				for (int i = 0; i < ipAddresses.length; i++)
 					drawMenuLine   (i+3,ipAddresses[i]);
-				
+
 				drawMenuLine   (getLastLine(),"Back");
 			}
 			else if (currentMenuState == MenuState.KEYBOARD_SETTINGS_MENU)
@@ -718,7 +725,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				String local2Left  = string2Left;
 				String local2Right = string2Right;
 				String local2Fire  = string2Fire;
-				
+
 				if ((keyBoardChangeSelected == 1) && (TimerOszott % 2 == 0)) 
 				{
 					if     (dotLine == 1) local1Left = "";
@@ -737,7 +744,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				drawOptionsLine(5,"P2 Right",local2Right);
 				drawOptionsLine(6,"P2 Fire",local2Fire);
 				drawMenuLine   (7,"Back");
-				
+
 			}
 
 			drawDot();
@@ -788,9 +795,9 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	{
 		bufferGraphics.setFont(menuFont);
 		bufferGraphics.setColor(menuColor);
-		
+
 		CoordinateX = frameWidth/2 - bufferGraphics.getFontMetrics().stringWidth(content)/2;
-		
+
 		/*if (content.length() == 0)
 			CoordinateX = frameWidth/2;
 		else
@@ -888,7 +895,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		else if (currentMenuState == MenuState.HIGH_SCORES_MENU) return lastMenuHS;
 		else if (currentMenuState == MenuState.OPTIONS_MENU) return 4;
 		else if (currentMenuState == MenuState.KEYBOARD_SETTINGS_MENU) return 7;
-		else if (currentMenuState == MenuState.JOIN_GAME_MENU) return ipAddresseslength /*ipAddresses.length */ + 3;
+		else if (currentMenuState == MenuState.JOIN_GAME_MENU) return ipAddresses.length +3;
 		else return 1;
 	}
 
@@ -953,7 +960,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				if (currentLine == 3) setMenuState(MenuState.KEYBOARD_SETTINGS_MENU);
 				else if (currentLine == 4) setMenuState(MenuState.MAIN_MENU); 
 			}		 
-			
+
 			else if (currentMenuState == MenuState.KEYBOARD_SETTINGS_MENU)
 			{
 				if (currentLine == getLastLine()) 
@@ -969,23 +976,19 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			}
 			else if (currentMenuState == MenuState.JOIN_GAME_MENU)
 			{
-				// drawWritingLine(textField);
-				// drawMenuLine   (3,"102.1.50.121");
-				// drawMenuLine   (4,"102.2.50.121");
-				// drawMenuLine   (5,"102.3.50.121");
-				// drawMenuLine   (6,"Back");
-
 				if (currentLine == getLastLine()) setMenuState(MenuState.MAIN_MENU);
-				else if (currentLine == 1)
+				else if (currentLine == 2)
 				{
 					if (isValidIP(textField))
+					{
 						client.joinGame(textField);
+					}
 					else error ("Invalid IP Address");
 					//setGameState(GameState.WAITING);
 				}
 				else
-					client.joinGame(IPtoSend);
-					
+					client.joinGame(ipAddresses[currentLine-3]);
+
 
 
 				//else if (currentLine == 1) jatek indul felsot elkülld + elment
@@ -1032,157 +1035,148 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	// Handle the key-pressed event from the text field.
 	public void keyPressed(KeyEvent e) {
-		
+
 		if ((currentGameState != GameState.NONE && currentGameState != GameState.PAUSED && currentGameState != GameState.GAMEOVER_NEW_HIGHSCORE ) && e.getKeyCode() != KeyEvent.VK_ESCAPE && e.getKeyCode() != KeyEvent.VK_BACK_SPACE)
 		{
 			client.dispatchKeyEvent(e,true);
 		}
 		else
 		{
-		keyCode = e.getKeyCode();
-/*
-		if 		(keyCode == KeyEvent.VK_A) localSound.playSound(SoundType.beepA);
-		else if (keyCode == KeyEvent.VK_S) localSound.playSound(SoundType.beepB);
-		else if (keyCode == KeyEvent.VK_D) localSound.playSound(SoundType.enemyExplosion);
-		else if (keyCode == KeyEvent.VK_F) localSound.playSound(SoundType.spaceShipExplosion);
-		else if (keyCode == KeyEvent.VK_G) localSound.playSound(SoundType.powerUp);
-		else if (keyCode == KeyEvent.VK_H) localSound.playSound(SoundType.powerDown);
-		else if (keyCode == KeyEvent.VK_J) localSound.playSound(SoundType.shoot);
-
-		else **/ if ((keyCode == KeyEvent.VK_BACK_SPACE && !(isTextLine() && textField.length() != 0)) || keyCode == KeyEvent.VK_ESCAPE) //ESCAPE
-		{
-			if (currentGameState == GameState.NONE || currentGameState == GameState.PAUSED)
+			keyCode = e.getKeyCode();
+			if ((keyCode == KeyEvent.VK_BACK_SPACE && !(isTextLine() && textField.length() != 0)) || keyCode == KeyEvent.VK_ESCAPE) //ESCAPE
 			{
-				if      (currentMenuState == MenuState.MAIN_MENU || currentMenuState == MenuState.PAUSED_MENU)
+				if (currentGameState == GameState.NONE || currentGameState == GameState.PAUSED)
 				{
-					if (currentMenuState == MenuState.MAIN_MENU && keyCode == KeyEvent.VK_ESCAPE)				
-						dotLine = getLastLine();
-				}
-				else if (currentMenuState == MenuState.MULTI_MENU) 
-					setMenuState(MenuState.NEW_GAME_MENU);
-				else if (currentMenuState == MenuState.JOIN_GAME_MENU) 
-					setMenuState(MenuState.MAIN_MENU);
-				else if (currentMenuState == MenuState.KEYBOARD_SETTINGS_MENU) 
-					setMenuState(MenuState.OPTIONS_MENU);
-				else
-					if (currentGameState == GameState.NONE) setMenuState(MenuState.MAIN_MENU);
-					else if (currentGameState == GameState.PAUSED) setMenuState(MenuState.PAUSED_MENU);
-			}
-
-			else
-			{
-				if (currentGameState == GameState.DISCONNECTED || currentGameState == GameState.GAMEOVER_NEW_HIGHSCORE || currentGameState == GameState.GAMEOVER)
-				{
-					client.resetGameState();
-					setMenuState(MenuState.MAIN_MENU);
-				}
-				else
-				{
-					if (currentGameState != GameState.PAUSED) client.pauseRequest();
-					setMenuState(MenuState.PAUSED_MENU); // Game Paused or Something else..!
-				}
-
-			}
-
-		}
-
-		else if (keyCode == KeyEvent.VK_ENTER) 
-		{
-			someThingIsEntered(dotLineToDraw,1);
-		}
-
-		else if (currentGameState == GameState.NONE || currentGameState == GameState.PAUSED)
-		{
-			if (keyBoardChangeSelected == 1)
-			{
-				if      (dotLine == 1) client.bindKey(PlayerAction.P1LEFT, keyCode);
-				else if (dotLine == 2) client.bindKey(PlayerAction.P1RIGHT, keyCode);
-				else if (dotLine == 3) client.bindKey(PlayerAction.P1FIRE, keyCode);
-				else if (dotLine == 4) client.bindKey(PlayerAction.P2LEFT, keyCode);
-				else if (dotLine == 5) client.bindKey(PlayerAction.P2RIGHT, keyCode);
-				else if (dotLine == 6) client.bindKey(PlayerAction.P2FIRE, keyCode);
-				
-				if      (dotLine == 1) string1Left = KeyEvent.getKeyText(keyCode);
-				else if (dotLine == 2) string1Right = KeyEvent.getKeyText(keyCode);
-				else if (dotLine == 3) string1Fire = KeyEvent.getKeyText(keyCode);
-				else if (dotLine == 4) string2Left = KeyEvent.getKeyText(keyCode);
-				else if (dotLine == 5) string2Right = KeyEvent.getKeyText(keyCode);
-				else if (dotLine == 6) string2Fire = KeyEvent.getKeyText(keyCode);
-				
-				keyBoardChangeSelected = 0;
-				//majd struktúra szerint...
-			}
-			else
-			{
-				
-				if (keyCode == KeyEvent.VK_UP)
-
-				{
-					if  (dotLine != 1) dotLine--;
-					//System.out.println("Current Line:" + dotLine);
-					System.out.println("Last Menu State: " + lastMenuHS);
-				}
-
-				else if (keyCode == KeyEvent.VK_DOWN)
-				{
-					if      (dotLine != getLastLine()) dotLine++;
-					//System.out.println("Current Line:" + dotLine);
-					System.out.println("Last Menu State: " + lastMenuHS);
-				}
-
-
-				else if (isTextLine())
-				{
-				
-					if (keyCode == KeyEvent.VK_BACK_SPACE)
-						textField = textField.substring(0, textField.length() - 1);
-					else 
+					if      (currentMenuState == MenuState.MAIN_MENU || currentMenuState == MenuState.PAUSED_MENU)
 					{
-						if (e.getKeyChar() == ',' && keyCode != KeyEvent.VK_COMMA) textField = textField + ".";
-						else						   textField = textField + e.getKeyChar(); //getKeyChar
+						if (currentMenuState == MenuState.MAIN_MENU && keyCode == KeyEvent.VK_ESCAPE)				
+							dotLine = getLastLine();
 					}
+					else if (currentMenuState == MenuState.MULTI_MENU) 
+						setMenuState(MenuState.NEW_GAME_MENU);
+					else if (currentMenuState == MenuState.JOIN_GAME_MENU) 
+						setMenuState(MenuState.MAIN_MENU);
+					else if (currentMenuState == MenuState.KEYBOARD_SETTINGS_MENU) 
+						setMenuState(MenuState.OPTIONS_MENU);
+					else
+						if (currentGameState == GameState.NONE) setMenuState(MenuState.MAIN_MENU);
+						else if (currentGameState == GameState.PAUSED) setMenuState(MenuState.PAUSED_MENU);
 				}
-				else if (currentMenuState == MenuState.OPTIONS_MENU)
+
+				else
 				{
-					if (dotLine == 1)
+					if (currentGameState == GameState.DISCONNECTED || currentGameState == GameState.GAMEOVER_NEW_HIGHSCORE || currentGameState == GameState.GAMEOVER)
 					{
-						if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_RIGHT) 
+						client.resetGameState();
+						setMenuState(MenuState.MAIN_MENU);
+					}
+					else
+					{
+						if (currentGameState != GameState.PAUSED) client.pauseRequest();
+						setMenuState(MenuState.PAUSED_MENU); // Game Paused or Something else..!
+					}
+
+				}
+
+			}
+
+			else if (keyCode == KeyEvent.VK_ENTER) 
+			{
+				someThingIsEntered(dotLineToDraw,1);
+			}
+
+			else if (currentGameState == GameState.NONE || currentGameState == GameState.PAUSED)
+			{
+				if (keyBoardChangeSelected == 1)
+				{
+					if      (dotLine == 1) client.bindKey(PlayerAction.P1LEFT, keyCode);
+					else if (dotLine == 2) client.bindKey(PlayerAction.P1RIGHT, keyCode);
+					else if (dotLine == 3) client.bindKey(PlayerAction.P1FIRE, keyCode);
+					else if (dotLine == 4) client.bindKey(PlayerAction.P2LEFT, keyCode);
+					else if (dotLine == 5) client.bindKey(PlayerAction.P2RIGHT, keyCode);
+					else if (dotLine == 6) client.bindKey(PlayerAction.P2FIRE, keyCode);
+
+					if      (dotLine == 1) string1Left = KeyEvent.getKeyText(keyCode);
+					else if (dotLine == 2) string1Right = KeyEvent.getKeyText(keyCode);
+					else if (dotLine == 3) string1Fire = KeyEvent.getKeyText(keyCode);
+					else if (dotLine == 4) string2Left = KeyEvent.getKeyText(keyCode);
+					else if (dotLine == 5) string2Right = KeyEvent.getKeyText(keyCode);
+					else if (dotLine == 6) string2Fire = KeyEvent.getKeyText(keyCode);
+
+					keyBoardChangeSelected = 0;
+				}
+				else
+				{
+
+					if (keyCode == KeyEvent.VK_UP)
+
+					{
+						if  (dotLine != 1) dotLine--;
+						//System.out.println("Current Line:" + dotLine);
+						System.out.println("Last Menu State: " + lastMenuHS);
+					}
+
+					else if (keyCode == KeyEvent.VK_DOWN)
+					{
+						if      (dotLine != getLastLine()) dotLine++;
+						//System.out.println("Current Line:" + dotLine);
+						System.out.println("Last Menu State: " + lastMenuHS);
+					}
+
+
+					else if (isTextLine())
+					{
+
+						if (keyCode == KeyEvent.VK_BACK_SPACE)
+							textField = textField.substring(0, textField.length() - 1);
+						else 
+						{
+							if (e.getKeyChar() == ',' && keyCode != KeyEvent.VK_COMMA) textField = textField + ".";
+							else						   textField = textField + e.getKeyChar(); //getKeyChar
+						}
+					}
+					else if (currentMenuState == MenuState.OPTIONS_MENU)
+					{
+						if (dotLine == 1)
+						{
+							if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_RIGHT) 
 							{
-							if (isEffectOn == true) isEffectOn = false;
-							else isEffectOn = true;
+								if (isEffectOn == true) isEffectOn = false;
+								else isEffectOn = true;
 							}
+						}
+						else if (dotLine == 2) 
+						{
+							if (keyCode == KeyEvent.VK_LEFT) 
+							{
+								if (currentGameSkill == GameSkill.NORMAL) 
+								{
+									currentGameSkill = GameSkill.EASY;
+									client.setDifficulty(GameSkill.EASY);
+								}
+								else if (currentGameSkill == GameSkill.HARD) 
+								{
+									currentGameSkill = GameSkill.NORMAL;
+									client.setDifficulty(GameSkill.NORMAL);
+								}
+							}
+							else if (keyCode == KeyEvent.VK_RIGHT)
+							{
+								if (currentGameSkill == GameSkill.NORMAL)
+								{
+									currentGameSkill = GameSkill.HARD;
+									client.setDifficulty(GameSkill.HARD);
+								}
+								else if (currentGameSkill == GameSkill.EASY) 
+								{
+									currentGameSkill = GameSkill.NORMAL;
+									client.setDifficulty(GameSkill.NORMAL);
+								}
+							}
+						}
 					}
-					else if (dotLine == 2) 
-						if (keyCode == KeyEvent.VK_LEFT) 
-						{
-							if (currentGameSkill == GameSkill.NORMAL) 
-								{
-								currentGameSkill = GameSkill.EASY;
-								client.setDifficulty(GameSkill.EASY);
-								}
-							else if (currentGameSkill == GameSkill.HARD) 
-								{
-								currentGameSkill = GameSkill.NORMAL;
-								client.setDifficulty(GameSkill.NORMAL);
-								}
-						}
-						else if (keyCode == KeyEvent.VK_RIGHT)
-						{
-							if (currentGameSkill == GameSkill.NORMAL)
-								{
-								currentGameSkill = GameSkill.HARD;
-								client.setDifficulty(GameSkill.HARD);
-								}
-							else if (currentGameSkill == GameSkill.EASY) 
-								{
-								currentGameSkill = GameSkill.NORMAL;
-								client.setDifficulty(GameSkill.NORMAL);
-								}
-						}
-
 				}
 			}
-		}
 		}
 	}
 
@@ -1212,8 +1206,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	public void mouseClicked (MouseEvent me) {
 
 		// Save the coordinates of the click
-		xpos = me.getX(); 
-		ypos = me.getY();
+		int xpos = me.getX(); 
+		int ypos = me.getY();
 
 		if (xpos < 500 && xpos > 140)
 			if (currentGameState == GameState.PAUSED || currentGameState == GameState.NONE)
