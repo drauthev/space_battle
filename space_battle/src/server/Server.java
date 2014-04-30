@@ -111,7 +111,7 @@ public class Server implements AllServerInterfaces
 		
 		removeNonExistentObjects();
 				
-		client1.updateObjects(allToJSON(listOfPlayers, listOfNPCs));
+		client1.updateObjects(allToJSON());
 		
 		isGameOver();
 
@@ -143,7 +143,7 @@ public class Server implements AllServerInterfaces
 			long currentTime = java.lang.System.currentTimeMillis();
 			if(currentTime - player1ShootTime > Constants.timeBetweenShots){
 				System.out.println(currentTime - player1ShootTime);
-				player1ShootTime = java.lang.System.currentTimeMillis();
+				player1ShootTime = currentTime;
 				Projectile shot = listOfPlayers.get(0).shoot();
 				listOfProjectiles.add(shot);
 				// playing sounds
@@ -362,7 +362,7 @@ public class Server implements AllServerInterfaces
 	// Game experience modifier functions
 	
 	// JSON converters
-	private String allToJSON(List<Player> listOfPlayers, List<NPC> listOfNPCs){
+	private String allToJSON(){
 		JSONObject all = new JSONObject();
 		
 		playersToJSON(listOfPlayers);
@@ -416,7 +416,7 @@ public class Server implements AllServerInterfaces
 		NPC temp;
 		try {
 			int listSize = list.size();
-			for( int i=0; i<listSize-1; i++){
+			for( int i=0; i<listSize; i++){
 				temp = list.get(i);
 				currentNPC = new JSONObject();
 				// type for GUI to paint the proper skin
@@ -453,7 +453,7 @@ public class Server implements AllServerInterfaces
 		//TODO: csak dummy
 		try {
 			int listSize = list.size();
-			for( int i=0; i<listSize-1; i++){
+			for( int i=0; i<listSize; i++){
 				temp = list.get(i);
 				currentProjectile = new JSONObject();
 				// type for GUI to paint the proper skin
@@ -565,7 +565,7 @@ public class Server implements AllServerInterfaces
 	public void startRequest(ClientForServer c){
 		if(initState == true){
 			initState = false;
-			client1.updateObjects(allToJSON(listOfPlayers, listOfNPCs));
+			client1.updateObjects(allToJSON());
 		}
 		if(type == GameType.SINGLE || type == GameType.MULTI_LOCAL){
 			isRunning = true;
