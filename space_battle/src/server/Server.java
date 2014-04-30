@@ -207,12 +207,13 @@ public class Server implements AllServerInterfaces
 	private void detectCollision(){
 		NPC tempNPC;
 		Player tempPlayer;
-		for(int i=0; i<listOfNPCs.size(); i++){
-			tempNPC = listOfNPCs.get(i);
-			for(int j=0; j<listOfPlayers.size(); j++){
-				tempPlayer = listOfPlayers.get(j);
+		
+		for(int i=0; i<listOfPlayers.size(); i++){
+			tempPlayer = listOfPlayers.get(i);
+			for(int j=0; j<listOfNPCs.size(); j++){
+				tempNPC = listOfNPCs.get(j);
+				if( tempNPC.getLives() <= 0) continue; // dead hostiles which are in the list for animation purposes, can't hurt the players
 				if( tempNPC.getHitBox().isCollision(tempPlayer)==true ){ // there is collision
-					System.out.println("collision hit");
 					// exploding the NPC
 					tempNPC.setLives(0);
 					tempNPC.setExplosionTime(java.lang.System.currentTimeMillis());
@@ -231,10 +232,6 @@ public class Server implements AllServerInterfaces
 						tempPlayer.setExplosionTime(java.lang.System.currentTimeMillis());
 					}
 					else{
-						if(tempPlayer.getID()==0)
-							player1Dead = true;
-						else
-							player2Dead = true;
 						tempPlayer.setHitTime(java.lang.System.currentTimeMillis());
 					}
 					// changing the list elements to the modified ones
@@ -242,76 +239,22 @@ public class Server implements AllServerInterfaces
 					listOfNPCs.set(i, tempNPC);
 				}
 			}
-			
-			
-//			Player tempPlayer = listOfPlayers.get(0);
-//			// check collisions for Player1
-//			if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==0 ){
-//				if( tempNPC.getHitBox().isCollision(tempPlayer)==true ){ // there is collision
-//					// exploding the NPC
-//					tempNPC.setLives(0);
-//					tempNPC.setExplosionTime(java.lang.System.currentTimeMillis());
-//					// playing sounds
-//					client1.playSound(SoundType.enemyExplosion);
-//					if(type == GameType.MULTI_NETWORK)	client2.playSound(SoundType.enemyExplosion);
-//					
-//					tempPlayer.setLives(tempPlayer.getLives() - 1);
-//					// checking Player's lives
-//					// if it's 0, explode it; else indicating a hit
-//					if(tempPlayer.getLives() == 0)
-//						tempPlayer.setExplosionTime(java.lang.System.currentTimeMillis());
-//					else
-//						tempPlayer.setHitTime(java.lang.System.currentTimeMillis());
-//					
-//					// changing the list elements to the modified ones
-//					listOfPlayers.set(0, tempPlayer);
-//					listOfNPCs.set(i, tempNPC);
-//				}
-//			}
-//				
-//			// check collisions for Player2 if gametype is multi
-//			if( type==(GameType.MULTI_LOCAL) || type==(GameType.MULTI_NETWORK) ){
-//				if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==1){
-//					tempPlayer = listOfPlayers.get(1);
-//					
-//					if( tempNPC.getHitBox().isCollision(tempPlayer)==true ){ // there is collision
-//						// exploding the NPC
-//						tempNPC.setLives(0);
-//						tempNPC.setExplosionTime(java.lang.System.currentTimeMillis());
-//						// playing sounds
-//						client1.playSound(SoundType.enemyExplosion);
-//						if(type == GameType.MULTI_NETWORK)	client2.playSound(SoundType.enemyExplosion);
-//						
-//						tempPlayer.setLives(tempPlayer.getLives() - 1);
-//						// checking Player's lives
-//						// if it's 0, explode it; else indicating a hit
-//						if(tempPlayer.getLives() == 0)
-//							tempPlayer.setExplosionTime(java.lang.System.currentTimeMillis());
-//						else
-//							tempPlayer.setHitTime(java.lang.System.currentTimeMillis());
-//						
-//						// changing the list elements to the modified ones //TODO: is this needed or the get() method gives references?
-//						listOfPlayers.set(1, tempPlayer);
-//						listOfNPCs.set(i, tempNPC);
-//					}
-//				}
-//			}
-			//NOTE: if an NPC collides with both players, its explosionTime will be the time it's colliding with Player2 - no problem	
 		}
 	}
 	
 	private void detectHits(){
+		Projectile proj;
+		NPC npc;
+		int npcLives;
 		for(int i=0; i<listOfProjectiles.size(); i++){
-			
-			Projectile proj = listOfProjectiles.get(i);
+			proj = listOfProjectiles.get(i);
 			// Projectile is shot by a player
 			if( proj instanceof ProjectileGoingUp ){
 				for(int j=0; j<listOfNPCs.size(); j++){
-					NPC npc = listOfNPCs.get(j);
-					int npcLives = npc.getLives();
-					
-					if ( proj.isHit(npc) ){ // Given NPC is hit
-						
+					npc = listOfNPCs.get(j);
+					npcLives = npc.getLives();
+					if( npcLives <= 0 ) continue; // dead hostiles which are in the list for animation purposes, cannot absorb projectiles
+					if( proj.isHit(npc) ){ // Given NPC is hit
 						npcLives--;
 						npc.setLives(npcLives);
 						if( npcLives == 0 ){
