@@ -533,7 +533,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 				if (localNPC.explosionTime != 0) 
 				{
-					tickDiff_div = (serverTick-localNPC.creationTime)/2000;
+					tickDiff_div = (serverTick-localNPC.creationTime)/200;
 					if      (tickDiff_div == 0) drawObject(enemyBlowImg1, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
 					else if (tickDiff_div == 1) drawObject(enemyBlowImg2, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
 					else if (tickDiff_div == 2) drawObject(enemyBlowImg3, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
@@ -541,9 +541,9 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				}
 				else if (localNPC.hitTime != 0) 
 				{
-					if ((localNPC.hitTime - serverTick) < 2000)
+					if ((localNPC.hitTime - serverTick) < 1000)
 					{
-						tickDiff_div = (serverTick-localNPC.creationTime)/5000;
+						tickDiff_div = (serverTick-localNPC.creationTime)/200;
 						if  (tickDiff_div % 2 == 0) drawObject(enemyImg1, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
 					}	
 				}
@@ -565,7 +565,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 				if (localPlayer.explosionTime != 0 )
 				{
-					tickDiff_div = (localPlayer.explosionTime-serverTick)/3000;
+					tickDiff_div = (serverTick - localPlayer.explosionTime)/200;
 					if      (tickDiff_div == 0) drawObject(spaceShipBombImg1, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
 					else if (tickDiff_div == 1) drawObject(spaceShipBombImg2, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
 					else if (tickDiff_div == 2) drawObject(spaceShipBombImg3, localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
@@ -590,7 +590,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			for (int i = 0; i < localObjectBuffer.modCount; i++)
 			{
 				CModifier localModifier = localObjectBuffer.mod[i];	
-				if (localModifier.pickupTime == 0 || (localModifier.pickupTime - serverTick > 5000) || ((localModifier.pickupTime - serverTick)/1000) % 2 == 0) ;
+				if (localModifier.pickupTime == 0 || (localModifier.pickupTime - serverTick > 1000) || ((localModifier.pickupTime - serverTick)/200) % 2 == 0) ;
 				{
 					if (localModifier.className.equals("PowerDown"))
 						drawObject(powerDownImg	, localModifier.x	, localModifier.y	, powerUpWidth,powerDownWidth);
@@ -642,7 +642,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			{
 				drawTitle("SPACE BATTLE");
 				drawMenuLine(1,"New Game");
-				drawMenuLine(2,"Join Game ");
+				drawMenuLine(2,"Join Game");
 				drawMenuLine(3,"Options");
 				drawMenuLine(4,"High Scores");
 				drawMenuLine(5,"Exit");
@@ -654,7 +654,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				drawMenuLine(1,"Resume");
 				drawMenuLine(2,"Disconnect");
 				drawMenuLine(3,"New Game");
-				drawMenuLine(4,"Join Game ");
+				drawMenuLine(4,"Join Game");
 				drawMenuLine(5,"Options");
 				drawMenuLine(6,"High Scores");
 				drawMenuLine(7,"Exit");
@@ -904,10 +904,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			if (currentMenuState == MenuState.MAIN_MENU)
 			{			
 				if      (currentLine == 1) setMenuState(MenuState.NEW_GAME_MENU);
-				else if (currentLine == 2) setMenuState(MenuState.JOIN_GAME_MENU); // Join Game
+				else if (currentLine == 2) setMenuState(MenuState.JOIN_GAME_MENU);
 				else if (currentLine == 3) setMenuState(MenuState.OPTIONS_MENU);
 				else if (currentLine == 4) setMenuState(MenuState.HIGH_SCORES_MENU);
-				else if (currentLine == 5) client.terminate(); //terminate()
+				else if (currentLine == 5) client.terminate();
 			}
 
 			else if (currentMenuState == MenuState.PAUSED_MENU)
@@ -915,19 +915,15 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				if      (currentLine == 1) client.startRequest();
 				else if (currentLine == 2) setMenuState(MenuState.MAIN_MENU); 
 				else if (currentLine == 3) setMenuState(MenuState.NEW_GAME_MENU); 
-				else if (currentLine == 4) setMenuState(MenuState.JOIN_GAME_MENU); // Join Game
+				else if (currentLine == 4) setMenuState(MenuState.JOIN_GAME_MENU);
 				else if (currentLine == 5) setMenuState(MenuState.OPTIONS_MENU);
 				else if (currentLine == 6) setMenuState(MenuState.HIGH_SCORES_MENU);
-				else if (currentLine == 7) client.terminate(); //terminate()
+				else if (currentLine == 7) client.terminate();
 			}
 
 			else if (currentMenuState == MenuState.NEW_GAME_MENU)
 			{
-				// drawMenuLine   (1,"Single Game");
-				// drawMenuLine   (2,"Multi Game");
-				// drawMenuLine   (3,"Back");
-
-				if      (currentLine == 1) client.newGame(GameType.SINGLE); // Join Game
+				if      (currentLine == 1) client.newGame(GameType.SINGLE);
 				else if (currentLine == 2) setMenuState(MenuState.MULTI_MENU);
 				else if (currentLine == 3) setMenuState(MenuState.MAIN_MENU);
 			}
@@ -946,15 +942,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 
 			else if (currentMenuState == MenuState.OPTIONS_MENU)
-			{		    	// drawOptionsLine(1,"Music","On");
-				// drawOptionsLine(2,"Sound Effects","Off");
-				// drawMenuLine   (3,"Set Keyboard");
-				// drawMenuLine   (4,"Back");
-
-				// if (currentLine == 1) setMenuState(NEW_GAME_MENU);
-				// else if (currentLine == 2) setMenuState(NEW_GAME_MENU);
-				// else if (currentLine == 3) setMenuState(NEW_GAME_MENU);
-				// else if (currentLine == 4) setMenuState(MAIN_MENU);
+			{
 				if (currentLine == 3) setMenuState(MenuState.KEYBOARD_SETTINGS_MENU);
 				else if (currentLine == 4) setMenuState(MenuState.MAIN_MENU); 
 			}		 
@@ -982,15 +970,9 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						client.joinGame(textField);
 					}
 					else error ("Invalid IP Address");
-					//setGameState(GameState.WAITING);  
 				}
 				else
 					client.joinGame(ipAddresses[currentLine-3]);
-
-				//else if (currentLine == 1) jatek indul felsot elkülld + elment
-				//else
-				//	for (int i = 0; i < 3; i++)
-				//			if (currentLine == i+1) jatek indul, IP cim elküld
 			}
 		}
 		else if (currentGameState == GameState.GAMEOVER_NEW_HIGHSCORE) 
