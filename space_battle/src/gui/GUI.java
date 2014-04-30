@@ -194,9 +194,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private ClientForGUI client;
 	
 	// IP handling
-	private String IPtoSend;
 	private String[] ipAddresses = null;
-	private int ipAddresseslength = 0;
+	private static final int ipAddresseslength = 4;
 
 	// Timer
 	private Timer timer = new Timer(false);
@@ -434,17 +433,16 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	}
 
-
 	public void setGameState(GameState gs)	
 	{
-		currentGameState = gs;
-		System.out.println("GameState changed to " + currentGameState);
-
 		textField = "";
 		dotLine = 1;
 		mainDot = 1;
 		optionsDot = 1;
 		newGameDot = 1;
+		
+		currentGameState = gs;
+		System.out.println("GameState changed to " + currentGameState);
 	}
 
 	public void run() {
@@ -485,7 +483,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			{
 				CNPC localNPC = localObjectBuffer.npc[i];
 
-				if (localNPC.className == "HostileType1")
+				if (localNPC.className.equals("HostileType1"))
 				{
 					enemyBlowImg1 	= enemyABlowImg1;
 					enemyBlowImg2 	= enemyABlowImg2;
@@ -501,7 +499,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					enemyBlowWidth 	= enemyABlowWidth;
 				}
 
-				else if (localNPC.className == "HostileType2")
+				else if (localNPC.className.equals("HostileType2"))
 				{
 					enemyBlowImg1 	= enemyBBlowImg1;
 					enemyBlowImg2 	= enemyBBlowImg2;
@@ -517,7 +515,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					enemyBlowWidth 	= enemyBBlowWidth;
 				}
 
-				else if (localNPC.className == "HostileType3")
+				else if (localNPC.className.equals("HostileType3"))
 				{
 					enemyBlowImg1 	= enemyCBlowImg1;
 					enemyBlowImg2 	= enemyCBlowImg2;
@@ -535,7 +533,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 				if (localNPC.explosionTime != 0) 
 				{
-					tickDiff_div = (localNPC.explosionTime-serverTick)/2000;
+					tickDiff_div = (serverTick-localNPC.creationTime)/2000;
 					if      (tickDiff_div == 0) drawObject(enemyBlowImg1, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
 					else if (tickDiff_div == 1) drawObject(enemyBlowImg2, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
 					else if (tickDiff_div == 2) drawObject(enemyBlowImg3, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
@@ -545,13 +543,13 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				{
 					if ((localNPC.hitTime - serverTick) < 2000)
 					{
-						tickDiff_div = (localNPC.creationTime-serverTick)/5000;
+						tickDiff_div = (serverTick-localNPC.creationTime)/5000;
 						if  (tickDiff_div % 2 == 0) drawObject(enemyImg1, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
 					}	
 				}
 				else 
 				{
-					tickDiff_div = (localNPC.creationTime-serverTick)/1000;
+					tickDiff_div = (serverTick-localNPC.creationTime)/1000;
 					if      (tickDiff_div % 3 == 0) drawObject(enemyImg1, localNPC.x, localNPC.y, enemyWidth,enemyHeight);
 					else if (tickDiff_div % 3 == 1) drawObject(enemyImg2, localNPC.x, localNPC.y, enemyWidth,enemyHeight);
 					else 							drawObject(enemyImg3, localNPC.x, localNPC.y, enemyWidth,enemyHeight);
@@ -583,7 +581,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			{
 				CProjectile localProjectile = localObjectBuffer.proj[i];
 
-				if (localProjectile.className == "ProjectileGoingUp")
+				if (localProjectile.className.equals("ProjectileGoingUp"))
 					drawObject(bulletImg1		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
 				else //ProjectileGoingDown
 					drawObject(bulletImg2		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
@@ -594,7 +592,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				CModifier localModifier = localObjectBuffer.mod[i];	
 				if (localModifier.pickupTime == 0 || (localModifier.pickupTime - serverTick > 5000) || ((localModifier.pickupTime - serverTick)/1000) % 2 == 0) ;
 				{
-					if (localModifier.className == "PowerDown")
+					if (localModifier.className.equals("PowerDown"))
 						drawObject(powerDownImg	, localModifier.x	, localModifier.y	, powerUpWidth,powerDownWidth);
 					else //PowerUp
 						drawObject(powerUpImg		, localModifier.x	, localModifier.y	, powerUpWidth,powerDownWidth);
@@ -710,7 +708,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				drawMenuLine   (1,"Please Give Us the IP Address!");
 				drawWritingLine(2,textField);
 
-				for (int i = 0; i < ipAddresses.length; i++)
+				for (int i = 0; i < ipAddresseslength; i++)
 					drawMenuLine   (i+3,ipAddresses[i]);
 
 				drawMenuLine   (getLastLine(),"Back");
@@ -895,7 +893,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		else if (currentMenuState == MenuState.HIGH_SCORES_MENU) return lastMenuHS;
 		else if (currentMenuState == MenuState.OPTIONS_MENU) return 4;
 		else if (currentMenuState == MenuState.KEYBOARD_SETTINGS_MENU) return 7;
-		else if (currentMenuState == MenuState.JOIN_GAME_MENU) return ipAddresses.length +3;
+		else if (currentMenuState == MenuState.JOIN_GAME_MENU) return ipAddresseslength +3;
 		else return 1;
 	}
 
@@ -1193,7 +1191,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	// Handle the key-released event from the text field.
 	public void keyReleased(KeyEvent e) {
-		if (currentGameState != GameState.NONE && currentGameState != GameState.PAUSED)
+		if ((currentGameState != GameState.NONE && currentGameState != GameState.PAUSED && currentGameState != GameState.GAMEOVER_NEW_HIGHSCORE ) && e.getKeyCode() != KeyEvent.VK_ESCAPE && e.getKeyCode() != KeyEvent.VK_BACK_SPACE)
 		{
 			client.dispatchKeyEvent(e,false);
 		}
