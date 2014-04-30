@@ -13,7 +13,7 @@ public class ProjectileGoingUp extends Projectile {
 	@Override
 	public boolean isHit(GameElement object){
 		// projectile-related
-		int top = getCoordY() + projectileHeight;
+		int top = getCoordY() - projectileHeight/2;
 		int projX = getCoordX();
 		// object-related
 		int objWidth = object.getHitBox().getWidth();
@@ -23,7 +23,7 @@ public class ProjectileGoingUp extends Projectile {
 		
 		
 		if( (projX > objX - objWidth/2) && (projX < objX + objWidth/2) ){ // projectile's coordX in range
-			if( (top > objY - objHeight/2) && (top < objY - objHeight/2) ){
+			if( (top > objY - objHeight/2) && (top < objY + objHeight/2) ){
 				return true;
 			}
 			else return false; // x range matches but no match in dimension Y

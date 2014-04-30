@@ -14,7 +14,7 @@ public class ProjectileGoingDown extends Projectile {
 	@Override
 	public boolean isHit(GameElement object) { //TODO: lehet, hogy y coordot itt nem is kellene nezni, hanem csak azokra hivni meg, amikre okes
 		// projectile-related
-		int bottom = getCoordY() - projectileHeight;
+		int bottom = getCoordY() + projectileHeight/2;
 		int projX = getCoordX();
 		// object-related
 		int objWidth = object.getHitBox().getWidth();
@@ -22,7 +22,7 @@ public class ProjectileGoingDown extends Projectile {
 		int objX = object.getCoordX();
 		int objY = object.getCoordY();
 		
-		if( bottom < objY + objHeight/2 ){ // match in Y dimension
+		if( bottom > objY - objHeight/2 && bottom < objY + objHeight/2){ // match in Y dimension
 			if ( (projX > objX - objWidth/2) && (projX < objX + objWidth/2) )
 				return true;
 			else return false; // match in Y dim, but no match in X dimension

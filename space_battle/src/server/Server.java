@@ -40,6 +40,8 @@ public class Server implements AllServerInterfaces
 	private boolean player2Shooting;
 	private long player1ShootTime = 0;
 	private long player2ShootTime = 0;
+	private boolean player1Dead = false;
+	private boolean player2Dead = true;
 	// Declaring lists of GameElements
 	private List<Player> listOfPlayers;
 	private List<Projectile> listOfProjectiles;
@@ -92,11 +94,11 @@ public class Server implements AllServerInterfaces
 		
 		// Spawning player/players
 		if( type == GameType.SINGLE ){
-			listOfPlayers.add(new Player(Constants.gameFieldWidth/2, (Constants.gameFieldHeigth-Player.getPlayerheight()/2 - 30), 0));	// the only player to the middle..with playerID==1
+			listOfPlayers.add(new Player(Constants.gameFieldWidth/2, (Constants.gameFieldHeigth-Player.getPlayerheight()/2 - 60), 0));	// the only player to the middle..with playerID==1
 		}
 		else if( type==(GameType.MULTI_LOCAL) || type==(GameType.MULTI_NETWORK) ){
-			listOfPlayers.add(new Player(Constants.gameFieldWidth/4, Player.getPlayerheight()/2 + 2, 0));	// with playerID==1
-			listOfPlayers.add(new Player(Constants.gameFieldWidth/4*3, Player.getPlayerheight()/2 + 2, 1)); // with playerID==2
+			listOfPlayers.add(new Player(Constants.gameFieldWidth/4, (Constants.gameFieldHeigth-Player.getPlayerheight()/2 - 60), 0));	// with playerID==1
+			listOfPlayers.add(new Player(Constants.gameFieldWidth/4*3, (Constants.gameFieldHeigth-Player.getPlayerheight()/2 - 60), 1)); // with playerID==2
 		}
 	};
 	
@@ -104,6 +106,7 @@ public class Server implements AllServerInterfaces
 	// Timer-driven methods
 	private void trackChanges(){
 		moveNPCs();
+		shootWithNPCs();
 		controlPlayers();	// move/shoot with players according to the pushed buttons
 		detectCollision();	// between players and hostiles
 		detectHits();
@@ -132,89 +135,167 @@ public class Server implements AllServerInterfaces
     	}
 	}
 	
-	private void controlPlayers(){
-		// Player 1
-		if(player1MovingLeft){		
-			listOfPlayers.get(0).moveLeft(); // 0th index is player1
-		}
-		if(player1MovingRight)
-			listOfPlayers.get(0).moveRight();
-		if(player1Shooting){
-			long currentTime = java.lang.System.currentTimeMillis();
-			if(currentTime - player1ShootTime > Constants.timeBetweenShots){
-				System.out.println(currentTime - player1ShootTime);
-				player1ShootTime = currentTime;
-				Projectile shot = listOfPlayers.get(0).shoot();
-				listOfProjectiles.add(shot);
-				// playing sounds
-				client1.playSound(SoundType.shoot);
-				if(type == GameType.MULTI_NETWORK){
-					client2.playSound(SoundType.shoot);
+	private void shootWithNPCs(){
+		NPC temp;
+		long lastShotTime;
+		long currentTime;
+		for(int i=0; i<listOfNPCs.size(); i++){
+			temp = listOfNPCs.get(i);
+			if(temp.getLives() != 0){ // "dead" hostiles are in the list for some time because of the explosion effect; this make sure they don't shoot
+				lastShotTime = temp.getLastShotTime();
+				currentTime = java.lang.System.currentTimeMillis();
+				if(currentTime - lastShotTime > temp.getShootingFrequency()){ // shoot only if enough time has lasted
+					temp.setLastShotTime(java.lang.System.currentTimeMillis());
+					listOfProjectiles.add(temp.shoot());
+					listOfNPCs.set(i, temp);
+					// playing sounds
+					client1.playSound(SoundType.shoot);
+					if(type == GameType.MULTI_NETWORK){
+						client2.playSound(SoundType.shoot);
+					}
 				}
 			}
-			
 		}
+	}
+	
+	private void controlPlayers(){		
+		// Player 1 - // if SINGLE OR (if both players are alive, or the only alive is player2)
+		if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==0 ){
+			if(player1MovingLeft){	
+				listOfPlayers.get(0).moveLeft(); // 0th index is player1
+			}
+			if(player1MovingRight)
+				listOfPlayers.get(0).moveRight();
+			if(player1Shooting){
+				long currentTime = java.lang.System.currentTimeMillis();
+				if(currentTime - player1ShootTime > Constants.timeBetweenShots){
+					player1ShootTime = currentTime;
+					Projectile shot = listOfPlayers.get(0).shoot();
+					listOfProjectiles.add(shot);
+					// playing sounds
+					client1.playSound(SoundType.shoot);
+					if(type == GameType.MULTI_NETWORK){
+						client2.playSound(SoundType.shoot);
+					}
+				}	
+			}
+		}		
 		// Player 2 if multiplayer
 		if( type==GameType.MULTI_LOCAL || type==GameType.MULTI_NETWORK){
-			if(player2MovingLeft)
-				listOfPlayers.get(1).moveLeft();	// 1st index is player1
-			if(player2MovingRight)
-				listOfPlayers.get(1).moveRight();
-			if(player2Shooting){
-				Projectile shot = listOfPlayers.get(1).shoot();
-				listOfProjectiles.add(shot);
-				// playing sounds
-				client1.playSound(SoundType.shoot);
-				if(type == GameType.MULTI_NETWORK){
-					client2.playSound(SoundType.shoot);
+			if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==1){ // if both players are alive, or the only alive is player2
+				if(player2MovingLeft)
+					listOfPlayers.get(1).moveLeft();	// 1st index is player1
+				if(player2MovingRight)
+					listOfPlayers.get(1).moveRight();
+				if(player2Shooting){
+					long currentTime = java.lang.System.currentTimeMillis();
+					if(currentTime - player2ShootTime > Constants.timeBetweenShots){
+						player2ShootTime = currentTime;
+						Projectile shot = listOfPlayers.get(1).shoot();
+						listOfProjectiles.add(shot);
+						// playing sounds
+						client1.playSound(SoundType.shoot);
+						if(type == GameType.MULTI_NETWORK){
+							client2.playSound(SoundType.shoot);
+						}
+					}
 				}
 			}
 		}
 	}
 	
 	private void detectCollision(){
+		NPC tempNPC;
+		Player tempPlayer;
 		for(int i=0; i<listOfNPCs.size(); i++){
-			NPC tempNPC = listOfNPCs.get(i);
-			Player tempPlayer = listOfPlayers.get(0);
-			// check collisions for Player1
-			if( tempNPC.getHitBox().isCollision(tempPlayer)==true ){ // there is collision
-				// exploding the NPC
-				tempNPC.setExplosionTime(java.lang.System.currentTimeMillis());
-				
-				tempPlayer.setLives(tempPlayer.getLives() - 1);
-				// checking Player's lives
-				// if it's 0, explode it; else indicating a hit
-				if(tempPlayer.getLives() == 0)
-					tempPlayer.setExplosionTime(java.lang.System.currentTimeMillis());
-				else
-					tempPlayer.setHitTime(java.lang.System.currentTimeMillis());
-				
-				// changing the list elements to the modified ones
-				listOfPlayers.set(0, tempPlayer);
-				listOfNPCs.set(i, tempNPC);
-			}
-				
-			// check collisions for Player2 if gametype is multi
-			if( type==(GameType.MULTI_LOCAL) || type==(GameType.MULTI_NETWORK) ){
-				tempPlayer = listOfPlayers.get(1);
-				
+			tempNPC = listOfNPCs.get(i);
+			for(int j=0; j<listOfPlayers.size(); j++){
+				tempPlayer = listOfPlayers.get(j);
 				if( tempNPC.getHitBox().isCollision(tempPlayer)==true ){ // there is collision
+					System.out.println("collision hit");
 					// exploding the NPC
+					tempNPC.setLives(0);
 					tempNPC.setExplosionTime(java.lang.System.currentTimeMillis());
+					// playing sounds
+					client1.playSound(SoundType.enemyExplosion);
+					if(type == GameType.MULTI_NETWORK)	client2.playSound(SoundType.enemyExplosion);
 					
 					tempPlayer.setLives(tempPlayer.getLives() - 1);
 					// checking Player's lives
 					// if it's 0, explode it; else indicating a hit
-					if(tempPlayer.getLives() == 0)
+					if(tempPlayer.getLives() == 0){
+						if(tempPlayer.getID()==0)
+							player1Dead = true;
+						else
+							player2Dead = true;
 						tempPlayer.setExplosionTime(java.lang.System.currentTimeMillis());
-					else
+					}
+					else{
+						if(tempPlayer.getID()==0)
+							player1Dead = true;
+						else
+							player2Dead = true;
 						tempPlayer.setHitTime(java.lang.System.currentTimeMillis());
-					
-					// changing the list elements to the modified ones //TODO: is this needed or the get() method gives references?
-					listOfPlayers.set(1, tempPlayer);
+					}
+					// changing the list elements to the modified ones
+					listOfPlayers.set(0, tempPlayer);
 					listOfNPCs.set(i, tempNPC);
 				}
 			}
+			
+			
+//			Player tempPlayer = listOfPlayers.get(0);
+//			// check collisions for Player1
+//			if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==0 ){
+//				if( tempNPC.getHitBox().isCollision(tempPlayer)==true ){ // there is collision
+//					// exploding the NPC
+//					tempNPC.setLives(0);
+//					tempNPC.setExplosionTime(java.lang.System.currentTimeMillis());
+//					// playing sounds
+//					client1.playSound(SoundType.enemyExplosion);
+//					if(type == GameType.MULTI_NETWORK)	client2.playSound(SoundType.enemyExplosion);
+//					
+//					tempPlayer.setLives(tempPlayer.getLives() - 1);
+//					// checking Player's lives
+//					// if it's 0, explode it; else indicating a hit
+//					if(tempPlayer.getLives() == 0)
+//						tempPlayer.setExplosionTime(java.lang.System.currentTimeMillis());
+//					else
+//						tempPlayer.setHitTime(java.lang.System.currentTimeMillis());
+//					
+//					// changing the list elements to the modified ones
+//					listOfPlayers.set(0, tempPlayer);
+//					listOfNPCs.set(i, tempNPC);
+//				}
+//			}
+//				
+//			// check collisions for Player2 if gametype is multi
+//			if( type==(GameType.MULTI_LOCAL) || type==(GameType.MULTI_NETWORK) ){
+//				if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==1){
+//					tempPlayer = listOfPlayers.get(1);
+//					
+//					if( tempNPC.getHitBox().isCollision(tempPlayer)==true ){ // there is collision
+//						// exploding the NPC
+//						tempNPC.setLives(0);
+//						tempNPC.setExplosionTime(java.lang.System.currentTimeMillis());
+//						// playing sounds
+//						client1.playSound(SoundType.enemyExplosion);
+//						if(type == GameType.MULTI_NETWORK)	client2.playSound(SoundType.enemyExplosion);
+//						
+//						tempPlayer.setLives(tempPlayer.getLives() - 1);
+//						// checking Player's lives
+//						// if it's 0, explode it; else indicating a hit
+//						if(tempPlayer.getLives() == 0)
+//							tempPlayer.setExplosionTime(java.lang.System.currentTimeMillis());
+//						else
+//							tempPlayer.setHitTime(java.lang.System.currentTimeMillis());
+//						
+//						// changing the list elements to the modified ones //TODO: is this needed or the get() method gives references?
+//						listOfPlayers.set(1, tempPlayer);
+//						listOfNPCs.set(i, tempNPC);
+//					}
+//				}
+//			}
 			//NOTE: if an NPC collides with both players, its explosionTime will be the time it's colliding with Player2 - no problem	
 		}
 	}
@@ -225,20 +306,26 @@ public class Server implements AllServerInterfaces
 			Projectile proj = listOfProjectiles.get(i);
 			// Projectile is shot by a player
 			if( proj instanceof ProjectileGoingUp ){
-				
 				for(int j=0; j<listOfNPCs.size(); j++){
 					NPC npc = listOfNPCs.get(j);
 					int npcLives = npc.getLives();
 					
 					if ( proj.isHit(npc) ){ // Given NPC is hit
+						
 						npcLives--;
+						npc.setLives(npcLives);
 						if( npcLives == 0 ){
+							score += npc.getScoreIfDestroyed();
 							npc.setExplosionTime(java.lang.System.currentTimeMillis());
+							// playing sound
+							client1.playSound(SoundType.enemyExplosion);
+							if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.enemyExplosion);
 						}
 						else{
 							npc.setHitTime(java.lang.System.currentTimeMillis());
-							npc.setLives(npcLives);
-							// decreasing lives is unnecessary as only explosionTime is propagated to the GUI
+							// playing sound
+							client1.playSound(SoundType.beepA);
+							if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.beepA);
 						}
 						listOfNPCs.set(j, npc);
 						listOfProjectiles.remove(i); // remove projectile which hit
@@ -255,12 +342,23 @@ public class Server implements AllServerInterfaces
 						int playerLives = player.getLives();
 						
 						if (proj.isHit(player) ){//TODO: lehet, hogy y coordot itt kellene nezni, ProjGoingDown isHit()-jeben nem, es csak azokra meghivni
+							System.out.println("projectile hit");
 							player.setLives(--playerLives);
 							if( playerLives == 0 ){
 								player.setExplosionTime(java.lang.System.currentTimeMillis());
+								if(player.getID()==0)
+									player1Dead = true;
+								else
+									player2Dead = true;
+								// playing sound
+								client1.playSound(SoundType.spaceShipExplosion);
+								if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.spaceShipExplosion);
 							}
 							else{
 								player.setHitTime(java.lang.System.currentTimeMillis());
+								// playing sound
+								client1.playSound(SoundType.beepA);
+								if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.beepA);
 							}
 							listOfPlayers.set(j, player);
 							listOfProjectiles.remove(i); // remove projectile which hit
@@ -318,7 +416,7 @@ public class Server implements AllServerInterfaces
 		for(int i=0; i<listOfNPCs.size(); i++){
 			// removing from list, if !!3sec!!? is lated since explosion
 			explosionTime = listOfNPCs.get(i).getExplosionTime();
-			if( (currentTime - explosionTime > 3000) && explosionTime!=0 ){//TODO: hany masodperc utan?
+			if( (currentTime - explosionTime > 2000) && explosionTime!=0 ){//TODO: hany masodperc utan?
 				listOfNPCs.remove(i);
 			}
 		}
@@ -327,7 +425,7 @@ public class Server implements AllServerInterfaces
 		for(int i=0; i<listOfPlayers.size(); i++){
 			// removing from list, if !!3sec!!? is lated since explosion
 			explosionTime = listOfPlayers.get(i).getExplosionTime();
-			if( (currentTime -  explosionTime > 3000) && explosionTime!=0 ){//TODO: hany masodperc utan?
+			if( (currentTime -  explosionTime > 2000) && explosionTime!=0 ){//TODO: hany masodperc utan?
 				listOfPlayers.remove(i);
 			}
 		}
@@ -341,7 +439,8 @@ public class Server implements AllServerInterfaces
 	private void isGameOver(){
 		
 		if(type == GameType.SINGLE){
-			if(listOfPlayers.get(0).getLives() == 0){
+			if(player1Dead){
+				timer.cancel();
 				//TODO: HIGHSCORE eseten GAMEOVER_HIGHSCORE-t hivni!
 				client1.changeGameState(GameState.GAMEOVER);
 				if(type == GameType.MULTI_NETWORK){
@@ -350,7 +449,8 @@ public class Server implements AllServerInterfaces
 			}
 		}
 		else // multi
-			if(listOfPlayers.get(0).getLives() == 0 || listOfPlayers.get(1).getLives() == 0){
+			if(player1Dead && player2Dead){
+				timer.cancel();
 				//TODO: HIGHSCORE eseten GAMEOVER_HIGHSCORE-t hivni!
 				client1.changeGameState(GameState.GAMEOVER);
 				if(type == GameType.MULTI_NETWORK){
@@ -391,7 +491,7 @@ public class Server implements AllServerInterfaces
 			for(int i=0; i<list.size(); i++){
 				temp = list.get(i);
 				currentPlayer = new JSONObject();
-				currentPlayer.put("className", "Player"); // ososztalyban van Andrasnal a className, azer kell csak
+				currentPlayer.put("className", "Player"); // ososztalyban van Andrasnal a className, azert kell csak
 				currentPlayer.put("id", temp.getID());
 				currentPlayer.put("numberOfLives", temp.getLives());
 				currentPlayer.put("x", temp.getCoordX());
@@ -502,18 +602,16 @@ public class Server implements AllServerInterfaces
 		    	}
 		    }
 		};
-		
-		//TODO: shoot with NPCS...
-		
+				
 			// Hostile-spawner tasks
 		TimerTask taskSpawnHostileType1 = new TimerTask() {
 			@Override
 			public void run() {
 				if(isRunning){
 				int x;
-				x = (int)(Math.random()*(Constants.gameFieldWidth - HostileType1.getHostiletype1width()));
-				x += HostileType1.getHostiletype1width()/2;	// peremertekek �?­gy x=0+hostileType1Width/2 �?‰S x=gameFieldWidth-hostileType1Width/2
-				listOfNPCs.add( new HostileType1(x, HostileType1.getHostiletype1heigth()+100, difficulty) );	// TODO: az Å±rhaj�?³k be�?ºsz�?¡sa miatt t�?ºlsk�?¡l�?¡zni
+				x = (int)(Math.random()*(Constants.gameFieldWidth - Constants.hostile1Width));
+				x += Constants.hostile1Width/2;	// peremertekek �?­gy x=0+hostileType1Width/2 �?‰S x=gameFieldWidth-hostileType1Width/2
+				listOfNPCs.add( new HostileType1(x, Constants.hostile1Height+100, difficulty) );	// TODO: az Å±rhaj�?³k be�?ºsz�?¡sa miatt t�?ºlsk�?¡l�?¡zni
 				}
 			}
 		};
@@ -546,7 +644,7 @@ public class Server implements AllServerInterfaces
 		// Update game state at a given rate
         timer.scheduleAtFixedRate(taskTrackChanges, 0, 1000/Constants.framePerSecond);	// 33.3333 millisecundumunk van megcsin�?¡lni, megjelen�?­teni mindent
 		// Spawn enemies at given rate
-        timer.scheduleAtFixedRate(taskSpawnHostileType1, 0, HostileType1.getSpawningFrequency());
+        timer.scheduleAtFixedRate(taskSpawnHostileType1, 0, Constants.hostile1spawningFrequency);
         
 		
 	}
@@ -596,7 +694,6 @@ public class Server implements AllServerInterfaces
 	// ------------------------------------------------------------------------------------------------------------------
 	@Override
 	public void moveLeft(int playerID){
-		System.out.println("player moving left");
 		if(playerID == 0)
 			player1MovingLeft = true;
 		else if(playerID == 1)
@@ -606,7 +703,6 @@ public class Server implements AllServerInterfaces
 	
 	@Override
 	public void releaseLeft(int playerID){
-		System.out.println("player released left");
 		if(playerID == 0)
 			player1MovingLeft = false;
 		else if(playerID == 1)
@@ -615,7 +711,6 @@ public class Server implements AllServerInterfaces
 	
 	@Override
 	public void moveRight(int playerID){
-		System.out.println("player moving right");
 		if(playerID == 0)
 			player1MovingRight = true;
 		else if(playerID == 1)
@@ -624,7 +719,6 @@ public class Server implements AllServerInterfaces
 	
 	@Override
 	public void releaseRight(int playerID){
-		System.out.println("player released right");
 		if(playerID == 0)
 			player1MovingRight = false;
 		else if(playerID == 1)
@@ -633,27 +727,42 @@ public class Server implements AllServerInterfaces
 	
 	@Override
 	public void fire(int playerID){
-		System.out.println("shooting");
-		if(playerID == 0)
+		if(playerID == 0){
 			player1Shooting = true;
-		else if(playerID == 1)
+			// Shooting one projectile here; for the reason if the player presses the button for a very short amount of time
+			// otherwise it can happen, if in the TimerTask, playerShooting flag will already be false and no shooting happen
+			player1ShootTime = java.lang.System.currentTimeMillis();
+			Projectile shot = listOfPlayers.get(0).shoot();
+			listOfProjectiles.add(shot);
+			// playing sounds
+			client1.playSound(SoundType.shoot);
+			if(type == GameType.MULTI_NETWORK){
+				client2.playSound(SoundType.shoot);
+			}
+		}
+		else if(playerID == 1 && (type == GameType.MULTI_LOCAL || type == GameType.MULTI_NETWORK)){
 			player2Shooting = true;
+			// Shooting one projectile here; for the reason if the player presses the button for a very short amount of time
+			// otherwise it can happen, if in the TimerTask, playerShooting flag will already be false and no shooting happen
+			player2ShootTime = java.lang.System.currentTimeMillis();
+			Projectile shot = listOfPlayers.get(1).shoot();
+			listOfProjectiles.add(shot);
+			// playing sounds
+			client1.playSound(SoundType.shoot);
+			if(type == GameType.MULTI_NETWORK){
+				client2.playSound(SoundType.shoot);
+			}
+		}
 	}
 	
 	@Override
 	public void releaseFire(int playerID){
-		System.out.println("shooting released");
 		if(playerID == 0)
 			player1Shooting = false;
 		else if(playerID == 1)
 			player2Shooting = false;
 	}
 	
-	// Getters, Setters
-	// ------------------------------------------------------------------------------------------------------------------
-	public int getScore() {
-		return score;
-	}
 
 	@Override
 	public void sendName(String name) {

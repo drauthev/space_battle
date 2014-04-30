@@ -18,7 +18,7 @@ public class HostileType2 extends NPC {
 	private static int spawningFrequency = 5000; //double inkább?
 	
 	HostileType2(int x, int y, GameSkill difficulty){
-		super(x,y);
+		super(x,y, Constants.hostile2scoreIfDestroyed, Constants.hostile2verticalMoveQuantity, Constants.hostile2horizontalMoveQuantity,Constants.hostile2shootingFrequency);
 		super.setHitBox(new HitBox(hostileType2Width, hostileType2Heigth, this));
 		// setting NPC's lives
 		if(difficulty == GameSkill.EASY){

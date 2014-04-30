@@ -7,6 +7,35 @@ public class Constants {
     
     public final static int timeBetweenShots = 500;
     
+    // Hostile-related constants
+    public final static int hostile1shootingFrequency = 2000;
+    public final static int hostile2shootingFrequency = 2000;
+    public final static int hostile3shootingFrequency = 2000;
+    //
+    public final static int hostile1spawningFrequency = 5000;
+    public final static int hostile2spawningFrequency = 5000;
+    public final static int hostile3spawningFrequency = 5000;
+    //
+    public final static int hostile1scoreIfDestroyed = 10;
+    public final static int hostile2scoreIfDestroyed = 20;
+    public final static int hostile3scoreIfDestroyed = 50;
+    //
+    public final static int hostile1Width = 34;
+    public final static int hostile2Width = 49;
+    public final static int hostile3Width = 54;
+    //
+    public final static int hostile1Height = 22;
+    public final static int hostile2Height = 32;
+    public final static int hostile3Height = 35;
+    //
+    public final static int hostile1verticalMoveQuantity = 1;
+    public final static int hostile2verticalMoveQuantity = 1;
+    public final static int hostile3verticalMoveQuantity = 1;
+    //
+    public final static int hostile1horizontalMoveQuantity = 0;
+    public final static int hostile2horizontalMoveQuantity = 1;
+    public final static int hostile3horizontalMoveQuantity = 0;
+    
 	//public static enum powerUpWhatIsInside {}
 	
 	// constants according to game difficulty --
