@@ -5,6 +5,8 @@ public class Constants {
     public static int gameFieldWidth = 480;
     public static int gameFieldHeigth = 640;
     
+    public final static int timeBetweenShots = 500;
+    
 	//public static enum powerUpWhatIsInside {}
 	
 	// constants according to game difficulty --

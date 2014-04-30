@@ -38,6 +38,8 @@ public class Server implements AllServerInterfaces
 	private boolean player2MovingLeft;
 	private boolean player2MovingRight;
 	private boolean player2Shooting;
+	private long player1ShootTime = 0;
+	private long player2ShootTime = 0;
 	// Declaring lists of GameElements
 	private List<Player> listOfPlayers;
 	private List<Projectile> listOfProjectiles;
@@ -138,13 +140,19 @@ public class Server implements AllServerInterfaces
 		if(player1MovingRight)
 			listOfPlayers.get(0).moveRight();
 		if(player1Shooting){
-			Projectile shot = listOfPlayers.get(0).shoot();
-			listOfProjectiles.add(shot);
-			// playing sounds
-			client1.playSound(SoundType.shoot);
-			if(type == GameType.MULTI_NETWORK){
-				client2.playSound(SoundType.shoot);
+			long currentTime = java.lang.System.currentTimeMillis();
+			if(currentTime - player1ShootTime > Constants.timeBetweenShots){
+				System.out.println(currentTime - player1ShootTime);
+				player1ShootTime = java.lang.System.currentTimeMillis();
+				Projectile shot = listOfPlayers.get(0).shoot();
+				listOfProjectiles.add(shot);
+				// playing sounds
+				client1.playSound(SoundType.shoot);
+				if(type == GameType.MULTI_NETWORK){
+					client2.playSound(SoundType.shoot);
+				}
 			}
+			
 		}
 		// Player 2 if multiplayer
 		if( type==GameType.MULTI_LOCAL || type==GameType.MULTI_NETWORK){
@@ -370,7 +378,7 @@ public class Server implements AllServerInterfaces
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(all.toString()); // PRINTING
+		//System.out.println(all.toString()); // PRINTING
 		return all.toString();
 	}
 	
@@ -531,8 +539,9 @@ public class Server implements AllServerInterfaces
 			}
 		};
 		
+		
 		// Starting Timer 
-		timer = new Timer(false);	// nem d�?©monk�?©nt indul, capable of keeping the application from termination
+		timer = new Timer(false);
 		
 		// Update game state at a given rate
         timer.scheduleAtFixedRate(taskTrackChanges, 0, 1000/Constants.framePerSecond);	// 33.3333 millisecundumunk van megcsin�?¡lni, megjelen�?­teni mindent
