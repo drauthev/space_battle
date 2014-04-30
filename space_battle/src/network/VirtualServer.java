@@ -41,6 +41,8 @@ public class VirtualServer
 			@SuppressWarnings("unchecked")
 			@Override
 			public void run() {
+				client.changeGameState(GameState.CONNECTING);
+				
 				try {
 					s = new Socket(ipv4, port);
 					oos = new ObjectOutputStream(new GZIPOutputStream(s.getOutputStream()));
