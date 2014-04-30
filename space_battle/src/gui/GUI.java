@@ -7,8 +7,8 @@ import java.awt.image.BufferedImage;
 import javax.swing.*;
 import javax.imageio.ImageIO;
 
-import sound.SoundSystem;
-import sound.SoundType;
+//import sound.SoundSystem;
+//import sound.SoundType;
 import client.CModifier;
 import client.CNPC;
 import client.CPlayer;
@@ -24,7 +24,7 @@ import java.io.IOException;
 
 public class GUI extends JFrame implements KeyListener, MouseListener, GUIForClient {
 
-	private SoundSystem localSound;
+//	private SoundSystem localSound;
 	// GUI Window
 	private static final long serialVersionUID = 1L;
 	private static int frameWidth = 480;
@@ -209,7 +209,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	public GUI(ClientForGUI client_param)
 	{
-		localSound = new SoundSystem();
+		//localSound = new SoundSystem();
 		
 		try {
 			String projdir = System.getProperty("user.dir");
@@ -473,7 +473,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					enemyBlowWidth 	= enemyABlowWidth;
 				}
 				
-				else if (localNPC.className == "HostileType1")
+				else if (localNPC.className == "HostileType2")
 				{
 				    enemyBlowImg1 	= enemyBBlowImg1;
 					enemyBlowImg2 	= enemyBBlowImg2;
@@ -489,7 +489,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					enemyBlowWidth 	= enemyBBlowWidth;
 				}
 				
-				else if (localNPC.className == "HostileType1")
+				else if (localNPC.className == "HostileType3")
 				{
 				    enemyBlowImg1 	= enemyCBlowImg1;
 					enemyBlowImg2 	= enemyCBlowImg2;
@@ -1033,14 +1033,14 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	// Handle the key-pressed event from the text field.
 	public void keyPressed(KeyEvent e) {
 		
-		if (currentGameState != GameState.NONE && currentGameState != GameState.PAUSED)
+		if ((currentGameState != GameState.NONE && currentGameState != GameState.PAUSED && currentGameState != GameState.GAMEOVER_NEW_HIGHSCORE ) && e.getKeyCode() != KeyEvent.VK_ESCAPE && e.getKeyCode() != KeyEvent.VK_BACK_SPACE)
 		{
 			client.dispatchKeyEvent(e,true);
 		}
 		else
 		{
 		keyCode = e.getKeyCode();
-
+/*
 		if 		(keyCode == KeyEvent.VK_A) localSound.playSound(SoundType.beepA);
 		else if (keyCode == KeyEvent.VK_S) localSound.playSound(SoundType.beepB);
 		else if (keyCode == KeyEvent.VK_D) localSound.playSound(SoundType.enemyExplosion);
@@ -1049,7 +1049,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		else if (keyCode == KeyEvent.VK_H) localSound.playSound(SoundType.powerDown);
 		else if (keyCode == KeyEvent.VK_J) localSound.playSound(SoundType.shoot);
 
-		else if ((keyCode == KeyEvent.VK_BACK_SPACE && !(isTextLine() && textField.length() != 0)) || keyCode == KeyEvent.VK_ESCAPE) //ESCAPE
+		else **/ if ((keyCode == KeyEvent.VK_BACK_SPACE && !(isTextLine() && textField.length() != 0)) || keyCode == KeyEvent.VK_ESCAPE) //ESCAPE
 		{
 			if (currentGameState == GameState.NONE || currentGameState == GameState.PAUSED)
 			{
