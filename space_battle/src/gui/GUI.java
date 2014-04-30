@@ -170,8 +170,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int projectTileWidth;
 
 	// Used for double buffering
-	Graphics bufferGraphics;  
-	Image offscreen;
+	Graphics2D bufferGraphics;  
+	BufferedImage offscreen;
 
 	// Initialize Timer
 	TimerTask reapaintTimer = new TimerTask() {
@@ -339,8 +339,12 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
 		// Manage Double Buffering
-		offscreen = createImage(frameWidth,frameHeight); 
-		bufferGraphics = offscreen.getGraphics();   
+		offscreen = new BufferedImage(frameWidth,frameHeight,BufferedImage.TYPE_INT_RGB); 
+		bufferGraphics = offscreen.createGraphics();  
+		
+		bufferGraphics.setRenderingHint(
+		        RenderingHints.KEY_TEXT_ANTIALIASING,
+		        RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
 
 		// Client
 		client = client_param;
@@ -364,7 +368,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		string2Left = KeyEvent.getKeyText(asd.get(PlayerAction.P2LEFT));
 		string2Right = KeyEvent.getKeyText(asd.get(PlayerAction.P2RIGHT));
 		string2Fire = KeyEvent.getKeyText(asd.get(PlayerAction.P2FIRE));
-
+		
 	}
 
 
