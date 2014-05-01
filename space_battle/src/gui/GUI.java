@@ -345,7 +345,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		bufferGraphics.setRenderingHint(
 		        RenderingHints.KEY_TEXT_ANTIALIASING,
 		        RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
-
 		// Client
 		client = client_param;
 
@@ -368,7 +367,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		string2Left = KeyEvent.getKeyText(asd.get(PlayerAction.P2LEFT));
 		string2Right = KeyEvent.getKeyText(asd.get(PlayerAction.P2RIGHT));
 		string2Fire = KeyEvent.getKeyText(asd.get(PlayerAction.P2FIRE));
-		
+
 	}
 
 
@@ -477,10 +476,12 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		g.drawImage(offscreen,0,0,this);
 		
 		drawBackground();
-
+		
+		if (currentGameState == GameState.RUNNING)
+			localObjectBuffer = client.getNewObjectBuffer();
+		
 		if (currentGameState != GameState.NONE && currentGameState != GameState.PAUSED)
 		{		
-			localObjectBuffer = client.getNewObjectBuffer();
 			serverTick = localObjectBuffer.currentTick;
 
 			for (int i = 0; i < localObjectBuffer.npcCount; i++)
@@ -537,19 +538,16 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 				if (localNPC.explosionTime != 0) 
 				{
-					tickDiff_div = (serverTick-localNPC.creationTime)/200;
+					tickDiff_div = (serverTick-localNPC.explosionTime)/130;
 					if      (tickDiff_div == 0) drawObject(enemyBlowImg1, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
 					else if (tickDiff_div == 1) drawObject(enemyBlowImg2, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
 					else if (tickDiff_div == 2) drawObject(enemyBlowImg3, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
 					else if (tickDiff_div == 3) drawObject(enemyBlowImg4, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
 				}
-				else if (localNPC.hitTime != 0) 
-				{
-					if ((localNPC.hitTime - serverTick) < 1000)
-					{
-						tickDiff_div = (serverTick-localNPC.creationTime)/200;
-						if  (tickDiff_div % 2 == 0) drawObject(enemyImg1, localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
-					}	
+				else if (localNPC.hitTime != 0 && ((serverTick - localNPC.hitTime) < 1500)) 
+				{							
+					tickDiff_div = (serverTick-localNPC.creationTime)/200;
+					if  (tickDiff_div % 2 == 0) drawObject(enemyImg1, localNPC.x, localNPC.y, enemyWidth,enemyHeight);
 				}
 				else 
 				{
@@ -594,7 +592,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			for (int i = 0; i < localObjectBuffer.modCount; i++)
 			{
 				CModifier localModifier = localObjectBuffer.mod[i];	
-				if (localModifier.pickupTime == 0 || (localModifier.pickupTime - serverTick > 1000) || ((localModifier.pickupTime - serverTick)/200) % 2 == 0) ;
+				if (localModifier.pickupTime == 0 || (serverTick - localModifier.pickupTime > 1000) || ((serverTick - localModifier.pickupTime)/200) % 2 == 0) ;
 				{
 					if (localModifier.className.equals("PowerDown"))
 						drawObject(powerDownImg	, localModifier.x	, localModifier.y	, powerUpWidth,powerDownWidth);
