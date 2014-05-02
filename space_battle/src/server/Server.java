@@ -14,6 +14,7 @@ import com.sun.jmx.snmp.tasks.Task;
 import enums.*;
 import interfaces.AllServerInterfaces;
 import interfaces.ClientForServer;
+import server.game_elements.Boom;
 import server.game_elements.Fastener;
 import server.game_elements.HostileType1;
 import server.game_elements.HostileType2;
@@ -75,7 +76,6 @@ public class Server implements AllServerInterfaces
 
 	// Constructor
 	public Server(GameType type, GameSkill difficulty, ClientForServer cl1){
-		// TODO: kliens1-et tárolni, kliens2 a setClient2-ben, ekkor ugyanis még nem ismert!
 		this.type = type;
 		this.difficulty = difficulty;
 		client1 = cl1;
@@ -97,14 +97,17 @@ public class Server implements AllServerInterfaces
 		if( difficulty == GameSkill.EASY){
 			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfEasy);
 			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
+			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
 		}
 		else if( difficulty == GameSkill.NORMAL){
 			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfNormal);
-			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
+			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfNormal);
+			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
 		}
 		else{
 			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfHard);
 			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
+			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
 		}
 		
 		
@@ -364,7 +367,7 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				for(int i=0; i<listOfPlayers.size(); i++){
-					if(listOfPlayers.get(i).getID() == 1){
+					if(listOfPlayers.get(i).getID() == 0){
 						listOfPlayers.get(i).setShielded(false);
 					}
 				}
@@ -410,9 +413,18 @@ public class Server implements AllServerInterfaces
 					if(tempMod instanceof Shield){
 						listOfPlayers.get(i).setShielded(true);
 						if(tempPlayer.getID() == 0)
-							timer.schedule(taskElapseShieldPlayer1, Fastener.getTimeItLasts());
+							timer.schedule(taskElapseShieldPlayer1, Shield.getTimeItLasts());
 						else
-							timer.schedule(taskElapseShieldPlayer2, Fastener.getTimeItLasts());
+							timer.schedule(taskElapseShieldPlayer2, Shield.getTimeItLasts());
+					}
+					if(tempMod instanceof Boom){
+						for(int i1=0; i1<listOfNPCs.size(); i1++){
+							listOfNPCs.get(i1).setLives(0);
+							listOfNPCs.get(i1).setExplosionTime(java.lang.System.currentTimeMillis());
+							// playing sound
+							client1.playSound(SoundType.enemyExplosion);
+							if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.enemyExplosion);
+						}
 					}
 				}
 			}
@@ -454,7 +466,7 @@ public class Server implements AllServerInterfaces
 		for(int i=0; i<listOfNPCs.size(); i++){
 			// removing from list, if !!3sec!!? is lated since explosion
 			explosionTime = listOfNPCs.get(i).getExplosionTime();
-			if( (currentTime - explosionTime > 2000) && explosionTime!=0 ){//TODO: hany masodperc utan?
+			if( (currentTime - explosionTime > 1000) && explosionTime!=0 ){//TODO: hany masodperc utan?
 				listOfNPCs.remove(i);
 			}
 		}
@@ -648,6 +660,8 @@ public class Server implements AllServerInterfaces
 					currentModifier.put("className", "OneUp");
 				else if(temp instanceof Shield)
 					currentModifier.put("className", "Shield");
+				else if(temp instanceof Boom)
+					currentModifier.put("className", "Boom");
 				
 				currentModifier.put("x", temp.getCoordX());
 				currentModifier.put("y", temp.getCoordY());
@@ -753,8 +767,8 @@ public class Server implements AllServerInterfaces
 						else{
 							if(whatToSpawn >= 0.5)
 								listOfModifiers.add( new OneUp(x, Modifier.getModifierheigth()+100) );
-							else//TODO BOOM
-								listOfModifiers.add( new Fastener(x, Modifier.getModifierheigth()+100) );
+							else
+								listOfModifiers.add( new Boom(x, Modifier.getModifierheigth()+100) );
 						}
 					}
 				}

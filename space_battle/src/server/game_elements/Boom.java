@@ -1,10 +1,9 @@
 package server.game_elements;
 
-public class Shield extends Modifier{
+public class Boom extends Modifier{
 	private static int verticalMoveQuantity = 1;
-	private static int timeItLasts = 20000; // 10 sec
 		
-	public Shield(int x, int y){
+	public Boom(int x, int y){
 		super(x,y);
 	}
 	
@@ -19,10 +18,7 @@ public class Shield extends Modifier{
 	}
 
 	public static void setVerticalMoveQuantity(int verticalMoveQuantity) {
-		Shield.verticalMoveQuantity = verticalMoveQuantity;
+		Boom.verticalMoveQuantity = verticalMoveQuantity;
 	}
 
-	public static int getTimeItLasts() {
-		return timeItLasts;
-	}
 }
