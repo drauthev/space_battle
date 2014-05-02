@@ -9,6 +9,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sun.jmx.snmp.tasks.Task;
+
 import enums.*;
 import interfaces.AllServerInterfaces;
 import interfaces.ClientForServer;
@@ -42,6 +44,7 @@ public class Server implements AllServerInterfaces
 	private long player2ShootTime = 0;
 	private boolean player1Dead = false;
 	private boolean player2Dead = true;
+	private boolean gameIsOver = false;
 	// Declaring lists of GameElements
 	private List<Player> listOfPlayers;
 	private List<Projectile> listOfProjectiles;
@@ -65,6 +68,8 @@ public class Server implements AllServerInterfaces
 	// Client interfaces
 	private ClientForServer client1;
 	private ClientForServer client2;
+	private boolean client1Ready;
+	private boolean client2Ready;
 	//
 	private boolean initState = true; // at the start of the game, has to call client1.updateObjects(), before changing GameState to RUNNING; or else the GUI cannot draw
 	private Timer timer;
@@ -90,7 +95,19 @@ public class Server implements AllServerInterfaces
 		listOfNPCs = new ArrayList<NPC>();
 		
 		// Setting game parameters according to difficulty level
-		//TODO object speeds, spawning rates, etc
+		if( difficulty == GameSkill.EASY){
+			Fastener.setSpawnFrequency(Constants.modifierSpawnFreqFrequentIfEasy);
+			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfEasy);
+		}
+		else if( difficulty == GameSkill.NORMAL){
+			Fastener.setSpawnFrequency(Constants.modifierSpawnFreqFrequentIfNormal);
+			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfNormal);
+		}
+		else{
+			Fastener.setSpawnFrequency(Constants.modifierSpawnFreqFrequentIfNormal);
+			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfNormal);
+		}
+		
 		
 		// Spawning player/players
 		if( type == GameType.SINGLE ){
@@ -105,19 +122,18 @@ public class Server implements AllServerInterfaces
 	
 	// Timer-driven methods
 	private void trackChanges(){
-		moveNPCs();
-		shootWithNPCs();
-		controlPlayers();	// move/shoot with players according to the pushed buttons
-		detectCollision();	// between players and hostiles
-		detectHits();
-		detectModifierPickUps();
-		
-		removeNonExistentObjects();
-				
+		if(!gameIsOver){
+			moveNPCs();
+			shootWithNPCs();
+			controlPlayers();	// move/shoot with players according to the pushed buttons
+			detectCollision();	// between players and hostiles
+			detectHits();
+			detectModifierPickUps();
+			removeNonExistentObjects();
+			isGameOver();
+		}
 		client1.updateObjects(allToJSON());
-		
-		isGameOver();
-
+			
 	}
 		
 	private void moveNPCs(){
@@ -131,7 +147,7 @@ public class Server implements AllServerInterfaces
     	}
     	// Moving Modifiers
     	for(int i=0; i < listOfModifiers.size(); i++){
-    		listOfNPCs.get(i).autoMove();
+    		listOfModifiers.get(i).autoMove();
     	}
 	}
 	
@@ -158,47 +174,52 @@ public class Server implements AllServerInterfaces
 		}
 	}
 	
-	private void controlPlayers(){		
-		// Player 1 - // if SINGLE OR (if both players are alive, or the only alive is player2)
-		if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==0 ){
-			if(player1MovingLeft){	
-				listOfPlayers.get(0).moveLeft(); // 0th index is player1
-			}
-			if(player1MovingRight)
-				listOfPlayers.get(0).moveRight();
-			if(player1Shooting){
-				long currentTime = java.lang.System.currentTimeMillis();
-				if(currentTime - player1ShootTime > Constants.timeBetweenShots){
-					player1ShootTime = currentTime;
-					Projectile shot = listOfPlayers.get(0).shoot();
-					listOfProjectiles.add(shot);
-					// playing sounds
-					client1.playSound(SoundType.shoot);
-					if(type == GameType.MULTI_NETWORK){
-						client2.playSound(SoundType.shoot);
-					}
-				}	
-			}
-		}		
-		// Player 2 if multiplayer
-		if( type==GameType.MULTI_LOCAL || type==GameType.MULTI_NETWORK){
-			if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==1){ // if both players are alive, or the only alive is player2
-				if(player2MovingLeft)
-					listOfPlayers.get(1).moveLeft();	// 1st index is player1
-				if(player2MovingRight)
-					listOfPlayers.get(1).moveRight();
-				if(player2Shooting){
-					long currentTime = java.lang.System.currentTimeMillis();
-					if(currentTime - player2ShootTime > Constants.timeBetweenShots){
-						player2ShootTime = currentTime;
-						Projectile shot = listOfPlayers.get(1).shoot();
+	private void controlPlayers(){
+		Player temp;
+		long currentTime;
+		for(int i=0; i<listOfPlayers.size(); i++){
+			temp = listOfPlayers.get(i);
+			if(temp.getID() == 0){
+				if(player1MovingLeft){
+					temp.moveLeft();
+				}
+				if(player1MovingRight){
+					temp.moveRight();
+				}
+				if(player1Shooting){
+					currentTime = java.lang.System.currentTimeMillis();
+					if(currentTime - player1ShootTime > temp.getTimeBetweenShots()){
+						player1ShootTime = currentTime;
+						Projectile shot = temp.shoot();
 						listOfProjectiles.add(shot);
 						// playing sounds
 						client1.playSound(SoundType.shoot);
 						if(type == GameType.MULTI_NETWORK){
 							client2.playSound(SoundType.shoot);
 						}
-					}
+					}	
+				}
+				listOfPlayers.set(i, temp); // Update the player list
+			}
+			else if(temp.getID() == 1){
+				if(player2MovingLeft){
+					temp.moveLeft();
+				}
+				if(player2MovingRight){
+					temp.moveRight();
+				}
+				if(player2Shooting){
+					currentTime = java.lang.System.currentTimeMillis();
+					if(currentTime - player2ShootTime > temp.getTimeBetweenShots()){
+						player2ShootTime = currentTime;
+						Projectile shot = temp.shoot();
+						listOfProjectiles.add(shot);
+						// playing sounds
+						client1.playSound(SoundType.shoot);
+						if(type == GameType.MULTI_NETWORK){
+							client2.playSound(SoundType.shoot);
+						}
+					}	
 				}
 			}
 		}
@@ -315,13 +336,50 @@ public class Server implements AllServerInterfaces
 	}
 	
 	private void detectModifierPickUps(){
-		for(int i=0; i<listOfModifiers.size(); i++){
-			Modifier tempMod = listOfModifiers.get(i);
-			if( tempMod.getHitBox().isCollision(listOfPlayers.get(0))){
-				//TODO
+		// TimerTasks for elapsing of the modfier-effects
+		TimerTask taskElapseFastenerPlayer1 = new TimerTask() {
+			@Override
+			public void run() {
+				for(int i=0; i<listOfPlayers.size(); i++){
+					if(listOfPlayers.get(i).getID() == 0){
+						listOfPlayers.get(i).setFastened(false);
+						listOfPlayers.get(i).setTimeBetweenShots(Constants.timeBetweenShots);
+					}
+				}
 			}
-		}
+		};
 		
+		TimerTask taskElapseFastenerPlayer2 = new TimerTask() {
+			@Override
+			public void run() {
+				for(int i=0; i<listOfPlayers.size(); i++){
+					if(listOfPlayers.get(i).getID() == 1){
+						listOfPlayers.get(i).setFastened(false);
+						listOfPlayers.get(i).setTimeBetweenShots(Constants.timeBetweenShots);
+					}
+				}
+			}
+		};
+		
+		for(int i=0; i<listOfPlayers.size(); i++){
+			Player tempPlayer = listOfPlayers.get(i);
+			for(int j=0; j<listOfModifiers.size(); j++){
+				Modifier tempMod = listOfModifiers.get(j);
+				if( tempMod.getHitBox().isCollision(tempPlayer)){
+					// fastener picked up
+					if(tempMod instanceof Fastener){
+						tempMod.setPickUpTime(java.lang.System.currentTimeMillis()); // removeNonExistentObjects() will delete it from list
+						tempPlayer.setFastened(true);
+						tempPlayer.setTimeBetweenShots(Constants.timeBetweenShotsIfFastened);
+						listOfPlayers.set(i, tempPlayer);
+						if(tempPlayer.getID() == 0)
+							timer.schedule(taskElapseFastenerPlayer1, Fastener.getTimeItLasts());
+						else
+							timer.schedule(taskElapseFastenerPlayer2, Fastener.getTimeItLasts());						
+					}
+				}
+			}
+		}		
 	}
 	
 	private void removeNonExistentObjects(){ // removes objects after a certain time, for animation purposes
@@ -373,33 +431,46 @@ public class Server implements AllServerInterfaces
 			}
 		}
 		
+		long pickUpTime;
 		// Remove picked-up modifiers
-		//TODO
+		for(int i=0; i<listOfModifiers.size(); i++){
+			pickUpTime = listOfModifiers.get(i).getPickUpTime();
+			if( (currentTime - pickUpTime > 500) && pickUpTime!=0 ){//TODO: hany masodperc utan?
+				listOfModifiers.remove(i);
+			}
+		}
 		
 		
 	}
 	
 	private void isGameOver(){
-		
+		// GameOver delaying task
+		// this Task provides the delay in changing gamestate to GameOver
+		// this delay is needed for the Player exploison animation
+		TimerTask taskGameOver = new TimerTask() {
+			@Override
+			public void run() {
+				if(type == GameType.SINGLE || type == GameType.MULTI_LOCAL){
+					client1.changeGameState(GameState.GAMEOVER);
+				}
+				else{ // network game
+					client1.changeGameState(GameState.GAMEOVER);
+					client2.changeGameState(GameState.GAMEOVER);
+				}
+			}
+		};
 		if(type == GameType.SINGLE){
 			if(player1Dead){
-				timer.cancel();
-				//TODO: HIGHSCORE eseten GAMEOVER_HIGHSCORE-t hivni!
-				client1.changeGameState(GameState.GAMEOVER);
-				if(type == GameType.MULTI_NETWORK){
-					client2.changeGameState(GameState.GAMEOVER); //TODO: mind2ot meg kell hivni?
-				}
+				gameIsOver = true;
+				timer.schedule(taskGameOver, 2000);
 			}
 		}
-		else // multi
+		else{ // multi
 			if(player1Dead && player2Dead){
-				timer.cancel();
-				//TODO: HIGHSCORE eseten GAMEOVER_HIGHSCORE-t hivni!
-				client1.changeGameState(GameState.GAMEOVER);
-				if(type == GameType.MULTI_NETWORK){
-					client2.changeGameState(GameState.GAMEOVER); //TODO: mind2ot meg kell hivni?
-				}
+				gameIsOver = true;
+				timer.schedule(taskGameOver, 2000);
 			}
+		}
 	}
 	
 	// Game experience modifier functions
@@ -492,8 +563,6 @@ public class Server implements AllServerInterfaces
 		ArrayList<JSONObject> projectileList = new ArrayList<>();
 		JSONArray projectilesJSON = new JSONArray();
 		Projectile temp;
-		//return projectilesJSON;
-		//TODO: csak dummy
 		try {
 			int listSize = list.size();
 			for( int i=0; i<listSize; i++){
@@ -527,9 +596,32 @@ public class Server implements AllServerInterfaces
 		ArrayList<JSONObject> modifierList = new ArrayList<>();
 		JSONArray modifiersJSON = new JSONArray();
 		Modifier temp;
+		try {
+			int listSize = list.size();
+			for( int i=0; i<listSize; i++){
+				temp = list.get(i);
+				currentModifier = new JSONObject();
+				// type for GUI to paint the proper skin
+				if( temp instanceof Fastener)
+					currentModifier.put("className", "Fastener");
+//				else if( temp instanceof ProjectileGoingDown)
+//					currentModifier.put("className", "ProjectileGoingDown");
+				else
+					currentModifier.put("className", "asd");
+				
+				currentModifier.put("x", temp.getCoordX());
+				currentModifier.put("y", temp.getCoordY());
+				currentModifier.put("pickupTime", temp.getPickUpTime());
+				// add each Projectile JSONObject to the arraylist<JSONObject>
+				modifierList.add(currentModifier);
+			}
+			// each NPC JSONObject to the JSONArray
+			modifiersJSON = new JSONArray(modifierList);
+		}
+		catch (JSONException e) {
+			e.printStackTrace();
+			}
 		return modifiersJSON;
-		//TODO: csak dummy
-
 	}
 	// Implementing ServerForClient Interface
 	// ------------------------------------------------------------------------------------------------------------------
@@ -563,7 +655,14 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				if(isRunning){
-				// TODO Auto-generated method stub
+					// take some "randomness" into the spawning
+					double spawnOrNot = Math.random();
+					if(spawnOrNot > 0.5){
+						int x;
+						x = (int)(Math.random()*(Constants.gameFieldWidth - Constants.hostile2Width));
+						x += Constants.hostile1Width/2;
+						listOfNPCs.add( new HostileType2(x, Constants.hostile2Height+100, difficulty) );	// TODO: az Å±rhaj�?³k be�?ºsz�?¡sa miatt t�?ºlsk�?¡l�?¡zni
+					}
 				}
 			}
 		};
@@ -573,22 +672,28 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				if(isRunning){
-				int x;
-				x = (int)(Math.random()*(Constants.gameFieldWidth - Modifier.getModifierwidth()) );
-				listOfModifiers.add( new Fastener(x,Constants.gameFieldHeigth-Modifier.getModifierheigth()) );
+					// take some "randomness" into the spawning
+					double spawnOrNot = Math.random();
+					if(spawnOrNot > 0.5){
+						int x;
+						x = (int)(Math.random()*(Constants.gameFieldWidth - Modifier.getModifierwidth()) );
+						x += Modifier.getModifierwidth()/2;
+						listOfModifiers.add( new Fastener(x, Modifier.getModifierheigth()+100) );
+					}
 				}
 			}
 		};
-		
 		
 		// Starting Timer 
 		timer = new Timer(false);
 		
 		// Update game state at a given rate
         timer.scheduleAtFixedRate(taskTrackChanges, 0, 1000/Constants.framePerSecond);	// 33.3333 millisecundumunk van megcsin�?¡lni, megjelen�?­teni mindent
-		// Spawn enemies at given rate
+		// Spawn enemies at given rates
         timer.scheduleAtFixedRate(taskSpawnHostileType1, 0, Constants.hostile1spawningFrequency);
-        
+        timer.scheduleAtFixedRate(taskSpawnHostileType2, 1000, Constants.hostile2spawningFrequency);
+        // Spawn modifiers at given rates
+        timer.scheduleAtFixedRate(taskSpawnFastener, 300, Fastener.getSpawnFrequency());
 		
 	}
 	
@@ -598,33 +703,75 @@ public class Server implements AllServerInterfaces
 		timer.cancel();
 		// terminating second client if exists
 		if(type == GameType.MULTI_NETWORK){
-			client2.terminate();
+			//client2.disconnect(); // csak ha nem nulll
 		}
 	}
 	
 	@Override
 	public void startRequest(ClientForServer c){
-		if(initState == true){
-			initState = false;
-			client1.updateObjects(allToJSON());
-		}
 		if(type == GameType.SINGLE || type == GameType.MULTI_LOCAL){
+			// have to send object list to client before changing its gamestate
+			if(initState == true){ 
+				initState = false;
+				client1.updateObjects(allToJSON());
+			}
+			//
 			isRunning = true;
 			client1.changeGameState(GameState.RUNNING);
 		}
-		else{ // network, 2 clients
-			//TODO vizsgalni, h mely kliens hivott, ready, wait stb
+		// MULTI_NETWORK -> 2 clients
+		else{ 
+			if( c == client1 ){ // start requested by client1
+				if(client2Ready){ // starting the game
+					client1Ready = true; //TODO: maybe this is not needed
+					if(initState == true){
+						initState = false;
+						client1.updateObjects(allToJSON());
+						client2.updateObjects(allToJSON());
+					}
+					isRunning = true;
+					client1.changeGameState(GameState.RUNNING);
+					client2.changeGameState(GameState.RUNNING);				
+				}
+				else{ // client2 is not ready yet
+					client1Ready = true;
+				}
+			}
+			else{ // start requested by client2
+				if(client1Ready){ // starting the game
+					client2Ready = true; //TODO: maybe this is not needed
+					if(initState == true){
+						initState = false;
+						client1.updateObjects(allToJSON());
+						client2.updateObjects(allToJSON());
+					}
+					isRunning = true;
+					client1.changeGameState(GameState.RUNNING);
+					client2.changeGameState(GameState.RUNNING);
+				}
+				else{
+					client2Ready = true;
+				}
+			}
 		}
 	}
 	
 	@Override
 	public void pauseRequest(ClientForServer c){
+		isRunning = false;
 		if(type == GameType.SINGLE || type == GameType.MULTI_LOCAL){
-			isRunning = false;
 			client1.changeGameState(GameState.PAUSED);
 		}
+		// MULTI_NETWORK -> 2 clients
 		else{
-		// TODO:
+			if( c == client1 ){ // pause requested by client1
+				client1.changeGameState(GameState.PAUSED);
+				client2.changeGameState(GameState.WAITING); //TODO: Erre van kitalalva ez az allapot??
+			}
+			else{ // pause requested by client2
+				client2.changeGameState(GameState.PAUSED);
+				client1.changeGameState(GameState.WAITING); //TODO: Erre van kitalalva ez az allapot??
+			}
 		}	
 	}
 	

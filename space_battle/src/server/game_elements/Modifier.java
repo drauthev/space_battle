@@ -17,6 +17,8 @@ public abstract class Modifier extends NonShootingObject{
 		creationTime = 0;
 	}
 	
+	public abstract void autoMove();
+	
 	// Getters, setters
 	public long getExplosionTime() {
 		return explosionTime;

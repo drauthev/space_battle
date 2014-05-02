@@ -6,14 +6,15 @@ public class Constants {
     public static int gameFieldHeigth = 640;
     
     public final static int timeBetweenShots = 1000;
+    public final static int timeBetweenShotsIfFastened = 500;
     
     // Hostile-related constants
     public final static int hostile1shootingFrequency = 2000;
     public final static int hostile2shootingFrequency = 2000;
     public final static int hostile3shootingFrequency = 2000;
     //
-    public final static int hostile1spawningFrequency = 5000;
-    public final static int hostile2spawningFrequency = 5000;
+    public final static int hostile1spawningFrequency = 7000;
+    public final static int hostile2spawningFrequency = 10000; //should be 10000
     public final static int hostile3spawningFrequency = 5000;
     //
     public final static int hostile1scoreIfDestroyed = 10;
@@ -21,7 +22,7 @@ public class Constants {
     public final static int hostile3scoreIfDestroyed = 50;
     //
     public final static int hostile1Width = 34;
-    public final static int hostile2Width = 49;
+    public final static int hostile2Width = 49; //TODO. negyzet alaku hitbox nem az igazi :/
     public final static int hostile3Width = 54;
     //
     public final static int hostile1Height = 22;
@@ -48,6 +49,16 @@ public class Constants {
 	public final static int modifierSpeedFastIfEasy = 4;
 	public final static int modifierSpeedFastIfNormal = 8;
 	public final static int modifierSpeedFastIfHard = 16;
+	//
+	public final static int modifierSpawnFreqFrequentIfEasy = 5000;
+	public final static int modifierSpawnFreqFrequentIfNormal = 5000;
+	public final static int modifierSpawnFreqFrequentIfHard = 5000;
+	public final static int modifierSpawnFreqMediumIfEasy = 5000;
+	public final static int modifierSpawnFreqMediumIfNormal = 5000;
+	public final static int modifierSpawnFreqMediumIfHard = 5000;
+	public final static int modifierSpawnFreqRareIfEasy = 5000;
+	public final static int modifierSpawnFreqRareIfNormal = 5000;
+	public final static int modifierSpawnFreqRareIfHard = 5000;
 	//
 	public final static int hostileType1livesIfEasy = 1;
 	public final static int hostileType1livesIfNormal = 2;
