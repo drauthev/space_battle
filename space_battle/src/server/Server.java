@@ -769,7 +769,6 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				if(isRunning){
-					listOfModifiers.add( new Laser(200, Modifier.getModifierheigth()+100) );
 					double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 					if(spawnOrNot >= 0.6){
 						// Determine the place of spawning
