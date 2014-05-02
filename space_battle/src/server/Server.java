@@ -18,6 +18,7 @@ import server.game_elements.Boom;
 import server.game_elements.Fastener;
 import server.game_elements.HostileType1;
 import server.game_elements.HostileType2;
+import server.game_elements.Laser;
 import server.game_elements.Modifier;
 import server.game_elements.NPC;
 import server.game_elements.OneUp;
@@ -25,6 +26,7 @@ import server.game_elements.Player;
 import server.game_elements.Projectile;
 import server.game_elements.ProjectileGoingDown;
 import server.game_elements.ProjectileGoingUp;
+import server.game_elements.ProjectileLaser;
 import server.game_elements.Shield;
 import sound.SoundType;
 
@@ -98,16 +100,19 @@ public class Server implements AllServerInterfaces
 			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfEasy);
 			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
 			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
+			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
 		}
 		else if( difficulty == GameSkill.NORMAL){
 			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfNormal);
 			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfNormal);
 			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
+			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
 		}
 		else{
 			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfHard);
 			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
 			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
+			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
 		}
 		
 		
@@ -272,7 +277,7 @@ public class Server implements AllServerInterfaces
 		for(int i=0; i<listOfProjectiles.size(); i++){
 			proj = listOfProjectiles.get(i);
 			// Projectile is shot by a player
-			if( proj instanceof ProjectileGoingUp ){
+			if( proj instanceof ProjectileGoingUp || proj instanceof ProjectileLaser ){
 				for(int j=0; j<listOfNPCs.size(); j++){
 					npc = listOfNPCs.get(j);
 					npcLives = npc.getLives();
@@ -383,6 +388,27 @@ public class Server implements AllServerInterfaces
 				}
 			}
 		};
+		//
+		TimerTask taskElapseLaserPlayer1 = new TimerTask() {
+			@Override
+			public void run() {
+				for(int i=0; i<listOfPlayers.size(); i++){
+					if(listOfPlayers.get(i).getID() == 0){
+						listOfPlayers.get(i).setHasMissile(false);
+					}
+				}
+			}
+		};
+		TimerTask taskElapseLaserPlayer2 = new TimerTask() {
+			@Override
+			public void run() {
+				for(int i=0; i<listOfPlayers.size(); i++){
+					if(listOfPlayers.get(i).getID() == 1){
+						listOfPlayers.get(i).setHasMissile(false);
+					}
+				}
+			}
+		};
 		
 		for(int i=0; i<listOfPlayers.size(); i++){
 			Player tempPlayer = listOfPlayers.get(i);
@@ -393,37 +419,44 @@ public class Server implements AllServerInterfaces
 					client1.playSound(SoundType.powerUp);
 					if( type == GameType.MULTI_NETWORK) client2.playSound(SoundType.powerUp);
 					// Taking effect..
-					if(tempMod instanceof Fastener){
-						tempMod.setPickUpTime(java.lang.System.currentTimeMillis()); // removeNonExistentObjects() will delete it from list
-						tempPlayer.setFastened(true);
-						tempPlayer.setTimeBetweenShots(Constants.timeBetweenShotsIfFastened);
-						listOfPlayers.set(i, tempPlayer);
-						if(tempPlayer.getID() == 0)
-							timer.schedule(taskElapseFastenerPlayer1, Fastener.getTimeItLasts());
-						else
-							timer.schedule(taskElapseFastenerPlayer2, Fastener.getTimeItLasts());						
-					}
-					if(tempMod instanceof OneUp){
-						if(tempMod.getPickUpTime() == 0){ // modifier staying in the list for animation purposes, so have to make sure that it takes effect only once
-							tempMod.setPickUpTime(java.lang.System.currentTimeMillis());
+					if(tempMod.getPickUpTime() == 0){ // modifier staying in the list for animation purposes, so have to make sure that it takes effect only once
+						tempMod.setPickUpTime(java.lang.System.currentTimeMillis());
+						if(tempMod instanceof Fastener){
+							tempMod.setPickUpTime(java.lang.System.currentTimeMillis()); // removeNonExistentObjects() will delete it from list
+							tempPlayer.setFastened(true);
+							tempPlayer.setTimeBetweenShots(Constants.timeBetweenShotsIfFastened);
+							listOfPlayers.set(i, tempPlayer);
+							if(tempPlayer.getID() == 0)
+								timer.schedule(taskElapseFastenerPlayer1, Fastener.getTimeItLasts());
+							else
+								timer.schedule(taskElapseFastenerPlayer2, Fastener.getTimeItLasts());						
+						}
+						if(tempMod instanceof OneUp){
 							if(tempPlayer.getLives() < 5)
 								listOfPlayers.get(i).setLives(tempPlayer.getLives()+1);
 						}
-					}
-					if(tempMod instanceof Shield){
-						listOfPlayers.get(i).setShielded(true);
-						if(tempPlayer.getID() == 0)
-							timer.schedule(taskElapseShieldPlayer1, Shield.getTimeItLasts());
-						else
-							timer.schedule(taskElapseShieldPlayer2, Shield.getTimeItLasts());
-					}
-					if(tempMod instanceof Boom){
-						for(int i1=0; i1<listOfNPCs.size(); i1++){
-							listOfNPCs.get(i1).setLives(0);
-							listOfNPCs.get(i1).setExplosionTime(java.lang.System.currentTimeMillis());
-							// playing sound
-							client1.playSound(SoundType.enemyExplosion);
-							if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.enemyExplosion);
+						if(tempMod instanceof Shield){
+							listOfPlayers.get(i).setShielded(true);
+							if(tempPlayer.getID() == 0)
+								timer.schedule(taskElapseShieldPlayer1, Shield.getTimeItLasts());
+							else
+								timer.schedule(taskElapseShieldPlayer2, Shield.getTimeItLasts());
+						}
+						if(tempMod instanceof Boom){
+							for(int i1=0; i1<listOfNPCs.size(); i1++){
+								listOfNPCs.get(i1).setLives(0);
+								listOfNPCs.get(i1).setExplosionTime(java.lang.System.currentTimeMillis());
+								// playing sound
+								client1.playSound(SoundType.enemyExplosion);
+								if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.enemyExplosion);
+							}
+						}
+						if(tempMod instanceof Laser){
+							listOfPlayers.get(i).setHasMissile(true);
+							if(tempPlayer.getID() == 0)
+								timer.schedule(taskElapseLaserPlayer1, Laser.getTimeItLasts());
+							else
+								timer.schedule(taskElapseLaserPlayer2, Laser.getTimeItLasts());
 						}
 					}
 				}
@@ -451,6 +484,13 @@ public class Server implements AllServerInterfaces
 			int height = Projectile.getProjectileheight();
 			if( y-height/2 > Constants.gameFieldHeigth || y+height/2<0 || x<0 || x>Constants.gameFieldWidth){ //TODO: x koordinatak atgondol atlosra
 				listOfProjectiles.remove(i);
+			}
+			// remove ProjectileLasers after their expiration times
+			if(temp instanceof ProjectileLaser){
+				System.out.println("itt");
+				if(currentTime - ((ProjectileLaser) temp).getShootTime() > Laser.getTimeItLasts()){
+					listOfProjectiles.remove(i);
+				}
 			}
 		}
 		// Modifiers
@@ -484,7 +524,7 @@ public class Server implements AllServerInterfaces
 		// Remove picked-up modifiers
 		for(int i=0; i<listOfModifiers.size(); i++){
 			pickUpTime = listOfModifiers.get(i).getPickUpTime();
-			if( (currentTime - pickUpTime > 200) && pickUpTime!=0 ){//TODO: mennyi ido utan?
+			if( (currentTime - pickUpTime > 1500) && pickUpTime!=0 ){//TODO: mennyi ido utan?
 				listOfModifiers.remove(i);
 			}
 		}
@@ -662,6 +702,9 @@ public class Server implements AllServerInterfaces
 					currentModifier.put("className", "Shield");
 				else if(temp instanceof Boom)
 					currentModifier.put("className", "Boom");
+				else if(temp instanceof Laser){
+					currentModifier.put("className", "Laser");
+				}
 				
 				currentModifier.put("x", temp.getCoordX());
 				currentModifier.put("y", temp.getCoordY());
@@ -726,6 +769,7 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				if(isRunning){
+					listOfModifiers.add( new Laser(200, Modifier.getModifierheigth()+100) );
 					double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 					if(spawnOrNot >= 0.6){
 						// Determine the place of spawning
@@ -742,13 +786,13 @@ public class Server implements AllServerInterfaces
 							else//TODO hostileFrenzy
 								listOfModifiers.add( new Fastener(x, Modifier.getModifierheigth()+100) );
 						}
-						//spawn a mod with medium frequency [laser, Shield, controlChangerMULTIONLY, LeftRightSwitcher, noAmmo, scoreHalver]
+						//spawn a mod with medium frequency [Shield, Laser, controlChangerMULTIONLY, LeftRightSwitcher, noAmmo, scoreHalver]
 						else if(whichFrequency > 0.4 && whichFrequency < 0.8){
 							if(whatToSpawn < 0.1667){
 								listOfModifiers.add( new Shield(x, Modifier.getModifierheigth()+100) );
 							}
 							else if(whatToSpawn >= 0.1667 && whatToSpawn < 0.333){
-								
+								listOfModifiers.add( new Laser(x, Modifier.getModifierheigth()+100) );
 							}
 							else if(whatToSpawn >= 0.333 && whatToSpawn < 0.5){
 								

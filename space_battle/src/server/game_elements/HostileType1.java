@@ -26,7 +26,7 @@ public class HostileType1 extends NPC {
 	}
 	
 	public Projectile shoot(){
-		ProjectileGoingDown shot = new ProjectileGoingDown(this.getCoordX(), this.getCoordY() + Constants.hostile1Height/2 + Projectile.projectileHeight/2);
+		ProjectileGoingDown shot = new ProjectileGoingDown(this.getCoordX(), this.getCoordY() + Constants.hostile1Height/2 + Projectile.getProjectileheight()/2);
 		return shot;
 	}
 		

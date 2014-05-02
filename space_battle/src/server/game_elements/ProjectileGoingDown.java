@@ -7,14 +7,15 @@ public class ProjectileGoingDown extends Projectile {
 		super(x,y);
 	}
 	
+	@Override
 	public void autoMove(){
-		super.setCoordY(super.getCoordY() + verticalMoveQuantity); // (x,y)=(0,0) is the top-left corner of gamespace
+		super.setCoordY(super.getCoordY() + super.getVerticalMoveQuantity()); // (x,y)=(0,0) is the top-left corner of gamespace
 	}
 
 	@Override
 	public boolean isHit(GameElement object) { //TODO: lehet, hogy y coordot itt nem is kellene nezni, hanem csak azokra hivni meg, amikre okes
 		// projectile-related
-		int bottom = getCoordY() + projectileHeight/2;
+		int bottom = getCoordY() + super.getProjectileheight()/2;
 		int projX = getCoordX();
 		// object-related
 		int objWidth = object.getHitBox().getWidth();

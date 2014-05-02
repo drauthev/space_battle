@@ -2,12 +2,12 @@ package server.game_elements;
 
 public abstract class Projectile extends NonShootingObject {
 	
-	final static int verticalMoveQuantity = 5;
-	final static int projectileWidth = 5; //TODO
-	final static int projectileHeight = 12;
+	private static int verticalMoveQuantity = 5;
+	private final static int projectileWidth = 5; //TODO
+	private final static int projectileHeight = 12;
 	
 	Projectile(int x, int y){
-		super(x,y);				// HITBOX ASDASDASD
+		super(x,y);
 	}
 	
 	public abstract boolean isHit(GameElement object);
@@ -19,6 +19,14 @@ public abstract class Projectile extends NonShootingObject {
 
 	public static int getProjectileheight() {
 		return projectileHeight;
+	}
+
+	public static void setVerticalMoveQuantity(int verticalMoveQuantity) {
+		Projectile.verticalMoveQuantity = verticalMoveQuantity;
+	}
+
+	public static int getVerticalMoveQuantity() {
+		return verticalMoveQuantity;
 	}
 	 
 }

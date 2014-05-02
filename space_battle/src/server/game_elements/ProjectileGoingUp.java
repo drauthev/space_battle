@@ -6,14 +6,15 @@ public class ProjectileGoingUp extends Projectile {
 		super(x,y);
 	}
 	
+	@Override
 	public void autoMove(){
-		super.setCoordY(super.getCoordY() - verticalMoveQuantity); // minus, because (x,y)=(0,0) is the top-left corner of gamespace
+		super.setCoordY(super.getCoordY() - super.getVerticalMoveQuantity()); // minus, because (x,y)=(0,0) is the top-left corner of gamespace
 	}
 	
 	@Override
 	public boolean isHit(GameElement object){
 		// projectile-related
-		int top = getCoordY() - projectileHeight/2;
+		int top = getCoordY() - super.getProjectileheight()/2;
 		int projX = getCoordX();
 		// object-related
 		int objWidth = object.getHitBox().getWidth();

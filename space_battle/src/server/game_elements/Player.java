@@ -19,6 +19,8 @@ public class Player extends ShootingObject {
 	private int timeBetweenShots = 1000; // will be less if player is fastened
 	//
 	private boolean isShielded;
+	//
+	private boolean hasLaser; //TODO: ki lehet cselezni, ha sokszor losz; SOLUTION lehet: timeBetweenShots-ot magasabbra állítani ezido alatt, mint a LAser lastingja
 	
 	public Player(int x, int y, int ID){
 		super(x,y);
@@ -51,8 +53,14 @@ public class Player extends ShootingObject {
 	}
 	
 	public Projectile shoot(){
-		ProjectileGoingUp shot = new ProjectileGoingUp(this.getCoordX(), this.getCoordY() - Player.playerHeight/2 - Projectile.projectileHeight/2);
-		return shot;
+		if(hasLaser){
+			ProjectileLaser shot = new ProjectileLaser(this.getCoordX(), this.getCoordY() - Player.playerHeight/2 - Projectile.getProjectileheight()/2, this);
+			return shot;
+		}
+		else{
+			ProjectileGoingUp shot = new ProjectileGoingUp(this.getCoordX(), this.getCoordY() - Player.playerHeight/2 - Projectile.getProjectileheight()/2);
+			return shot;
+		}
 	}
 	
 	//
@@ -118,6 +126,14 @@ public class Player extends ShootingObject {
 
 	public void setShielded(boolean isShielded) {
 		this.isShielded = isShielded;
+	}
+
+	public boolean isHasLaser() {
+		return hasLaser;
+	}
+
+	public void setHasMissile(boolean hasLaser) {
+		this.hasLaser = hasLaser;
 	}
 
 	
