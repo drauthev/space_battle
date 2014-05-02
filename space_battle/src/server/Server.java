@@ -24,6 +24,7 @@ import server.game_elements.Player;
 import server.game_elements.Projectile;
 import server.game_elements.ProjectileGoingDown;
 import server.game_elements.ProjectileGoingUp;
+import server.game_elements.Shield;
 import sound.SoundType;
 
 public class Server implements AllServerInterfaces
@@ -57,10 +58,7 @@ public class Server implements AllServerInterfaces
 	private String modifiersJSON;
 	private String npcsJSON;
 	// Game Experience modifying flags
-	private boolean isFastened;
 	private boolean laserBeam;
-	private boolean player1HasShield;
-	private boolean player2HasShield;
 	private boolean changedControls;
 	private boolean leftRightIsChanged;
 	private boolean aggressiveHostiles;
@@ -306,27 +304,28 @@ public class Server implements AllServerInterfaces
 						Player player = listOfPlayers.get(j);
 						int playerLives = player.getLives();
 						
-						if (proj.isHit(player) ){//TODO: lehet, hogy y coordot itt kellene nezni, ProjGoingDown isHit()-jeben nem, es csak azokra meghivni
-							System.out.println("projectile hit");
-							player.setLives(--playerLives);
-							if( playerLives == 0 ){
-								player.setExplosionTime(java.lang.System.currentTimeMillis());
-								if(player.getID()==0)
-									player1Dead = true;
-								else
-									player2Dead = true;
-								// playing sound
-								client1.playSound(SoundType.spaceShipExplosion);
-								if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.spaceShipExplosion);
-							}
-							else{
-								player.setHitTime(java.lang.System.currentTimeMillis());
-								// playing sound
-								client1.playSound(SoundType.beepA);
-								if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.beepA);
-							}
-							listOfPlayers.set(j, player);
+						if (proj.isHit(player)){//TODO: lehet, hogy y coordot itt kellene nezni, ProjGoingDown isHit()-jeben nem, es csak azokra meghivni
 							listOfProjectiles.remove(i); // remove projectile which hit
+							if(!player.isShielded()){
+								player.setLives(--playerLives);
+								if( playerLives == 0 ){
+									player.setExplosionTime(java.lang.System.currentTimeMillis());
+									if(player.getID()==0)
+										player1Dead = true;
+									else
+										player2Dead = true;
+									// playing sound
+									client1.playSound(SoundType.spaceShipExplosion);
+									if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.spaceShipExplosion);
+								}
+								else{
+									player.setHitTime(java.lang.System.currentTimeMillis());
+									// playing sound
+									client1.playSound(SoundType.beepA);
+									if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.beepA);
+								}
+								listOfPlayers.set(j, player);
+							}
 						}
 						// nothing to do if there is no hit
 					}
@@ -349,7 +348,6 @@ public class Server implements AllServerInterfaces
 				}
 			}
 		};
-		
 		TimerTask taskElapseFastenerPlayer2 = new TimerTask() {
 			@Override
 			public void run() {
@@ -357,6 +355,27 @@ public class Server implements AllServerInterfaces
 					if(listOfPlayers.get(i).getID() == 1){
 						listOfPlayers.get(i).setFastened(false);
 						listOfPlayers.get(i).setTimeBetweenShots(Constants.timeBetweenShots);
+					}
+				}
+			}
+		};
+		//
+		TimerTask taskElapseShieldPlayer1 = new TimerTask() {
+			@Override
+			public void run() {
+				for(int i=0; i<listOfPlayers.size(); i++){
+					if(listOfPlayers.get(i).getID() == 1){
+						listOfPlayers.get(i).setShielded(false);
+					}
+				}
+			}
+		};
+		TimerTask taskElapseShieldPlayer2 = new TimerTask() {
+			@Override
+			public void run() {
+				for(int i=0; i<listOfPlayers.size(); i++){
+					if(listOfPlayers.get(i).getID() == 1){
+						listOfPlayers.get(i).setShielded(false);
 					}
 				}
 			}
@@ -387,6 +406,13 @@ public class Server implements AllServerInterfaces
 							if(tempPlayer.getLives() < 5)
 								listOfPlayers.get(i).setLives(tempPlayer.getLives()+1);
 						}
+					}
+					if(tempMod instanceof Shield){
+						listOfPlayers.get(i).setShielded(true);
+						if(tempPlayer.getID() == 0)
+							timer.schedule(taskElapseShieldPlayer1, Fastener.getTimeItLasts());
+						else
+							timer.schedule(taskElapseShieldPlayer2, Fastener.getTimeItLasts());
 					}
 				}
 			}
@@ -446,7 +472,7 @@ public class Server implements AllServerInterfaces
 		// Remove picked-up modifiers
 		for(int i=0; i<listOfModifiers.size(); i++){
 			pickUpTime = listOfModifiers.get(i).getPickUpTime();
-			if( (currentTime - pickUpTime > 500) && pickUpTime!=0 ){//TODO: hany masodperc utan?
+			if( (currentTime - pickUpTime > 200) && pickUpTime!=0 ){//TODO: mennyi ido utan?
 				listOfModifiers.remove(i);
 			}
 		}
@@ -523,6 +549,7 @@ public class Server implements AllServerInterfaces
 				currentPlayer.put("y", temp.getCoordY());
 				currentPlayer.put("hitTime", temp.getHitTime());
 				currentPlayer.put("explosionTime", temp.getExplosionTime());
+				currentPlayer.put("isShielded", temp.isShielded());
 				playerList.add(currentPlayer); // player1 added
 			}
 		playersJSON = new JSONArray( playerList );
@@ -617,8 +644,10 @@ public class Server implements AllServerInterfaces
 					currentModifier.put("className", "Fastener");
 //				else if( temp instanceof ProjectileGoingDown)
 //					currentModifier.put("className", "ProjectileGoingDown");
-				else
-					currentModifier.put("className", "asd");
+				else if(temp instanceof OneUp)
+					currentModifier.put("className", "OneUp");
+				else if(temp instanceof Shield)
+					currentModifier.put("className", "Shield");
 				
 				currentModifier.put("x", temp.getCoordX());
 				currentModifier.put("y", temp.getCoordY());
@@ -678,22 +707,7 @@ public class Server implements AllServerInterfaces
 			}
 		};
 			
-			// Modifier-spawner tasks
-		TimerTask taskSpawnFastener = new TimerTask() {
-			@Override
-			public void run() {
-				if(isRunning){
-					// take some "randomness" into the spawning
-					double spawnOrNot = Math.random();
-					if(spawnOrNot > 0.5){
-						int x;
-						x = (int)(Math.random()*(Constants.gameFieldWidth - Modifier.getModifierwidth()) );
-						x += Modifier.getModifierwidth()/2;
-						listOfModifiers.add( new Fastener(x, Modifier.getModifierheigth()+100) );
-					}
-				}
-			}
-		};
+			// Modifier-spawner task
 		TimerTask taskSpawnModifiers = new TimerTask() {
 			@Override
 			public void run() {
@@ -716,7 +730,24 @@ public class Server implements AllServerInterfaces
 						}
 						//spawn a mod with medium frequency [laser, Shield, controlChangerMULTIONLY, LeftRightSwitcher, noAmmo, scoreHalver]
 						else if(whichFrequency > 0.4 && whichFrequency < 0.8){
-							
+							if(whatToSpawn < 0.1667){
+								listOfModifiers.add( new Shield(x, Modifier.getModifierheigth()+100) );
+							}
+							else if(whatToSpawn >= 0.1667 && whatToSpawn < 0.333){
+								
+							}
+							else if(whatToSpawn >= 0.333 && whatToSpawn < 0.5){
+								
+							}
+							else if(whatToSpawn >= 0.5 && whatToSpawn < 0.667){
+								
+							}
+							else if(whatToSpawn >= 0.667 && whatToSpawn < 0.8333){
+								
+							}
+							else{
+								
+							}
 						}
 						// spawn a rare modifier [OneUp, Boom]
 						else{

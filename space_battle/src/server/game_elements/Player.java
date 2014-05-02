@@ -11,12 +11,14 @@ public class Player extends ShootingObject {
 	private static int horizontalMoveQuantity = 5;
 	private static int horizontalMoveQuantityIfFastened = 10;
 	private static int playerLivesAtStart = 3;
-	
 	//
 	private int ID;	// for player identification in case of Multi-player mode
 	private int lives;
+	//
 	private boolean isFastened = false;
 	private int timeBetweenShots = 1000; // will be less if player is fastened
+	//
+	private boolean isShielded;
 	
 	public Player(int x, int y, int ID){
 		super(x,y);
@@ -108,6 +110,14 @@ public class Player extends ShootingObject {
 
 	public void setTimeBetweenShots(int timeBetweenShots) {
 		this.timeBetweenShots = timeBetweenShots;
+	}
+
+	public boolean isShielded() {
+		return isShielded;
+	}
+
+	public void setShielded(boolean isShielded) {
+		this.isShielded = isShielded;
 	}
 
 	
