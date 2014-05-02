@@ -1,17 +1,10 @@
 package server.game_elements;
 
-import java.util.TimerTask;
-
-import server.Constants;
-import enums.GameSkill;
-
-public class Fastener extends Modifier {
-	
+public class OneUp extends Modifier {
 	private static int verticalMoveQuantity = 1;
 	private static int spawnFrequency;
-	private static int timeItLasts = 10000; // 10 sec
 		
-	public Fastener(int x, int y){
+	public OneUp(int x, int y){
 		super(x,y);
 	}
 	
@@ -26,7 +19,7 @@ public class Fastener extends Modifier {
 	}
 
 	public static void setSpawnFrequency(int spawnFrequency) {
-		Fastener.spawnFrequency = spawnFrequency;
+		OneUp.spawnFrequency = spawnFrequency;
 	}
 
 	public static int getVerticalMoveQuantity() {
@@ -34,11 +27,7 @@ public class Fastener extends Modifier {
 	}
 
 	public static void setVerticalMoveQuantity(int verticalMoveQuantity) {
-		Fastener.verticalMoveQuantity = verticalMoveQuantity;
+		OneUp.verticalMoveQuantity = verticalMoveQuantity;
 	}
 
-	public static int getTimeItLasts() {
-		return timeItLasts;
-	}
-	
 }

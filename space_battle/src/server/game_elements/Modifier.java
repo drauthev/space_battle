@@ -5,9 +5,9 @@ public abstract class Modifier extends NonShootingObject{
 	private final static int modifierWidth = 40;
 	private final static int modifierHeigth = 40;
 	//
-	private long explosionTime;
-	private long pickUpTime;	// to animate what's in it
-	private long creationTime;		// only changes if the modifier was created from another modifier by shooting it.. for animation reasons
+	private long explosionTime = 0;
+	private long pickUpTime = 0;	// to animate what's in it
+	private long creationTime = 0;		// only changes if the modifier was created from another modifier by shooting it.. for animation reasons
 	
 	Modifier(int x, int y){
 		super(x, y);

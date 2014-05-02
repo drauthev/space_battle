@@ -19,6 +19,7 @@ import server.game_elements.HostileType1;
 import server.game_elements.HostileType2;
 import server.game_elements.Modifier;
 import server.game_elements.NPC;
+import server.game_elements.OneUp;
 import server.game_elements.Player;
 import server.game_elements.Projectile;
 import server.game_elements.ProjectileGoingDown;
@@ -96,16 +97,16 @@ public class Server implements AllServerInterfaces
 		
 		// Setting game parameters according to difficulty level
 		if( difficulty == GameSkill.EASY){
-			Fastener.setSpawnFrequency(Constants.modifierSpawnFreqFrequentIfEasy);
 			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfEasy);
+			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
 		}
 		else if( difficulty == GameSkill.NORMAL){
-			Fastener.setSpawnFrequency(Constants.modifierSpawnFreqFrequentIfNormal);
 			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfNormal);
+			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
 		}
 		else{
-			Fastener.setSpawnFrequency(Constants.modifierSpawnFreqFrequentIfNormal);
-			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfNormal);
+			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfHard);
+			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
 		}
 		
 		
@@ -367,6 +368,9 @@ public class Server implements AllServerInterfaces
 				Modifier tempMod = listOfModifiers.get(j);
 				if( tempMod.getHitBox().isCollision(tempPlayer)){
 					// fastener picked up
+					client1.playSound(SoundType.powerUp);
+					if( type == GameType.MULTI_NETWORK) client2.playSound(SoundType.powerUp);
+					// Taking effect..
 					if(tempMod instanceof Fastener){
 						tempMod.setPickUpTime(java.lang.System.currentTimeMillis()); // removeNonExistentObjects() will delete it from list
 						tempPlayer.setFastened(true);
@@ -376,6 +380,13 @@ public class Server implements AllServerInterfaces
 							timer.schedule(taskElapseFastenerPlayer1, Fastener.getTimeItLasts());
 						else
 							timer.schedule(taskElapseFastenerPlayer2, Fastener.getTimeItLasts());						
+					}
+					if(tempMod instanceof OneUp){
+						if(tempMod.getPickUpTime() == 0){ // modifier staying in the list for animation purposes, so have to make sure that it takes effect only once
+							tempMod.setPickUpTime(java.lang.System.currentTimeMillis());
+							if(tempPlayer.getLives() < 5)
+								listOfPlayers.get(i).setLives(tempPlayer.getLives()+1);
+						}
 					}
 				}
 			}
@@ -683,6 +694,41 @@ public class Server implements AllServerInterfaces
 				}
 			}
 		};
+		TimerTask taskSpawnModifiers = new TimerTask() {
+			@Override
+			public void run() {
+				if(isRunning){
+					double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
+					if(spawnOrNot >= 0.6){
+						// Determine the place of spawning
+						int x;
+						x = (int)(Math.random()*(Constants.gameFieldWidth - Modifier.getModifierwidth()) );
+						x += Modifier.getModifierwidth()/2;
+						// Choosing what to spawn
+						double whichFrequency = Math.random();
+						double whatToSpawn = Math.random();
+						// spawn a frequent modifier [fastener, hostileFrenzy]
+						if(whichFrequency <= 0.4){
+							if(whatToSpawn >= 0.5)
+								listOfModifiers.add( new Fastener(x, Modifier.getModifierheigth()+100) );
+							else//TODO hostileFrenzy
+								listOfModifiers.add( new Fastener(x, Modifier.getModifierheigth()+100) );
+						}
+						//spawn a mod with medium frequency [laser, Shield, controlChangerMULTIONLY, LeftRightSwitcher, noAmmo, scoreHalver]
+						else if(whichFrequency > 0.4 && whichFrequency < 0.8){
+							
+						}
+						// spawn a rare modifier [OneUp, Boom]
+						else{
+							if(whatToSpawn >= 0.5)
+								listOfModifiers.add( new OneUp(x, Modifier.getModifierheigth()+100) );
+							else//TODO BOOM
+								listOfModifiers.add( new Fastener(x, Modifier.getModifierheigth()+100) );
+						}
+					}
+				}
+			}
+		};
 		
 		// Starting Timer 
 		timer = new Timer(false);
@@ -693,7 +739,8 @@ public class Server implements AllServerInterfaces
         timer.scheduleAtFixedRate(taskSpawnHostileType1, 0, Constants.hostile1spawningFrequency);
         timer.scheduleAtFixedRate(taskSpawnHostileType2, 1000, Constants.hostile2spawningFrequency);
         // Spawn modifiers at given rates
-        timer.scheduleAtFixedRate(taskSpawnFastener, 300, Fastener.getSpawnFrequency());
+        timer.scheduleAtFixedRate(taskSpawnModifiers, 300, 3000);
+       // timer.scheduleAtFixedRate(taskSpawnOneUp, 350, period);
 		
 	}
 	
