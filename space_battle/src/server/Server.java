@@ -277,29 +277,39 @@ public class Server implements AllServerInterfaces
 		for(int i=0; i<listOfProjectiles.size(); i++){
 			proj = listOfProjectiles.get(i);
 			// Projectile is shot by a player
-			if( proj instanceof ProjectileGoingUp || proj instanceof ProjectileLaser ){
+			if( proj instanceof ProjectileGoingUp ){
 				for(int j=0; j<listOfNPCs.size(); j++){
 					npc = listOfNPCs.get(j);
 					npcLives = npc.getLives();
 					if( npcLives <= 0 ) continue; // dead hostiles which are in the list for animation purposes, cannot absorb projectiles
 					if( proj.isHit(npc) ){ // Given NPC is hit
-						npcLives--;
-						npc.setLives(npcLives);
-						if( npcLives == 0 ){
-							score += npc.getScoreIfDestroyed();
+						if( proj instanceof ProjectileLaser ){ 
+							npc.setLives(0);
 							npc.setExplosionTime(java.lang.System.currentTimeMillis());
+							score += npc.getScoreIfDestroyed();
 							// playing sound
 							client1.playSound(SoundType.enemyExplosion);
 							if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.enemyExplosion);
 						}
 						else{
-							npc.setHitTime(java.lang.System.currentTimeMillis());
-							// playing sound
-							client1.playSound(SoundType.beepA);
-							if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.beepA);
+							npcLives--;
+							npc.setLives(npcLives);
+							if( npcLives == 0 ){
+								score += npc.getScoreIfDestroyed();
+								npc.setExplosionTime(java.lang.System.currentTimeMillis());
+								// playing sound
+								client1.playSound(SoundType.enemyExplosion);
+								if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.enemyExplosion);
+							}
+							else{
+								npc.setHitTime(java.lang.System.currentTimeMillis());
+								// playing sound
+								client1.playSound(SoundType.beepA);
+								if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.beepA);
+							}
+							listOfProjectiles.remove(i); // remove projectile which hit
 						}
 						listOfNPCs.set(j, npc);
-						listOfProjectiles.remove(i); // remove projectile which hit
 					}
 					// nothing to do if there is no hit
 				}
@@ -485,13 +495,6 @@ public class Server implements AllServerInterfaces
 			if( y-height/2 > Constants.gameFieldHeigth || y+height/2<0 || x<0 || x>Constants.gameFieldWidth){ //TODO: x koordinatak atgondol atlosra
 				listOfProjectiles.remove(i);
 			}
-			// remove ProjectileLasers after their expiration times
-			if(temp instanceof ProjectileLaser){
-				System.out.println("itt");
-				if(currentTime - ((ProjectileLaser) temp).getShootTime() > Laser.getTimeItLasts()){
-					listOfProjectiles.remove(i);
-				}
-			}
 		}
 		// Modifiers
 		for(int i=0; i<listOfModifiers.size(); i++){
@@ -663,8 +666,8 @@ public class Server implements AllServerInterfaces
 					currentProjectile.put("className", "ProjectileGoingUp");
 				else if( temp instanceof ProjectileGoingDown)
 					currentProjectile.put("className", "ProjectileGoingDown");
-				else//TODO: goingdiagonallyLeft..
-					currentProjectile.put("className", "HostileType3");
+				else if( temp instanceof ProjectileLaser)
+					currentProjectile.put("className", "ProjectileLaser");
 				
 				currentProjectile.put("x", temp.getCoordX());
 				currentProjectile.put("y", temp.getCoordY());
@@ -769,6 +772,7 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				if(isRunning){
+					listOfModifiers.add( new Laser(200, Modifier.getModifierheigth()+100) );
 					double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 					if(spawnOrNot >= 0.6){
 						// Determine the place of spawning

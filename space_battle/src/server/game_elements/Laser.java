@@ -2,7 +2,7 @@ package server.game_elements;
 
 public class Laser extends Modifier{
 	private static int verticalMoveQuantity = 1;
-	private static int timeItLasts = 3000; // 3 sec
+	private static int timeItLasts = 6000; // 6 sec
 		
 	public Laser(int x, int y){
 		super(x,y);
