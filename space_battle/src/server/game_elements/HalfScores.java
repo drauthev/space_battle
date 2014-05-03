@@ -2,7 +2,7 @@ package server.game_elements;
 
 public class HalfScores extends PowerDown{
 	
-	private static int timeItLasts = 10000; // 10 sec
+	private static int timeItLasts = 15000; // 15 sec
 	
 	public HalfScores(int x, int y){
 		super(x, y);

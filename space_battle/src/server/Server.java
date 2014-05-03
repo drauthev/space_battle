@@ -53,7 +53,7 @@ public class Server implements AllServerInterfaces
 	private long player1ShootTime = 0;
 	private long player2ShootTime = 0;
 	private boolean player1Dead = false;
-	private boolean player2Dead = true;
+	private boolean player2Dead = false;
 	private boolean gameIsOver = false;
 	// Declaring lists of GameElements
 	private List<Player> listOfPlayers;
