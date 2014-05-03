@@ -23,6 +23,7 @@ import server.game_elements.Laser;
 import server.game_elements.LeftRightSwitcher;
 import server.game_elements.Modifier;
 import server.game_elements.NPC;
+import server.game_elements.NoAmmo;
 import server.game_elements.OneUp;
 import server.game_elements.Player;
 import server.game_elements.PowerDown;
@@ -68,7 +69,8 @@ public class Server implements AllServerInterfaces
 	private boolean leftRightIsSwitchedPlayer1;
 	private boolean leftRightIsSwitchedPlayer2;
 	private boolean hostilesAreFrenzied;
-	private boolean noAmmo;
+	private boolean noAmmoPlayer1;
+	private boolean noAmmoPlayer2;
 	private boolean halfScores;
 	// Client interfaces
 	private ClientForServer client1;
@@ -211,7 +213,7 @@ public class Server implements AllServerInterfaces
 					else
 						temp.moveLeft();
 				}
-				if(player1Shooting){
+				if(player1Shooting && !noAmmoPlayer1){
 					currentTime = java.lang.System.currentTimeMillis();
 					if(currentTime - player1ShootTime > temp.getTimeBetweenShots()){
 						player1ShootTime = currentTime;
@@ -239,7 +241,7 @@ public class Server implements AllServerInterfaces
 					else
 						temp.moveLeft();
 				}
-				if(player2Shooting){
+				if(player2Shooting && !noAmmoPlayer2){
 					currentTime = java.lang.System.currentTimeMillis();
 					if(currentTime - player2ShootTime > temp.getTimeBetweenShots()){
 						player2ShootTime = currentTime;
@@ -447,17 +449,13 @@ public class Server implements AllServerInterfaces
 		TimerTask taskElapseLeftRightSwitcherPlayer1 = new TimerTask() {
 			@Override
 			public void run() {
-				for(int i=0; i<listOfPlayers.size(); i++){
-					leftRightIsSwitchedPlayer1 = false;
-				}
+				leftRightIsSwitchedPlayer1 = false;
 			}
 		};
 		TimerTask taskElapseLeftRightSwitcherPlayer2 = new TimerTask() {
 			@Override
 			public void run() {
-				for(int i=0; i<listOfPlayers.size(); i++){
-					leftRightIsSwitchedPlayer2 = false;
-				}
+				leftRightIsSwitchedPlayer2 = false;
 			}
 		};
 		//
@@ -465,6 +463,19 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 					hostilesAreFrenzied = false;
+				}
+		};
+		//
+		TimerTask taskElapseNoAmmoPlayer1 = new TimerTask() {
+			@Override
+			public void run() {
+					noAmmoPlayer1 = false;
+				}
+		};
+		TimerTask taskElapseNoAmmoPlayer2 = new TimerTask() {
+			@Override
+			public void run() {
+					noAmmoPlayer2 = false;
 				}
 		};
 		
@@ -522,7 +533,6 @@ public class Server implements AllServerInterfaces
 								timer.schedule(taskElapseLaserPlayer2, Laser.getTimeItLasts());
 						}
 						if(tempMod instanceof LeftRightSwitcher){
-							listOfPlayers.get(i).setHasLaser(true);
 							if(tempPlayer.getID() == 0){
 								leftRightIsSwitchedPlayer1 = true;
 								timer.schedule(taskElapseLeftRightSwitcherPlayer1, LeftRightSwitcher.getTimeItLasts());
@@ -535,6 +545,16 @@ public class Server implements AllServerInterfaces
 						if(tempMod instanceof HostileFrenzy){
 							hostilesAreFrenzied = true;
 							timer.schedule(taskElapseHostileFrenzy, HostileFrenzy.getTimeItLasts());		
+						}
+						if(tempMod instanceof NoAmmo){
+							if(tempPlayer.getID() == 0){
+								noAmmoPlayer1 = true;
+								timer.schedule(taskElapseNoAmmoPlayer1, NoAmmo.getTimeItLasts());
+							}	
+							else{
+								noAmmoPlayer2 = true;
+								timer.schedule(taskElapseNoAmmoPlayer2, NoAmmo.getTimeItLasts());
+							}	
 						}
 					}
 				}
@@ -782,6 +802,9 @@ public class Server implements AllServerInterfaces
 				else if(temp instanceof HostileFrenzy){
 					currentModifier.put("className", "HostileFrenzy");
 				}
+				else if(temp instanceof NoAmmo){
+					currentModifier.put("className", "NoAmmo");
+				}
 				
 				currentModifier.put("x", temp.getCoordX());
 				currentModifier.put("y", temp.getCoordY());
@@ -846,6 +869,7 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				if(isRunning){
+					listOfModifiers.add( new NoAmmo(200, Modifier.getModifierheigth()+100) );
 					double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 					if(spawnOrNot >= 0.6){
 						// Determine the place of spawning
@@ -874,7 +898,7 @@ public class Server implements AllServerInterfaces
 								listOfModifiers.add( new LeftRightSwitcher(x, Modifier.getModifierheigth()+100) );
 							}
 							else if(whatToSpawn >= 0.5 && whatToSpawn < 0.667){
-								
+								listOfModifiers.add( new NoAmmo(x, Modifier.getModifierheigth()+100) );
 							}
 							else if(whatToSpawn >= 0.667 && whatToSpawn < 0.8333){
 								
@@ -1035,7 +1059,7 @@ public class Server implements AllServerInterfaces
 				// Shooting one projectile here; for the reason if the player presses the button for a very short amount of time
 				// otherwise it can happen, if in the TimerTask, playerShooting flag will already be false and no shooting happen
 				long currentTime = java.lang.System.currentTimeMillis();
-				if(currentTime - player1ShootTime > Constants.timeBetweenShots){
+				if(currentTime - player1ShootTime > Constants.timeBetweenShots && !noAmmoPlayer1){
 					player1ShootTime = java.lang.System.currentTimeMillis();
 					Projectile shot = listOfPlayers.get(0).shoot();
 					listOfProjectiles.add(shot);
@@ -1053,7 +1077,7 @@ public class Server implements AllServerInterfaces
 				// Shooting one projectile here; for the reason if the player presses the button for a very short amount of time
 				// otherwise it can happen, if in the TimerTask, playerShooting flag will already be false and no shooting happen
 				long currentTime = java.lang.System.currentTimeMillis();
-				if(currentTime - player2ShootTime > Constants.timeBetweenShots){
+				if(currentTime - player2ShootTime > Constants.timeBetweenShots && !noAmmoPlayer2){
 					player2ShootTime = java.lang.System.currentTimeMillis();
 					Projectile shot = listOfPlayers.get(1).shoot();
 					listOfProjectiles.add(shot);
