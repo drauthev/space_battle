@@ -132,7 +132,7 @@ public class Player extends ShootingObject {
 		return hasLaser;
 	}
 
-	public void setHasMissile(boolean hasLaser) {
+	public void setHasLaser(boolean hasLaser) {
 		this.hasLaser = hasLaser;
 	}
 

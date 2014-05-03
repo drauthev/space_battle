@@ -19,10 +19,12 @@ import server.game_elements.Fastener;
 import server.game_elements.HostileType1;
 import server.game_elements.HostileType2;
 import server.game_elements.Laser;
+import server.game_elements.LeftRightSwitcher;
 import server.game_elements.Modifier;
 import server.game_elements.NPC;
 import server.game_elements.OneUp;
 import server.game_elements.Player;
+import server.game_elements.PowerDown;
 import server.game_elements.Projectile;
 import server.game_elements.ProjectileGoingDown;
 import server.game_elements.ProjectileGoingUp;
@@ -63,7 +65,8 @@ public class Server implements AllServerInterfaces
 	// Game Experience modifying flags
 	private boolean laserBeam;
 	private boolean changedControls;
-	private boolean leftRightIsChanged;
+	private boolean leftRightIsSwitchedPlayer1;
+	private boolean leftRightIsSwitchedPlayer2;
 	private boolean aggressiveHostiles;
 	private boolean noAmmo;
 	private boolean halfScores;
@@ -101,18 +104,24 @@ public class Server implements AllServerInterfaces
 			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
 			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
 			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
+			Laser.setVerticalMoveQuantity(Constants.modifierSpeedMediumIfEasy);
+			PowerDown.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
 		}
 		else if( difficulty == GameSkill.NORMAL){
 			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfNormal);
 			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfNormal);
 			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
 			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
+			Laser.setVerticalMoveQuantity(Constants.modifierSpeedMediumIfNormal);
+			PowerDown.setVerticalMoveQuantity(Constants.modifierSpeedFastIfNormal);
 		}
 		else{
 			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfHard);
 			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
 			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
 			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
+			Laser.setVerticalMoveQuantity(Constants.modifierSpeedMediumIfHard);
+			PowerDown.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
 		}
 		
 		
@@ -188,10 +197,16 @@ public class Server implements AllServerInterfaces
 			temp = listOfPlayers.get(i);
 			if(temp.getID() == 0){
 				if(player1MovingLeft){
-					temp.moveLeft();
+					if(!leftRightIsSwitchedPlayer1)
+						temp.moveLeft();
+					else
+						temp.moveRight();
 				}
 				if(player1MovingRight){
-					temp.moveRight();
+					if(!leftRightIsSwitchedPlayer1)
+						temp.moveRight();
+					else
+						temp.moveLeft();
 				}
 				if(player1Shooting){
 					currentTime = java.lang.System.currentTimeMillis();
@@ -210,10 +225,16 @@ public class Server implements AllServerInterfaces
 			}
 			else if(temp.getID() == 1){
 				if(player2MovingLeft){
-					temp.moveLeft();
+					if(!leftRightIsSwitchedPlayer2)
+						temp.moveLeft();
+					else
+						temp.moveRight();
 				}
 				if(player2MovingRight){
-					temp.moveRight();
+					if(!leftRightIsSwitchedPlayer2)
+						temp.moveRight();
+					else
+						temp.moveLeft();
 				}
 				if(player2Shooting){
 					currentTime = java.lang.System.currentTimeMillis();
@@ -404,7 +425,7 @@ public class Server implements AllServerInterfaces
 			public void run() {
 				for(int i=0; i<listOfPlayers.size(); i++){
 					if(listOfPlayers.get(i).getID() == 0){
-						listOfPlayers.get(i).setHasMissile(false);
+						listOfPlayers.get(i).setHasLaser(false);
 					}
 				}
 			}
@@ -414,8 +435,24 @@ public class Server implements AllServerInterfaces
 			public void run() {
 				for(int i=0; i<listOfPlayers.size(); i++){
 					if(listOfPlayers.get(i).getID() == 1){
-						listOfPlayers.get(i).setHasMissile(false);
+						listOfPlayers.get(i).setHasLaser(false);
 					}
+				}
+			}
+		};
+		TimerTask taskElapseLeftRightSwitcherPlayer1 = new TimerTask() {
+			@Override
+			public void run() {
+				for(int i=0; i<listOfPlayers.size(); i++){
+					leftRightIsSwitchedPlayer1 = false;
+				}
+			}
+		};
+		TimerTask taskElapseLeftRightSwitcherPlayer2 = new TimerTask() {
+			@Override
+			public void run() {
+				for(int i=0; i<listOfPlayers.size(); i++){
+					leftRightIsSwitchedPlayer2 = false;
 				}
 			}
 		};
@@ -425,9 +462,15 @@ public class Server implements AllServerInterfaces
 			for(int j=0; j<listOfModifiers.size(); j++){
 				Modifier tempMod = listOfModifiers.get(j);
 				if( tempMod.getHitBox().isCollision(tempPlayer)){
-					// fastener picked up
-					client1.playSound(SoundType.powerUp);
-					if( type == GameType.MULTI_NETWORK) client2.playSound(SoundType.powerUp);
+					// Playing sound
+					if( tempMod instanceof PowerDown){
+						client1.playSound(SoundType.powerDown);
+						if( type == GameType.MULTI_NETWORK) client2.playSound(SoundType.powerDown);
+					}
+					else{
+						client1.playSound(SoundType.powerUp);
+						if( type == GameType.MULTI_NETWORK) client2.playSound(SoundType.powerUp);
+					}
 					// Taking effect..
 					if(tempMod.getPickUpTime() == 0){ // modifier staying in the list for animation purposes, so have to make sure that it takes effect only once
 						tempMod.setPickUpTime(java.lang.System.currentTimeMillis());
@@ -462,11 +505,21 @@ public class Server implements AllServerInterfaces
 							}
 						}
 						if(tempMod instanceof Laser){
-							listOfPlayers.get(i).setHasMissile(true);
 							if(tempPlayer.getID() == 0)
 								timer.schedule(taskElapseLaserPlayer1, Laser.getTimeItLasts());
 							else
 								timer.schedule(taskElapseLaserPlayer2, Laser.getTimeItLasts());
+						}
+						if(tempMod instanceof LeftRightSwitcher){
+							listOfPlayers.get(i).setHasLaser(true);
+							if(tempPlayer.getID() == 0){
+								leftRightIsSwitchedPlayer1 = true;
+								timer.schedule(taskElapseLeftRightSwitcherPlayer1, LeftRightSwitcher.getTimeItLasts());
+							}	
+							else{
+								leftRightIsSwitchedPlayer2 = true;
+								timer.schedule(taskElapseLeftRightSwitcherPlayer2, LeftRightSwitcher.getTimeItLasts());
+							}
 						}
 					}
 				}
@@ -708,6 +761,9 @@ public class Server implements AllServerInterfaces
 				else if(temp instanceof Laser){
 					currentModifier.put("className", "Laser");
 				}
+				else if(temp instanceof LeftRightSwitcher){
+					currentModifier.put("className", "LeftRightSwitcher");
+				}
 				
 				currentModifier.put("x", temp.getCoordX());
 				currentModifier.put("y", temp.getCoordY());
@@ -772,7 +828,7 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				if(isRunning){
-					listOfModifiers.add( new Laser(200, Modifier.getModifierheigth()+100) );
+					listOfModifiers.add( new LeftRightSwitcher(200, Modifier.getModifierheigth()+100) );
 					double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 					if(spawnOrNot >= 0.6){
 						// Determine the place of spawning
@@ -798,7 +854,7 @@ public class Server implements AllServerInterfaces
 								listOfModifiers.add( new Laser(x, Modifier.getModifierheigth()+100) );
 							}
 							else if(whatToSpawn >= 0.333 && whatToSpawn < 0.5){
-								
+								listOfModifiers.add( new LeftRightSwitcher(x, Modifier.getModifierheigth()+100) );
 							}
 							else if(whatToSpawn >= 0.5 && whatToSpawn < 0.667){
 								

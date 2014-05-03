@@ -9,7 +9,14 @@ public abstract class PowerDown extends Modifier {
 	}
 	
 	public void autoMove(){
-		super.setCoordY(super.getCoordY() - verticalMoveQuantity);
+		super.setCoordY(super.getCoordY() + verticalMoveQuantity);
 	}
+	
+	// Getters, setters
+	public static void setVerticalMoveQuantity(int verticalMoveQuantity) {
+		PowerDown.verticalMoveQuantity = verticalMoveQuantity;
+	}
+
+
 	
 }
