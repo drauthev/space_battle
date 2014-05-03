@@ -14,6 +14,7 @@ import com.sun.jmx.snmp.tasks.Task;
 import enums.*;
 import interfaces.AllServerInterfaces;
 import interfaces.ClientForServer;
+import server.game_elements.HostileFrenzy;
 import server.game_elements.Boom;
 import server.game_elements.Fastener;
 import server.game_elements.HostileType1;
@@ -63,11 +64,10 @@ public class Server implements AllServerInterfaces
 	private String modifiersJSON;
 	private String npcsJSON;
 	// Game Experience modifying flags
-	private boolean laserBeam;
 	private boolean changedControls;
 	private boolean leftRightIsSwitchedPlayer1;
 	private boolean leftRightIsSwitchedPlayer2;
-	private boolean aggressiveHostiles;
+	private boolean hostilesAreFrenzied;
 	private boolean noAmmo;
 	private boolean halfScores;
 	// Client interfaces
@@ -160,6 +160,7 @@ public class Server implements AllServerInterfaces
     	// Moving hostile spaceships
     	for(int i=0; i < listOfNPCs.size(); i++){
     		listOfNPCs.get(i).autoMove();
+    		if(hostilesAreFrenzied) listOfNPCs.get(i).autoMove(); // moving 'em to double distance
     	}
     	// Moving Modifiers
     	for(int i=0; i < listOfModifiers.size(); i++){
@@ -171,12 +172,14 @@ public class Server implements AllServerInterfaces
 		NPC temp;
 		long lastShotTime;
 		long currentTime;
+		long timeSinceLastShot;
 		for(int i=0; i<listOfNPCs.size(); i++){
 			temp = listOfNPCs.get(i);
 			if(temp.getLives() > 0){ // "dead" hostiles are in the list for some time because of the explosion effect; this make sure they don't shoot
 				lastShotTime = temp.getLastShotTime();
 				currentTime = java.lang.System.currentTimeMillis();
-				if(currentTime - lastShotTime > temp.getShootingFrequency()){ // shoot only if enough time has lasted
+				timeSinceLastShot = currentTime - lastShotTime;
+				if( (timeSinceLastShot > temp.getShootingFrequency() && !hostilesAreFrenzied) || (timeSinceLastShot > temp.getShootingFrequency()/2 && hostilesAreFrenzied) ){ // shoot only if enough time has lasted
 					temp.setLastShotTime(java.lang.System.currentTimeMillis());
 					listOfProjectiles.add(temp.shoot());
 					listOfNPCs.set(i, temp);
@@ -440,6 +443,7 @@ public class Server implements AllServerInterfaces
 				}
 			}
 		};
+		//
 		TimerTask taskElapseLeftRightSwitcherPlayer1 = new TimerTask() {
 			@Override
 			public void run() {
@@ -455,6 +459,13 @@ public class Server implements AllServerInterfaces
 					leftRightIsSwitchedPlayer2 = false;
 				}
 			}
+		};
+		//
+		TimerTask taskElapseHostileFrenzy = new TimerTask() {
+			@Override
+			public void run() {
+					hostilesAreFrenzied = false;
+				}
 		};
 		
 		for(int i=0; i<listOfPlayers.size(); i++){
@@ -520,6 +531,10 @@ public class Server implements AllServerInterfaces
 								leftRightIsSwitchedPlayer2 = true;
 								timer.schedule(taskElapseLeftRightSwitcherPlayer2, LeftRightSwitcher.getTimeItLasts());
 							}
+						}
+						if(tempMod instanceof HostileFrenzy){
+							hostilesAreFrenzied = true;
+							timer.schedule(taskElapseHostileFrenzy, HostileFrenzy.getTimeItLasts());		
 						}
 					}
 				}
@@ -764,6 +779,9 @@ public class Server implements AllServerInterfaces
 				else if(temp instanceof LeftRightSwitcher){
 					currentModifier.put("className", "LeftRightSwitcher");
 				}
+				else if(temp instanceof HostileFrenzy){
+					currentModifier.put("className", "HostileFrenzy");
+				}
 				
 				currentModifier.put("x", temp.getCoordX());
 				currentModifier.put("y", temp.getCoordY());
@@ -828,7 +846,6 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				if(isRunning){
-					listOfModifiers.add( new LeftRightSwitcher(200, Modifier.getModifierheigth()+100) );
 					double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 					if(spawnOrNot >= 0.6){
 						// Determine the place of spawning
@@ -843,7 +860,7 @@ public class Server implements AllServerInterfaces
 							if(whatToSpawn >= 0.5)
 								listOfModifiers.add( new Fastener(x, Modifier.getModifierheigth()+100) );
 							else//TODO hostileFrenzy
-								listOfModifiers.add( new Fastener(x, Modifier.getModifierheigth()+100) );
+								listOfModifiers.add( new HostileFrenzy(x, Modifier.getModifierheigth()+100) );
 						}
 						//spawn a mod with medium frequency [Shield, Laser, controlChangerMULTIONLY, LeftRightSwitcher, noAmmo, scoreHalver]
 						else if(whichFrequency > 0.4 && whichFrequency < 0.8){
