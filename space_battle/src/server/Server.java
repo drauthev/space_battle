@@ -14,6 +14,7 @@ import com.sun.jmx.snmp.tasks.Task;
 import enums.*;
 import interfaces.AllServerInterfaces;
 import interfaces.ClientForServer;
+import server.game_elements.HalfScores;
 import server.game_elements.HostileFrenzy;
 import server.game_elements.Boom;
 import server.game_elements.Fastener;
@@ -271,6 +272,10 @@ public class Server implements AllServerInterfaces
 					// exploding the NPC
 					tempNPC.setLives(0);
 					tempNPC.setExplosionTime(java.lang.System.currentTimeMillis());
+					if(halfScores)
+						score += tempNPC.getScoreIfDestroyed()/2;
+					else
+						score += tempNPC.getScoreIfDestroyed();
 					// playing sounds
 					client1.playSound(SoundType.enemyExplosion);
 					if(type == GameType.MULTI_NETWORK)	client2.playSound(SoundType.enemyExplosion);
@@ -312,7 +317,10 @@ public class Server implements AllServerInterfaces
 						if( proj instanceof ProjectileLaser ){ 
 							npc.setLives(0);
 							npc.setExplosionTime(java.lang.System.currentTimeMillis());
-							score += npc.getScoreIfDestroyed();
+							if(halfScores)
+								score += npc.getScoreIfDestroyed()/2;
+							else
+								score += npc.getScoreIfDestroyed();
 							// playing sound
 							client1.playSound(SoundType.enemyExplosion);
 							if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.enemyExplosion);
@@ -321,7 +329,10 @@ public class Server implements AllServerInterfaces
 							npcLives--;
 							npc.setLives(npcLives);
 							if( npcLives == 0 ){
-								score += npc.getScoreIfDestroyed();
+								if(halfScores)
+									score += npc.getScoreIfDestroyed()/2;
+								else
+									score += npc.getScoreIfDestroyed();
 								npc.setExplosionTime(java.lang.System.currentTimeMillis());
 								// playing sound
 								client1.playSound(SoundType.enemyExplosion);
@@ -478,6 +489,13 @@ public class Server implements AllServerInterfaces
 					noAmmoPlayer2 = false;
 				}
 		};
+		//
+		TimerTask taskElapseHalfScores = new TimerTask() {
+			@Override
+			public void run() {
+					halfScores = false;
+				}
+		};
 		
 		for(int i=0; i<listOfPlayers.size(); i++){
 			Player tempPlayer = listOfPlayers.get(i);
@@ -555,6 +573,10 @@ public class Server implements AllServerInterfaces
 								noAmmoPlayer2 = true;
 								timer.schedule(taskElapseNoAmmoPlayer2, NoAmmo.getTimeItLasts());
 							}	
+						}
+						if(tempMod instanceof HalfScores){
+							halfScores = true;
+							timer.schedule(taskElapseHalfScores, HalfScores.getTimeItLasts());
 						}
 					}
 				}
@@ -805,6 +827,9 @@ public class Server implements AllServerInterfaces
 				else if(temp instanceof NoAmmo){
 					currentModifier.put("className", "NoAmmo");
 				}
+				else if(temp instanceof HalfScores){
+					currentModifier.put("className", "HalfScores");
+				}
 				
 				currentModifier.put("x", temp.getCoordX());
 				currentModifier.put("y", temp.getCoordY());
@@ -869,7 +894,6 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				if(isRunning){
-					listOfModifiers.add( new NoAmmo(200, Modifier.getModifierheigth()+100) );
 					double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 					if(spawnOrNot >= 0.6){
 						// Determine the place of spawning
@@ -886,7 +910,7 @@ public class Server implements AllServerInterfaces
 							else//TODO hostileFrenzy
 								listOfModifiers.add( new HostileFrenzy(x, Modifier.getModifierheigth()+100) );
 						}
-						//spawn a mod with medium frequency [Shield, Laser, controlChangerMULTIONLY, LeftRightSwitcher, noAmmo, scoreHalver]
+						//spawn a mod with medium frequency [Shield, Laser, controlChangerMULTIONLY, LeftRightSwitcher, noAmmo, HalfScores]
 						else if(whichFrequency > 0.4 && whichFrequency < 0.8){
 							if(whatToSpawn < 0.1667){
 								listOfModifiers.add( new Shield(x, Modifier.getModifierheigth()+100) );
@@ -901,7 +925,7 @@ public class Server implements AllServerInterfaces
 								listOfModifiers.add( new NoAmmo(x, Modifier.getModifierheigth()+100) );
 							}
 							else if(whatToSpawn >= 0.667 && whatToSpawn < 0.8333){
-								
+								listOfModifiers.add( new HalfScores(x, Modifier.getModifierheigth()+100) );
 							}
 							else{
 								
