@@ -971,7 +971,7 @@ public class Server implements AllServerInterfaces
 	public void startRequest(ClientForServer c){
 		if(type == GameType.SINGLE || type == GameType.MULTI_LOCAL){
 			// have to send object list to client before changing its gamestate
-			if(initState == true){ 
+			if(initState){ 
 				initState = false;
 				client1.updateObjects(allToJSON());
 			}
@@ -980,26 +980,28 @@ public class Server implements AllServerInterfaces
 			client1.changeGameState(GameState.RUNNING);
 		}
 		// MULTI_NETWORK -> 2 clients
-		else{ 
+		else{
+			if(initState){
+				initState = false;
+				client1.updateObjects(allToJSON());
+				client2.updateObjects(allToJSON());
+				client1.changeGameState(GameState.WAITING);
+				client2.changeGameState(GameState.WAITING);
+			}	
 			if( c == client1 ){ // start requested by client1
+				client1Ready = true;
 				if(client2Ready){ // starting the game
-					client1Ready = true; //TODO: maybe this is not needed
-					if(initState == true){
-						initState = false;
-						client1.updateObjects(allToJSON());
-						client2.updateObjects(allToJSON());
-					}
 					isRunning = true;
 					client1.changeGameState(GameState.RUNNING);
 					client2.changeGameState(GameState.RUNNING);				
 				}
-				else{ // client2 is not ready yet
-					client1Ready = true;
+				else{
+					client1.changeGameState(GameState.WAITING);
 				}
 			}
 			else{ // start requested by client2
+				client2Ready = true;
 				if(client1Ready){ // starting the game
-					client2Ready = true; //TODO: maybe this is not needed
 					if(initState == true){
 						initState = false;
 						client1.updateObjects(allToJSON());
@@ -1010,7 +1012,7 @@ public class Server implements AllServerInterfaces
 					client2.changeGameState(GameState.RUNNING);
 				}
 				else{
-					client2Ready = true;
+					client2.changeGameState(GameState.WAITING);
 				}
 			}
 		}
@@ -1025,12 +1027,14 @@ public class Server implements AllServerInterfaces
 		// MULTI_NETWORK -> 2 clients
 		else{
 			if( c == client1 ){ // pause requested by client1
+				client1Ready = false;
 				client1.changeGameState(GameState.PAUSED);
-				client2.changeGameState(GameState.WAITING); //TODO: Erre van kitalalva ez az allapot??
+				client2.changeGameState(GameState.PAUSED); //TODO: Erre van kitalalva ez az allapot??
 			}
 			else{ // pause requested by client2
+				client2Ready = false;
 				client2.changeGameState(GameState.PAUSED);
-				client1.changeGameState(GameState.WAITING); //TODO: Erre van kitalalva ez az allapot??
+				client1.changeGameState(GameState.PAUSED); //TODO: Erre van kitalalva ez az allapot??
 			}
 		}	
 	}
