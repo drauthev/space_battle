@@ -379,6 +379,8 @@ public class Client implements ClientForGUI, ClientForServer {
 		if (gt == GameType.MULTI_NETWORK)
 		{
 			vc = new VirtualClient(temp, 47987, 100);
+			
+			temp.setClient2(vc);
 
 			Thread t = new Thread(vc);
 			t.start();
@@ -387,6 +389,11 @@ public class Client implements ClientForGUI, ClientForServer {
 		if (gt == GameType.MULTI_LOCAL)
 		{
 			playercontrollers = new PlayerController[2];
+			
+			playercontrollers[1] = new PlayerController(temp);
+			playercontrollers[1].bindKey(PlayerAction.P2FIRE, keyboardSettings.get(PlayerAction.P2FIRE));
+			playercontrollers[1].bindKey(PlayerAction.P2LEFT, keyboardSettings.get(PlayerAction.P2LEFT));
+			playercontrollers[1].bindKey(PlayerAction.P2RIGHT, keyboardSettings.get(PlayerAction.P2RIGHT));
 		}
 		else playercontrollers = new PlayerController[1];
 		
@@ -394,14 +401,6 @@ public class Client implements ClientForGUI, ClientForServer {
 		playercontrollers[0].bindKey(PlayerAction.P1FIRE, keyboardSettings.get(PlayerAction.P1FIRE));
 		playercontrollers[0].bindKey(PlayerAction.P1LEFT, keyboardSettings.get(PlayerAction.P1LEFT));
 		playercontrollers[0].bindKey(PlayerAction.P1RIGHT, keyboardSettings.get(PlayerAction.P1RIGHT));
-		
-		if (gt == GameType.MULTI_LOCAL)
-		{
-				playercontrollers[1] = new PlayerController(temp);
-				playercontrollers[1].bindKey(PlayerAction.P2FIRE, keyboardSettings.get(PlayerAction.P2FIRE));
-				playercontrollers[1].bindKey(PlayerAction.P2LEFT, keyboardSettings.get(PlayerAction.P2LEFT));
-				playercontrollers[1].bindKey(PlayerAction.P2RIGHT, keyboardSettings.get(PlayerAction.P2RIGHT));
-		}
 		
 		Thread t = new Thread(server);
 		t.start();
