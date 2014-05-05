@@ -45,17 +45,21 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private static Font titleFont;
 	private static Font menuFont;
 	private static Font stateFont;
+	private static Font powerFont;
 
 	// Font Sizes
 	private static final int scoreSize = 22;
 	private static final int titleSize = 42;
 	private static final int menuSize  = 26;
 	private static final int stateSize = 26;
+	private static final int powerSize = 26;
 
 	// Font Colors
 	private static final Color titleColor = Color.WHITE;
 	private static final Color menuColor  = Color.WHITE;
 	private static final Color stateColor = Color.WHITE;
+	private static final Color powerUpColor = Color.GREEN;
+	private static final Color powerDownColor = Color.RED;
 
 	// Tick Counters
 	private long localTick = 0;
@@ -241,6 +245,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		titleFont = new Font("monospscoreFont", Font.BOLD, titleSize);
 		menuFont  = new Font("monospscoreFont", Font.BOLD, menuSize);
 		stateFont = new Font("monospscoreFont", Font.BOLD, stateSize);
+		powerFont = new Font("monospscoreFont", Font.BOLD, powerSize);
 
 		// Initialize Local variables
 		setGameState(GameState.NONE);
@@ -398,7 +403,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		if (currentGameState == GameState.RUNNING)
 			localObjectBuffer = client.getNewObjectBuffer();
 		
-		if (currentGameState != GameState.NONE && currentGameState != GameState.PAUSED)
+		if (currentGameState != GameState.NONE && currentGameState != GameState.PAUSED && currentGameState != GameState.CONNECTING && currentGameState != GameState.WAITING)
 		{		
 			long serverTick = localObjectBuffer.currentTick;
 			
@@ -490,19 +495,52 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 				if (localProjectile.className.equals("ProjectileGoingUp"))
 					drawObject(bulletImg[0]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
-				else //ProjectileGoingDown
+				else if (localProjectile.className.equals("ProjectileGoingDown"))
 					drawObject(bulletImg[1]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+				else if (localProjectile.className.equals("ProjectileLaser"))
+					drawObject(bulletImg[2]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+				else
+				{
+					drawObject(bulletImg[1]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+					System.out.println("Projectile with unknown name: " + localProjectile.className);
+				}
 			}
 
+			int modificationNumber = 0;
 			for (int i = 0; i < localObjectBuffer.modCount; i++)
 			{
+				boolean isUp;
+			
 				CModifier localModifier = localObjectBuffer.mod[i];	
-				if (localModifier.pickupTime == 0 || (serverTick - localModifier.pickupTime > 1000) || ((serverTick - localModifier.pickupTime)/200) % 2 == 0) ;
+				//if (localModifier.pickupTime == 0 || (serverTick - localModifier.pickupTime > 1000) || ((serverTick - localModifier.pickupTime)/200) % 2 == 0) ;
+				
+				if (localModifier.className.equals("ProjectileLaser") || localModifier.className.equals("Shield") ||
+						localModifier.className.equals("Boom") || localModifier.className.equals("Fastener") ||
+						localModifier.className.equals("Laser") || localModifier.className.equals("OneUp"))
+					isUp = true;
+				
+				else if (localModifier.className.equals("HalfScores") || localModifier.className.equals("HostileFrenzy") ||
+						localModifier.className.equals("LeftRightSwitcher") || localModifier.className.equals("NoAmmo"))
+					isUp = false;
+				
+				else
 				{
-					if (localModifier.className.equals("PowerDown"))
-						drawObject(powerDownImg	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
-					else //PowerUp
-						drawObject(powerUpImg		, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+					System.out.println("Not known powerUp/Down: " + localModifier.className);
+					isUp = false;
+				}
+				
+					
+				if (localModifier.pickupTime == 0)
+				{
+					if (isUp)
+						drawObject(powerUpImg	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+					else
+						drawObject(powerDownImg		, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+				}
+				else
+				{
+					drawPowerTitle(7-modificationNumber,localModifier.className.toUpperCase(),isUp);
+					modificationNumber++;
 				}
 				
 			}
@@ -679,6 +717,19 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		if (dotLineToDraw == lineNumber) dotCorX = CoordinateX;
 	}
 
+	public void drawPowerTitle(int lineNumber, String content, boolean isPowerUp)
+	{	
+		bufferGraphics.setFont(powerFont);
+		if(isPowerUp)
+			bufferGraphics.setColor(powerUpColor);
+		else
+			bufferGraphics.setColor(powerDownColor);
+		
+		int CoordinateX = middleX - bufferGraphics.getFontMetrics().stringWidth(content)/2;
+		int CoordinateY = firstLineY + lineNumber * lineHeight;
+		bufferGraphics.drawString(content,CoordinateX, CoordinateY);
+	}
+	
 	public void drawWritingLine(int lineNumber, String content)
 	{
 		bufferGraphics.setFont(menuFont);
