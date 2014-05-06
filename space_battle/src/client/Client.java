@@ -422,9 +422,9 @@ public class Client implements ClientForGUI, ClientForServer {
 		playercontrollers = new PlayerController[1];
 		
 		playercontrollers[0] = new PlayerController(vs);
-		playercontrollers[0].bindKey(PlayerAction.P1FIRE, keyboardSettings.get(PlayerAction.P1FIRE));
-		playercontrollers[0].bindKey(PlayerAction.P1LEFT, keyboardSettings.get(PlayerAction.P1LEFT));
-		playercontrollers[0].bindKey(PlayerAction.P1RIGHT, keyboardSettings.get(PlayerAction.P1RIGHT));
+		playercontrollers[0].bindKey(PlayerAction.P2FIRE, keyboardSettings.get(PlayerAction.P1FIRE));
+		playercontrollers[0].bindKey(PlayerAction.P2LEFT, keyboardSettings.get(PlayerAction.P1LEFT));
+		playercontrollers[0].bindKey(PlayerAction.P2RIGHT, keyboardSettings.get(PlayerAction.P1RIGHT));
 		
 		Thread t = new Thread(vs);
 		t.start();

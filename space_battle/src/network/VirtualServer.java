@@ -179,7 +179,7 @@ public class VirtualServer
 	}
 
 	@Override
-	public void disconnect() {
+	public void disconnect(ClientForServer c) {
 		synchronized (callQueue) { callQueue.add(new AbstractMap.SimpleEntry<String, Object>("disconnect", null)); }
 	}
 
@@ -200,7 +200,7 @@ public class VirtualServer
 
 	@Override
 	public void terminate() {
-		disconnect();
+		disconnect(client);
 		isShuttingDown = true;
 		timer.cancel();
 	}

@@ -2,7 +2,7 @@ package interfaces;
 
 public interface ServerForClient extends Runnable {
 	// public void run() 							// entry point
-	public void disconnect();						// lelép a kliens (vagy a network controller elveszti a kapcsolatot)
+	public void disconnect(ClientForServer c);		// lelép a kliens (vagy a network controller elveszti a kapcsolatot)
 	public void pauseRequest(ClientForServer c);	// kliens kérvényezi a szünetelést
 	public void startRequest(ClientForServer c);	// kliens kérvényezi a játék indítását
 	public void sendName(String name);				// játékosnév elküldése; szerver felírhatja a high scores-ba
