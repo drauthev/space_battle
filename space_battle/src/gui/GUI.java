@@ -63,7 +63,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	// Tick Counters
 	private long localTick = 0;
-	
+
 	// Enums
 	private GameState currentGameState;
 	private MenuState currentMenuState;
@@ -141,10 +141,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	//Strings containing Keyboard settings
 	private String[] actionKeys = new String[6];
-	
+
 	//Client
 	private ClientForGUI client;
-	
+
 	// IP handling
 	private String[] ipAddresses = null;
 	private static final int ipAddresseslength = 4;
@@ -160,10 +160,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int lastMenuHS = 1;
 	private String highScoreValues[] = new String[10];
 	private String highScoreString[] = new String[10];
-	
+
 	private static final String[] actionKeysNames = {"P1 Left","P1 Right","P1 Fire","P2 Left","P2 Right","P2 Fire"};
 
-	
+
 	public GUI(ClientForGUI client_param)
 	{
 
@@ -209,7 +209,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			spaceShipImg[5]	   	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg6.png"));
 			powerUpImg	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg.png"));
 			powerDownImg	  	  = ImageIO.read(new File(projdir + "/res/sprites/powerDownImg.png"));
-			
+
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -265,10 +265,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		// Manage Double Buffering
 		offscreen = new BufferedImage(frameWidth,frameHeight,BufferedImage.TYPE_INT_RGB); 
 		bufferGraphics = offscreen.createGraphics();  
-		
+
 		bufferGraphics.setRenderingHint(
-		        RenderingHints.KEY_TEXT_ANTIALIASING,
-		        RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+				RenderingHints.KEY_TEXT_ANTIALIASING,
+				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
 		// Client
 		client = client_param;
 
@@ -282,7 +282,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		});
 
 		// Get Keyboard settings
-		EnumMap<PlayerAction, Integer> asd = client.getKeyboardSettings().clone(); //TODO kell?		// HashMap-ben action(K)-KeyCode(V) párok
+		EnumMap<PlayerAction, Integer> asd = client.getKeyboardSettings().clone(); //TODO kell?		// HashMap-ben action(K)-KeyCode(V) pĂˇrok
 
 		actionKeys[0] = KeyEvent.getKeyText(asd.get(PlayerAction.P1LEFT));
 		actionKeys[1] = KeyEvent.getKeyText(asd.get(PlayerAction.P1RIGHT));
@@ -322,7 +322,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			dotLine = newGameDot;
 		else 
 			dotLine = 1;
-		
+
 		if (ms == MenuState.HIGH_SCORES_MENU)
 			refreshHighScore();
 
@@ -366,7 +366,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		mainDot = 1;
 		optionsDot = 1;
 		newGameDot = 1;
-		
+
 		currentGameState = gs;
 		System.out.println("GameState changed to " + currentGameState);
 	}
@@ -391,165 +391,167 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		JOptionPane.showMessageDialog(null, infoMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
 	}
 
-
+ 
 	/**************** GRAPHICAL PROCEDURES **************************/
 
 	public void paint(Graphics g)
 	{
 		g.drawImage(offscreen,0,0,this);
-		
+
 		drawBackground();
-		
+
 		if (currentGameState == GameState.RUNNING)
 			localObjectBuffer = client.getNewObjectBuffer();
-		
-		if (currentGameState != GameState.NONE && currentGameState != GameState.PAUSED && currentGameState != GameState.CONNECTING && currentGameState != GameState.WAITING)
+
+		if (currentGameState != GameState.NONE && currentGameState != GameState.PAUSED)
 		{		
-			long serverTick = localObjectBuffer.currentTick;
-			
-			int numberOfLivesA = 0;
-			int numberOfLivesB = 0;
-
-			for (int i = 0; i < localObjectBuffer.npcCount; i++)
+			if (currentGameState != GameState.CONNECTING && currentGameState != GameState.WAITING)
 			{
-				CNPC localNPC = localObjectBuffer.npc[i];
+				long serverTick = localObjectBuffer.currentTick;
 
-				if (localNPC.className.equals("HostileType1"))
+				int numberOfLivesA = 0;
+				int numberOfLivesB = 0;
+
+				for (int i = 0; i < localObjectBuffer.npcCount; i++)
 				{
-					for (int j = 0; j < 4; j++)
-						enemyBlowImg[j] = enemyABlowImg[j];
-					
-					for (int j = 0; j < 3; j++)
-						enemyImg[j] 		= enemyAImg[j];
+					CNPC localNPC = localObjectBuffer.npc[i];
 
-					enemyHeight 	= enemyAHeight;
-					enemyWidth 		= enemyAWidth;
-					enemyBlowHeight = enemyABlowHeight;
-					enemyBlowWidth 	= enemyABlowWidth;
+					if (localNPC.className.equals("HostileType1"))
+					{
+						for (int j = 0; j < 4; j++)
+							enemyBlowImg[j] = enemyABlowImg[j];
+
+						for (int j = 0; j < 3; j++)
+							enemyImg[j] 		= enemyAImg[j];
+
+						enemyHeight 	= enemyAHeight;
+						enemyWidth 		= enemyAWidth;
+						enemyBlowHeight = enemyABlowHeight;
+						enemyBlowWidth 	= enemyABlowWidth;
+					}
+
+					else if (localNPC.className.equals("HostileType2"))
+					{
+						for (int j = 0; j < 4; j++)
+							enemyBlowImg[j] = enemyBBlowImg[j];
+
+						for (int j = 0; j < 3; j++)
+							enemyImg[j] 		= enemyBImg[j];
+
+						enemyHeight 	= enemyBHeight;
+						enemyWidth 		= enemyBWidth;
+						enemyBlowHeight = enemyBBlowHeight;
+						enemyBlowWidth 	= enemyBBlowWidth;
+					}
+
+					else if (localNPC.className.equals("HostileType3"))
+					{
+						for (int j = 0; j < 4; j++)
+							enemyBlowImg[j] = enemyCBlowImg[j];
+
+						for (int j = 0; j < 3; j++)
+							enemyImg[j] 		= enemyCImg[j];
+
+						enemyHeight 	= enemyCHeight;
+						enemyWidth 		= enemyCWidth;
+						enemyBlowHeight = enemyCBlowHeight;
+						enemyBlowWidth 	= enemyCBlowWidth;
+					}
+
+					if (localNPC.explosionTime != 0) 
+					{
+						int tickDiff_div = (int) (serverTick-localNPC.explosionTime)/130;
+						if (tickDiff_div < 4) drawObject(enemyBlowImg[tickDiff_div], localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
+					}
+					else if (localNPC.hitTime != 0 && ((serverTick - localNPC.hitTime) < 1500)) 
+					{							
+						int tickDiff_div = (int) (serverTick-localNPC.creationTime)/200;
+						if (tickDiff_div % 2 == 0) drawObject(enemyImg[0], localNPC.x, localNPC.y, enemyWidth,enemyHeight);
+					}
+					else 
+					{
+						int tickDiff_div = (int) (serverTick-localNPC.creationTime)/1000;
+						drawObject(enemyImg[tickDiff_div % 3], localNPC.x, localNPC.y, enemyWidth,enemyHeight);
+					}
 				}
 
-				else if (localNPC.className.equals("HostileType2"))
+				for (int i = 0; i < localObjectBuffer.playerCount; i++)
 				{
-					for (int j = 0; j < 4; j++)
-						enemyBlowImg[j] = enemyBBlowImg[j];
-					
-					for (int j = 0; j < 3; j++)
-						enemyImg[j] 		= enemyBImg[j];
-					
-					enemyHeight 	= enemyBHeight;
-					enemyWidth 		= enemyBWidth;
-					enemyBlowHeight = enemyBBlowHeight;
-					enemyBlowWidth 	= enemyBBlowWidth;
+					CPlayer localPlayer = localObjectBuffer.player[i];
+
+					if (i == 0) numberOfLivesA = localPlayer.numberOfLives;
+					else if (i == 1) numberOfLivesB = localPlayer.numberOfLives;
+
+					if (localPlayer.explosionTime != 0 )
+					{
+						int tickDiff_div = (int) (serverTick - localPlayer.explosionTime)/200;
+						if      (tickDiff_div < 5) drawObject(spaceShipBombImg[tickDiff_div], localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
+					}
+					else 
+						drawObject(spaceShipImg[i], localPlayer.x, localPlayer.y, spaceShipWidth, spaceShipHeight);
 				}
 
-				else if (localNPC.className.equals("HostileType3"))
+				for (int i = 0; i < localObjectBuffer.projCount; i++)
 				{
-					for (int j = 0; j < 4; j++)
-						enemyBlowImg[j] = enemyCBlowImg[j];
-					
-					for (int j = 0; j < 3; j++)
-						enemyImg[j] 		= enemyCImg[j];
-					
-					enemyHeight 	= enemyCHeight;
-					enemyWidth 		= enemyCWidth;
-					enemyBlowHeight = enemyCBlowHeight;
-					enemyBlowWidth 	= enemyCBlowWidth;
-				}
+					CProjectile localProjectile = localObjectBuffer.proj[i];
 
-				if (localNPC.explosionTime != 0) 
-				{
-					int tickDiff_div = (int) (serverTick-localNPC.explosionTime)/130;
-					if (tickDiff_div < 4) drawObject(enemyBlowImg[tickDiff_div], localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
-				}
-				else if (localNPC.hitTime != 0 && ((serverTick - localNPC.hitTime) < 1500)) 
-				{							
-					int tickDiff_div = (int) (serverTick-localNPC.creationTime)/200;
-					if (tickDiff_div % 2 == 0) drawObject(enemyImg[0], localNPC.x, localNPC.y, enemyWidth,enemyHeight);
-				}
-				else 
-				{
-					int tickDiff_div = (int) (serverTick-localNPC.creationTime)/1000;
-					drawObject(enemyImg[tickDiff_div % 3], localNPC.x, localNPC.y, enemyWidth,enemyHeight);
-				}
-			}
-
-			for (int i = 0; i < localObjectBuffer.playerCount; i++)
-			{
-				CPlayer localPlayer = localObjectBuffer.player[i];
-				
-				if (i == 0) numberOfLivesA = localPlayer.numberOfLives;
-				else if (i == 1) numberOfLivesB = localPlayer.numberOfLives;
-
-				if (localPlayer.explosionTime != 0 )
-				{
-					int tickDiff_div = (int) (serverTick - localPlayer.explosionTime)/200;
-					if      (tickDiff_div < 5) drawObject(spaceShipBombImg[tickDiff_div], localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
-				}
-				else 
-					drawObject(spaceShipImg[i], localPlayer.x, localPlayer.y, spaceShipWidth, spaceShipHeight);
-			}
-
-			for (int i = 0; i < localObjectBuffer.projCount; i++)
-			{
-				CProjectile localProjectile = localObjectBuffer.proj[i];
-
-				if (localProjectile.className.equals("ProjectileGoingUp"))
-					drawObject(bulletImg[0]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
-				else if (localProjectile.className.equals("ProjectileGoingDown"))
-					drawObject(bulletImg[1]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
-				else if (localProjectile.className.equals("ProjectileLaser"))
-					drawObject(bulletImg[2]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
-				else
-				{
-					drawObject(bulletImg[1]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
-					System.out.println("Projectile with unknown name: " + localProjectile.className);
-				}
-			}
-
-			int modificationNumber = 0;
-			for (int i = 0; i < localObjectBuffer.modCount; i++)
-			{
-				boolean isUp;
-			
-				CModifier localModifier = localObjectBuffer.mod[i];	
-				//if (localModifier.pickupTime == 0 || (serverTick - localModifier.pickupTime > 1000) || ((serverTick - localModifier.pickupTime)/200) % 2 == 0) ;
-				
-				if (localModifier.className.equals("ProjectileLaser") || localModifier.className.equals("Shield") ||
-						localModifier.className.equals("Boom") || localModifier.className.equals("Fastener") ||
-						localModifier.className.equals("Laser") || localModifier.className.equals("OneUp"))
-					isUp = true;
-				
-				else if (localModifier.className.equals("HalfScores") || localModifier.className.equals("HostileFrenzy") ||
-						localModifier.className.equals("LeftRightSwitcher") || localModifier.className.equals("NoAmmo"))
-					isUp = false;
-				
-				else
-				{
-					System.out.println("Not known powerUp/Down: " + localModifier.className);
-					isUp = false;
-				}
-				
-					
-				if (localModifier.pickupTime == 0)
-				{
-					if (isUp)
-						drawObject(powerUpImg	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+					if (localProjectile.className.equals("ProjectileGoingUp"))
+						drawObject(bulletImg[0]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+					else if (localProjectile.className.equals("ProjectileGoingDown"))
+						drawObject(bulletImg[1]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+					else if (localProjectile.className.equals("ProjectileLaser"))
+						drawObject(bulletImg[2]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
 					else
-						drawObject(powerDownImg		, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+					{
+						drawObject(bulletImg[1]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+						System.out.println("Projectile with unknown name: " + localProjectile.className);
+					}
 				}
-				else
+
+				int modificationNumber = 0;
+				for (int i = 0; i < localObjectBuffer.modCount; i++)
 				{
-					drawPowerTitle(7-modificationNumber,localModifier.className.toUpperCase(),isUp);
-					modificationNumber++;
+					boolean isUp;
+
+					CModifier localModifier = localObjectBuffer.mod[i];	
+					//if (localModifier.pickupTime == 0 || (serverTick - localModifier.pickupTime > 1000) || ((serverTick - localModifier.pickupTime)/200) % 2 == 0) ;
+
+					if (localModifier.className.equals("ProjectileLaser") || localModifier.className.equals("Shield") ||
+							localModifier.className.equals("Boom") || localModifier.className.equals("Fastener") ||
+							localModifier.className.equals("Laser") || localModifier.className.equals("OneUp"))
+						isUp = true;
+
+					else if (localModifier.className.equals("HalfScores") || localModifier.className.equals("HostileFrenzy") ||
+							localModifier.className.equals("LeftRightSwitcher") || localModifier.className.equals("NoAmmo"))
+						isUp = false;
+
+					else
+					{
+						System.out.println("Not known powerUp/Down: " + localModifier.className);
+						isUp = false;
+					}
+
+
+					if (localModifier.pickupTime == 0)
+					{
+						if (isUp)
+							drawObject(powerUpImg	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+						else
+							drawObject(powerDownImg		, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+					}
+					else
+					{
+						drawPowerTitle(7-modificationNumber,localModifier.className.toUpperCase(),isUp);
+						modificationNumber++;
+					}
+
 				}
-				
+
+				drawLives(numberOfLivesA,numberOfLivesB);
+
+				drawTopScores(localObjectBuffer.score,client.getHighestScore());
+
 			}
-			
-			drawLives(numberOfLivesA,numberOfLivesB);
-
-			//testDrawing();
-
-			drawTopScores(localObjectBuffer.score,client.getHighestScore());
 
 			if (currentGameState == GameState.WAITING)
 			{
@@ -628,8 +630,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				drawTitle("HIGH SCORE");
 
 				for(int j = 0; j < lastMenuHS-1; j++) 
-				drawOptionsLine(j,highScoreString[j],highScoreValues[j]);
-			
+					drawOptionsLine(j,highScoreString[j],highScoreValues[j]);
+
 				drawMenuLine   (lastMenuHS,"Back");
 			}
 
@@ -724,12 +726,12 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			bufferGraphics.setColor(powerUpColor);
 		else
 			bufferGraphics.setColor(powerDownColor);
-		
+
 		int CoordinateX = middleX - bufferGraphics.getFontMetrics().stringWidth(content)/2;
 		int CoordinateY = firstLineY + lineNumber * lineHeight;
 		bufferGraphics.drawString(content,CoordinateX, CoordinateY);
 	}
-	
+
 	public void drawWritingLine(int lineNumber, String content)
 	{
 		bufferGraphics.setFont(menuFont);
@@ -737,7 +739,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 		int CoordinateX = frameWidth/2 - bufferGraphics.getFontMetrics().stringWidth(content)/2;
 		int CoordinateY = firstLineY + lineNumber * lineHeight;
-		
+
 		if (localTick/1000 % 2 == 0) bufferGraphics.drawString(content,      CoordinateX, CoordinateY);
 		else 							 bufferGraphics.drawString(content + "_",CoordinateX, CoordinateY);
 		if (dotLineToDraw == lineNumber) dotCorX = CoordinateX;
@@ -783,7 +785,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		for (int i = 0; i < numberOfLives2; i++)
 			drawObject(lifeImg	, frameWidth - 45 -  40*i	, 600	, lifeImgWidth	,lifeImgHeight);
 	}		
-	
+
 	public void drawTopScores(int curr, int high)
 	{
 		bufferGraphics.setColor(Color.YELLOW);
@@ -989,7 +991,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					else if (dotLine == 6) client.bindKey(PlayerAction.P2FIRE, keyCode);
 
 					if (dotLine < 6) actionKeys[dotLine - 1] = KeyEvent.getKeyText(keyCode);
-					
+
 					keyBoardChangeSelected = 0;
 				}
 				else
@@ -1124,6 +1126,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	}
 
 	public void setRecentIPs(String[] iparr) {
-		ipAddresses = iparr.clone(); //TODO ez }gy jó?
+		ipAddresses = iparr.clone(); //TODO ez }gy jĂł?
 	}
 }

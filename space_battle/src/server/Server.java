@@ -241,6 +241,7 @@ public class Server implements AllServerInterfaces
 			temp = listOfPlayers.get(i);
 			if(temp.getID() == 0){
 				if(player1MovingLeft){
+					System.out.println("player 1 balra");
 					if(!leftRightIsSwitchedPlayer1)
 						temp.moveLeft();
 					else
@@ -514,7 +515,6 @@ public class Server implements AllServerInterfaces
 	
 	private void spawnModifier(int x, int y){
 		double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
-		listOfModifiers.add( new Shield(200, y) );
 		if(spawnOrNot >= 0.6){
 			// Choosing what to spawn
 			double whichFrequency = Math.random();
@@ -1199,22 +1199,21 @@ public class Server implements AllServerInterfaces
 	@Override
 	public void moveLeft(int playerID){
 		if(playerID == 0){
-			//System.out.println("player1");
 			player1MovingLeft = true;
 		}
 		else if(playerID == 1){
-			//System.out.println("player2");
 			player2MovingLeft = true;
 		}
-
 	}
 	
 	@Override
 	public void releaseLeft(int playerID){
-		if(playerID == 0)
+		if(playerID == 0){
 			player1MovingLeft = false;
-		else if(playerID == 1)
+		}
+		else if(playerID == 1){
 			player2MovingLeft = false;
+		}
 	}
 	
 	@Override
@@ -1287,7 +1286,6 @@ public class Server implements AllServerInterfaces
 		// TODO Auto-generated method stub
 		// TODO A végén setGameState(GameState.NONE) !!!
 	}
-	
 	
 	
 	/* FTP szerveren lesznek tárolva a high score-ok, mondjuk egy highscores.txt
