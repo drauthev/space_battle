@@ -197,6 +197,8 @@ public class Client implements ClientForGUI, ClientForServer {
 				objectBuffer[idx].mod[i].x = curr.getInt("x");
 				objectBuffer[idx].mod[i].y = curr.getInt("y");
 				objectBuffer[idx].mod[i].pickupTime = curr.getLong("pickupTime");
+				objectBuffer[idx].mod[i].creationTime = curr.getLong("creationTime");
+				objectBuffer[idx].mod[i].explosionTime = curr.getLong("explosionTime");
 			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
