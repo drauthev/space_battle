@@ -391,7 +391,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		JOptionPane.showMessageDialog(null, infoMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
 	}
 
-
+ 
 	/**************** GRAPHICAL PROCEDURES **************************/
 
 	public void paint(Graphics g)
