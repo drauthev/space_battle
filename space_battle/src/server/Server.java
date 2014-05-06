@@ -10,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.sun.jmx.snmp.tasks.Task;
+import com.sun.org.apache.xpath.internal.operations.Mod;
 
 import enums.*;
 import interfaces.AllServerInterfaces;
@@ -149,12 +150,13 @@ public class Server implements AllServerInterfaces
 			controlPlayers();	// move/shoot with players according to the pushed buttons
 			detectCollision();	// between players and hostiles
 			detectHits();
+			detectModifierHits(); // separate function -> no interference with hostile hit detect -> no list indexing issues
 			detectModifierPickUps();
 			removeNonExistentObjects();
 			isGameOver();
 		}
 		client1.updateObjects(allToJSON());
-			
+		if(type == GameType.MULTI_NETWORK)	client2.updateObjects(allToJSON());		
 	}
 		
 	private void moveNPCs(){
@@ -165,8 +167,16 @@ public class Server implements AllServerInterfaces
     	// Moving hostile spaceships
     	for(int i=0; i < listOfNPCs.size(); i++){
     		listOfNPCs.get(i).autoMove();
-    		if(hostilesAreFrenzied) listOfNPCs.get(i).autoMove(); // moving 'em to double distance
+    		if(hostilesAreFrenzied) listOfNPCs.get(i).autoMove(); // moving 'em to double distance if Frenzied
+    		// Teleporting with HostileType3s
+    		long currentTime = java.lang.System.currentTimeMillis();
+			if(listOfNPCs.get(i) instanceof HostileType3){
+				if( currentTime - ((HostileType3) listOfNPCs.get(i)).getTeleportTime() > Constants.hostile3TeleportFrequency){
+					((HostileType3) listOfNPCs.get(i)).teleport();
+				}
+			}
     	}
+				
     	// Moving Modifiers
     	for(int i=0; i < listOfModifiers.size(); i++){
     		listOfModifiers.get(i).autoMove();
@@ -332,11 +342,13 @@ public class Server implements AllServerInterfaces
 	private void detectHits(){
 		Projectile proj;
 		NPC npc;
+		Modifier mod;
 		int npcLives;
 		for(int i=0; i<listOfProjectiles.size(); i++){
 			proj = listOfProjectiles.get(i);
 			// Projectile is shot by a player
 			if( proj instanceof ProjectileGoingUp ){
+				// Detect NPC-hits
 				for(int j=0; j<listOfNPCs.size(); j++){
 					npc = listOfNPCs.get(j);
 					npcLives = npc.getLives();
@@ -376,10 +388,9 @@ public class Server implements AllServerInterfaces
 						}
 						listOfNPCs.set(j, npc);
 					}
-					// nothing to do if there is no hit
+					// If NPC is not hit, there is nothing to do
 				}
-			}
-			
+			}		
 			// Projectile is shot by an NPC
 			else{ 
 				if( proj instanceof ProjectileGoingDown ){
@@ -414,6 +425,134 @@ public class Server implements AllServerInterfaces
 					}
 				}
 				
+			}
+		}
+	}
+	
+	private void detectModifierHits(){ // Separate function for mod hit detect; this way there are no problems with list indexing
+		Projectile proj;
+		Modifier mod;
+		for(int i=0; i<listOfProjectiles.size(); i++){
+			proj = listOfProjectiles.get(i);
+			// Detect Modifier-hits
+			for(int j=0; j<listOfModifiers.size(); j++){
+				mod = listOfModifiers.get(j);
+				if( mod.getExplosionTime() == 0 && (java.lang.System.currentTimeMillis() - mod.getCreationTime() > 1000) ){ // doing nothing if the modifier is already exploded, or was just created
+					if( proj instanceof ProjectileGoingUp || proj instanceof ProjectileLaser){ // only investigating for player-shooted powerups
+						if( proj.isHit(mod) ){
+							mod.setExplosionTime(java.lang.System.currentTimeMillis());
+							// playing sound
+							client1.playSound(SoundType.enemyExplosion);
+							if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.enemyExplosion);
+							// Spawning 2 new modifiers from the exploded one
+							createModifiersFromAnExplodedOne(mod);
+							mod.setExplosionTime(java.lang.System.currentTimeMillis());
+							if( !(proj instanceof ProjectileLaser) ){ 
+								listOfProjectiles.remove(i); // remove projectile which hit, except it is a ProjectileLaser
+							}
+						}
+					}
+				
+				}	
+			}
+		}
+	}
+	
+	private void createModifiersFromAnExplodedOne(Modifier explodedMod){
+		// Adding the 2 new modifiers to the list
+		for(int i=0; i<2; i++){
+			// For choosing what to spawn
+			double whichFrequency = Math.random();
+			double whatToSpawn = Math.random();
+			// Determining coordinates
+			int x;
+			int y = explodedMod.getCoordY() + Modifier.getModifierheigth()/2;
+			if(i==0){
+				x = explodedMod.getCoordX() - Modifier.getModifierwidth();
+			}
+			else{
+				x = explodedMod.getCoordX() + Modifier.getModifierwidth();
+			}
+			
+			if(explodedMod instanceof PowerDown){
+				if(whichFrequency <= 0.4){ // spawning a frequent mod
+					listOfModifiers.add( new HostileFrenzy(x, y) );
+				}
+				else{ // spawning a medium frequent one (no rare PowerDowns exist)
+					if(whatToSpawn <= 0.3){
+						listOfModifiers.add( new LeftRightSwitcher(x, y) );
+					}
+					else if(whatToSpawn > 0.3 && whatToSpawn <= 0.6){
+						listOfModifiers.add( new NoAmmo(x, y) );
+					}
+					else{
+						listOfModifiers.add( new HalfScores(x, y) );	
+					}
+				}
+			}
+			else{ //exploded mod is a Powerup
+				if(whichFrequency <= 0.4){
+					listOfModifiers.add( new Fastener(x, y) );
+				}
+				else if(whichFrequency > 0.4 && whichFrequency < 0.8){
+					if(whatToSpawn < 0.5)
+						listOfModifiers.add( new Shield(x, y) );
+					else
+						listOfModifiers.add( new Laser(x, y) );
+				}
+				else{
+					if(whatToSpawn < 0.5)
+						listOfModifiers.add( new OneUp(x, y) );
+					else
+						listOfModifiers.add( new Boom(x, y) );
+				}
+			}
+			// Setting the creationTime of the new modifier - it is the last element of the list
+			listOfModifiers.get(listOfModifiers.size()-1).setCreationTime(java.lang.System.currentTimeMillis());
+		}
+	}
+	
+	private void spawnModifier(int x, int y){
+		double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
+		listOfModifiers.add( new Shield(200, y) );
+		if(spawnOrNot >= 0.6){
+			// Choosing what to spawn
+			double whichFrequency = Math.random();
+			double whatToSpawn = Math.random();
+			// spawn a frequent modifier [fastener, hostileFrenzy]
+			if(whichFrequency <= 0.4){
+				if(whatToSpawn >= 0.5)
+					listOfModifiers.add( new Fastener(x, y) );
+				else//TODO hostileFrenzy
+					listOfModifiers.add( new HostileFrenzy(x, y) );
+			}
+			//spawn a mod with medium frequency [Shield, Laser, controlChangerMULTIONLY, LeftRightSwitcher, noAmmo, HalfScores]
+			else if(whichFrequency > 0.4 && whichFrequency < 0.8){
+				if(whatToSpawn < 0.1667){
+					listOfModifiers.add( new Shield(x, y) );
+				}
+				else if(whatToSpawn >= 0.1667 && whatToSpawn < 0.333){
+					listOfModifiers.add( new Laser(x, y) );
+				}
+				else if(whatToSpawn >= 0.333 && whatToSpawn < 0.5){
+					listOfModifiers.add( new LeftRightSwitcher(x, y) );
+				}
+				else if(whatToSpawn >= 0.5 && whatToSpawn < 0.667){
+					listOfModifiers.add( new NoAmmo(x, y) );
+				}
+				else if(whatToSpawn >= 0.667 && whatToSpawn < 0.8333){
+					listOfModifiers.add( new HalfScores(x, y) );
+				}
+				else{
+					
+				}
+			}
+			// spawn a rare modifier [OneUp, Boom]
+			else{
+				if(whatToSpawn >= 0.5)
+					listOfModifiers.add( new OneUp(x, y) );
+				else
+					listOfModifiers.add( new Boom(x, y) );
 			}
 		}
 	}
@@ -529,85 +668,87 @@ public class Server implements AllServerInterfaces
 			Player tempPlayer = listOfPlayers.get(i);
 			for(int j=0; j<listOfModifiers.size(); j++){
 				Modifier tempMod = listOfModifiers.get(j);
-				if( tempMod.getHitBox().isCollision(tempPlayer)){
-					// Playing sound
-					if( tempMod instanceof PowerDown){
-						client1.playSound(SoundType.powerDown);
-						if( type == GameType.MULTI_NETWORK) client2.playSound(SoundType.powerDown);
-					}
-					else{
-						client1.playSound(SoundType.powerUp);
-						if( type == GameType.MULTI_NETWORK) client2.playSound(SoundType.powerUp);
-					}
-					// Taking effect..
-					if(tempMod.getPickUpTime() == 0){ // modifier staying in the list for animation purposes, so have to make sure that it takes effect only once
-						tempMod.setPickUpTime(java.lang.System.currentTimeMillis());
-						if(tempMod instanceof Fastener){
-							tempMod.setPickUpTime(java.lang.System.currentTimeMillis()); // removeNonExistentObjects() will delete it from list
-							tempPlayer.setFastened(true);
-							tempPlayer.setTimeBetweenShots(Constants.timeBetweenShotsIfFastened);
-							listOfPlayers.set(i, tempPlayer);
-							if(tempPlayer.getID() == 0)
-								timer.schedule(taskElapseFastenerPlayer1, Fastener.getTimeItLasts());
-							else
-								timer.schedule(taskElapseFastenerPlayer2, Fastener.getTimeItLasts());						
+				if( tempMod.getExplosionTime() == 0 ){ // no investigation if the modifier is stays in the list only for animation purposes
+					if( tempMod.getHitBox().isCollision(tempPlayer)){
+						// Playing sound
+						if( tempMod instanceof PowerDown){
+							client1.playSound(SoundType.powerDown);
+							if( type == GameType.MULTI_NETWORK) client2.playSound(SoundType.powerDown);
 						}
-						if(tempMod instanceof OneUp){
-							if(tempPlayer.getLives() < 5)
-								listOfPlayers.get(i).setLives(tempPlayer.getLives()+1);
+						else{
+							client1.playSound(SoundType.powerUp);
+							if( type == GameType.MULTI_NETWORK) client2.playSound(SoundType.powerUp);
 						}
-						if(tempMod instanceof Shield){
-							listOfPlayers.get(i).setShielded(true);
-							if(tempPlayer.getID() == 0)
-								timer.schedule(taskElapseShieldPlayer1, Shield.getTimeItLasts());
-							else
-								timer.schedule(taskElapseShieldPlayer2, Shield.getTimeItLasts());
-						}
-						if(tempMod instanceof Boom){
-							for(int i1=0; i1<listOfNPCs.size(); i1++){
-								listOfNPCs.get(i1).setLives(0);
-								listOfNPCs.get(i1).setExplosionTime(java.lang.System.currentTimeMillis());
-								// playing sound
-								client1.playSound(SoundType.enemyExplosion);
-								if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.enemyExplosion);
+						// Taking effect..
+						if(tempMod.getPickUpTime() == 0){ // modifier staying in the list for animation purposes, so have to make sure that it takes effect only once
+							tempMod.setPickUpTime(java.lang.System.currentTimeMillis());
+							if(tempMod instanceof Fastener){
+								tempMod.setPickUpTime(java.lang.System.currentTimeMillis()); // removeNonExistentObjects() will delete it from list
+								tempPlayer.setFastened(true);
+								tempPlayer.setTimeBetweenShots(Constants.timeBetweenShotsIfFastened);
+								listOfPlayers.set(i, tempPlayer);
+								if(tempPlayer.getID() == 0)
+									timer.schedule(taskElapseFastenerPlayer1, Fastener.getTimeItLasts());
+								else
+									timer.schedule(taskElapseFastenerPlayer2, Fastener.getTimeItLasts());						
 							}
-						}
-						if(tempMod instanceof Laser){
-							tempPlayer.setHasLaser(true);
-							if(tempPlayer.getID() == 0){
-								timer.schedule(taskElapseLaserPlayer1, Laser.getTimeItLasts());
+							if(tempMod instanceof OneUp){
+								if(tempPlayer.getLives() < 5)
+									listOfPlayers.get(i).setLives(tempPlayer.getLives()+1);
 							}
-							else{
-								timer.schedule(taskElapseLaserPlayer2, Laser.getTimeItLasts());
-							}							
-						}
-						if(tempMod instanceof LeftRightSwitcher){
-							if(tempPlayer.getID() == 0){
-								leftRightIsSwitchedPlayer1 = true;
-								timer.schedule(taskElapseLeftRightSwitcherPlayer1, LeftRightSwitcher.getTimeItLasts());
-							}	
-							else{
-								leftRightIsSwitchedPlayer2 = true;
-								timer.schedule(taskElapseLeftRightSwitcherPlayer2, LeftRightSwitcher.getTimeItLasts());
+							if(tempMod instanceof Shield){
+								listOfPlayers.get(i).setShielded(true);
+								if(tempPlayer.getID() == 0)
+									timer.schedule(taskElapseShieldPlayer1, Shield.getTimeItLasts());
+								else
+									timer.schedule(taskElapseShieldPlayer2, Shield.getTimeItLasts());
 							}
-						}
-						if(tempMod instanceof HostileFrenzy){
-							hostilesAreFrenzied = true;
-							timer.schedule(taskElapseHostileFrenzy, HostileFrenzy.getTimeItLasts());		
-						}
-						if(tempMod instanceof NoAmmo){
-							if(tempPlayer.getID() == 0){
-								noAmmoPlayer1 = true;
-								timer.schedule(taskElapseNoAmmoPlayer1, NoAmmo.getTimeItLasts());
-							}	
-							else{
-								noAmmoPlayer2 = true;
-								timer.schedule(taskElapseNoAmmoPlayer2, NoAmmo.getTimeItLasts());
-							}	
-						}
-						if(tempMod instanceof HalfScores){
-							halfScores = true;
-							timer.schedule(taskElapseHalfScores, HalfScores.getTimeItLasts());
+							if(tempMod instanceof Boom){
+								for(int i1=0; i1<listOfNPCs.size(); i1++){
+									listOfNPCs.get(i1).setLives(0);
+									listOfNPCs.get(i1).setExplosionTime(java.lang.System.currentTimeMillis());
+									// playing sound
+									client1.playSound(SoundType.enemyExplosion);
+									if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.enemyExplosion);
+								}
+							}
+							if(tempMod instanceof Laser){
+								tempPlayer.setHasLaser(true);
+								if(tempPlayer.getID() == 0){
+									timer.schedule(taskElapseLaserPlayer1, Laser.getTimeItLasts());
+								}
+								else{
+									timer.schedule(taskElapseLaserPlayer2, Laser.getTimeItLasts());
+								}							
+							}
+							if(tempMod instanceof LeftRightSwitcher){
+								if(tempPlayer.getID() == 0){
+									leftRightIsSwitchedPlayer1 = true;
+									timer.schedule(taskElapseLeftRightSwitcherPlayer1, LeftRightSwitcher.getTimeItLasts());
+								}	
+								else{
+									leftRightIsSwitchedPlayer2 = true;
+									timer.schedule(taskElapseLeftRightSwitcherPlayer2, LeftRightSwitcher.getTimeItLasts());
+								}
+							}
+							if(tempMod instanceof HostileFrenzy){
+								hostilesAreFrenzied = true;
+								timer.schedule(taskElapseHostileFrenzy, HostileFrenzy.getTimeItLasts());		
+							}
+							if(tempMod instanceof NoAmmo){
+								if(tempPlayer.getID() == 0){
+									noAmmoPlayer1 = true;
+									timer.schedule(taskElapseNoAmmoPlayer1, NoAmmo.getTimeItLasts());
+								}	
+								else{
+									noAmmoPlayer2 = true;
+									timer.schedule(taskElapseNoAmmoPlayer2, NoAmmo.getTimeItLasts());
+								}	
+							}
+							if(tempMod instanceof HalfScores){
+								halfScores = true;
+								timer.schedule(taskElapseHalfScores, HalfScores.getTimeItLasts());
+							}
 						}
 					}
 				}
@@ -671,9 +812,7 @@ public class Server implements AllServerInterfaces
 			if( (currentTime - pickUpTime > 1500) && pickUpTime!=0 ){//TODO: mennyi ido utan?
 				listOfModifiers.remove(i);
 			}
-		}
-		
-		
+		}	
 	}
 	
 	private void isGameOver(){
@@ -705,8 +844,6 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
-	
-	// Game experience modifier functions
 	
 	// JSON converters
 	private String allToJSON(){
@@ -866,6 +1003,8 @@ public class Server implements AllServerInterfaces
 				currentModifier.put("x", temp.getCoordX());
 				currentModifier.put("y", temp.getCoordY());
 				currentModifier.put("pickupTime", temp.getPickUpTime());
+				currentModifier.put("creationTime", temp.getSpawnTime());
+				currentModifier.put("explosionTime", temp.getExplosionTime());
 				// add each Projectile JSONObject to the arraylist<JSONObject>
 				modifierList.add(currentModifier);
 			}
@@ -940,65 +1079,13 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				if(isRunning){
-					listOfModifiers.add( new HostileFrenzy(200, Modifier.getModifierheigth()+100) );
-					double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
-					if(spawnOrNot >= 0.6){
-						// Determine the place of spawning
-						int x;
-						x = (int)(Math.random()*(Constants.gameFieldWidth - Modifier.getModifierwidth()) );
-						x += Modifier.getModifierwidth()/2;
-						// Choosing what to spawn
-						double whichFrequency = Math.random();
-						double whatToSpawn = Math.random();
-						// spawn a frequent modifier [fastener, hostileFrenzy]
-						if(whichFrequency <= 0.4){
-							if(whatToSpawn >= 0.5)
-								listOfModifiers.add( new Fastener(x, Modifier.getModifierheigth()+100) );
-							else//TODO hostileFrenzy
-								listOfModifiers.add( new HostileFrenzy(x, Modifier.getModifierheigth()+100) );
-						}
-						//spawn a mod with medium frequency [Shield, Laser, controlChangerMULTIONLY, LeftRightSwitcher, noAmmo, HalfScores]
-						else if(whichFrequency > 0.4 && whichFrequency < 0.8){
-							if(whatToSpawn < 0.1667){
-								listOfModifiers.add( new Shield(x, Modifier.getModifierheigth()+100) );
-							}
-							else if(whatToSpawn >= 0.1667 && whatToSpawn < 0.333){
-								listOfModifiers.add( new Laser(x, Modifier.getModifierheigth()+100) );
-							}
-							else if(whatToSpawn >= 0.333 && whatToSpawn < 0.5){
-								listOfModifiers.add( new LeftRightSwitcher(x, Modifier.getModifierheigth()+100) );
-							}
-							else if(whatToSpawn >= 0.5 && whatToSpawn < 0.667){
-								listOfModifiers.add( new NoAmmo(x, Modifier.getModifierheigth()+100) );
-							}
-							else if(whatToSpawn >= 0.667 && whatToSpawn < 0.8333){
-								listOfModifiers.add( new HalfScores(x, Modifier.getModifierheigth()+100) );
-							}
-							else{
-								
-							}
-						}
-						// spawn a rare modifier [OneUp, Boom]
-						else{
-							if(whatToSpawn >= 0.5)
-								listOfModifiers.add( new OneUp(x, Modifier.getModifierheigth()+100) );
-							else
-								listOfModifiers.add( new Boom(x, Modifier.getModifierheigth()+100) );
-						}
+					// Determine the place of spawning
+					int x = (int)(Math.random()*(Constants.gameFieldWidth - Modifier.getModifierwidth()) );
+					x += Modifier.getModifierwidth()/2;
+					
+					spawnModifier(x, Modifier.getModifierheigth()+100);
 					}
 				}
-			}
-		};
-		
-		TimerTask teleportHostileType3s = new TimerTask() {			
-			@Override
-			public void run() {
-				for(int i=0; i<listOfNPCs.size(); i++){
-					if(listOfNPCs.get(i) instanceof HostileType3){
-						((HostileType3) listOfNPCs.get(i)).teleport();
-					}
-				}	
-			}
 		};
 		
 		// Starting Timer 
@@ -1011,10 +1098,7 @@ public class Server implements AllServerInterfaces
         timer.scheduleAtFixedRate(taskSpawnHostileType2, 1535, Constants.hostile2spawningFrequency);
         timer.scheduleAtFixedRate(taskSpawnHostileType3, 2768, Constants.hostile3spawningFrequency);
         // Spawn modifiers at given rates
-        timer.scheduleAtFixedRate(taskSpawnModifiers, 300, 3000);
-        // teleport HostileType3s
-        timer.scheduleAtFixedRate(teleportHostileType3s, 0, Constants.hostile3teleportFrequency);
-		
+        timer.scheduleAtFixedRate(taskSpawnModifiers, 300, 3000);		
 	}
 	
 	@Override
@@ -1100,18 +1184,28 @@ public class Server implements AllServerInterfaces
 	}
 	
 	@Override
-	public void disconnect(){
-		//TODO
+	public void disconnect(ClientForServer c){
+		isRunning = false;
+		if( c == client1 ){
+			client2.changeGameState(GameState.GAMEOVER);
+		}
+		else{
+			client1.changeGameState(GameState.GAMEOVER);
+		}
 	}
 
 	// Implementing ServerForPlayerController Interface
 	// ------------------------------------------------------------------------------------------------------------------
 	@Override
 	public void moveLeft(int playerID){
-		if(playerID == 0)
+		if(playerID == 0){
+			//System.out.println("player1");
 			player1MovingLeft = true;
-		else if(playerID == 1)
+		}
+		else if(playerID == 1){
+			//System.out.println("player2");
 			player2MovingLeft = true;
+		}
 
 	}
 	

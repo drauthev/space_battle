@@ -52,5 +52,13 @@ public abstract class Modifier extends NonShootingObject{
 		return modifierHeigth;
 	}
 	
+	public long getCreationTime() {
+		return creationTime;
+	}
+
+	public void setCreationTime(long creationTime) {
+		this.creationTime = creationTime;
+	}
+	
 	
 }

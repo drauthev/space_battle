@@ -9,7 +9,7 @@ public class Constants {
     public final static int timeBetweenShotsIfFastened = 300;
     
     // Hostile-related constants
-    public final static int hostile3teleportFrequency = 3000;
+    public final static int hostile3TeleportFrequency = 3000;
     public final static int hostile3timeBetweenBurstShots = 8000;
     public final static int hostile3burstShootingFrequency = 500;
     //
