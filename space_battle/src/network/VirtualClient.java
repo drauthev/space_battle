@@ -108,7 +108,7 @@ public class VirtualClient implements ClientForServer, Runnable {
 								}
 								break;
 							case "disconnect":
-								server.disconnect(); break;
+								server.disconnect(thisClient); break;
 							case "pauseRequest":
 								server.pauseRequest(thisClient); break;
 							case "startRequest":
