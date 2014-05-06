@@ -82,27 +82,15 @@ public class VirtualClient implements ClientForServer, Runnable {
 								{
 									Integer playerStates = (Integer) temp.getValue();
 									
-									if ((playerStates & Constants.p1left) == 0)
-										server.releaseLeft(0);
-									else server.moveLeft(0);
-									
-									if ((playerStates & Constants.p2left) == 0)
+									if ((playerStates & Constants.left) == 0)
 										server.releaseLeft(1);
 									else server.moveLeft(1);
 									
-									if ((playerStates & Constants.p1right) == 0)
-										server.releaseRight(0);
-									else server.moveRight(0);
-									
-									if ((playerStates & Constants.p2right) == 0)
+									if ((playerStates & Constants.right) == 0)
 										server.releaseRight(1);
 									else server.moveRight(1);
-									
-									if ((playerStates & Constants.p1fire) == 0)
-										server.releaseFire(0);
-									else server.fire(0);
-									
-									if ((playerStates & Constants.p2fire) == 0)
+
+									if ((playerStates & Constants.fire) == 0)
 										server.releaseFire(1);
 									else server.fire(1);
 								}
