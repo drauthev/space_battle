@@ -41,7 +41,8 @@ public class VirtualClient implements ClientForServer, Runnable {
 			public void run() {
 				try {
 					s = ss.accept();
-					oos = new ObjectOutputStream(new GZIPOutputStream(s.getOutputStream()));
+					// s.setTcpNoDelay(true);
+					oos = new ObjectOutputStream(s.getOutputStream());
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -60,6 +61,7 @@ public class VirtualClient implements ClientForServer, Runnable {
 									oos.writeObject(m);
 								}
 								oos.flush();
+								callQueue.clear();
 							} catch (IOException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -69,8 +71,7 @@ public class VirtualClient implements ClientForServer, Runnable {
 				}, 0, 1000/cmdRate);
 				
 				try {
-					GZIPInputStream gis = new GZIPInputStream(s.getInputStream());
-					ObjectInputStream ois = new ObjectInputStream(gis);
+					ObjectInputStream ois = new ObjectInputStream(s.getInputStream());
 					while (!isShuttingDown)
 					{
 						java.util.Map.Entry<String, Object> temp = (java.util.Map.Entry<String, Object>) ois.readObject();
