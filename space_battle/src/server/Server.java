@@ -1107,7 +1107,8 @@ public class Server implements AllServerInterfaces
 		timer.cancel();
 		// terminating second client if exists
 		if(type == GameType.MULTI_NETWORK){
-			//client2.disconnect(); // csak ha nem nulll
+			client1.changeGameState(GameState.DISCONNECTED);
+			client2.changeGameState(GameState.DISCONNECTED);
 		}
 	}
 	
