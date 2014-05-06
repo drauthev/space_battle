@@ -120,62 +120,32 @@ public class VirtualServer
 
 	@Override
 	public void moveLeft(int playerID) {
-		switch (playerID)
-		{
-			case 0: playerStates |= Constants.p1left; break;
-			case 1: playerStates |= Constants.p2left; break;
-			default:
-		}
+		playerStates |= Constants.left;
 	}
 
 	@Override
 	public void releaseLeft(int playerID) {
-		switch (playerID)
-		{
-			case 0: playerStates &= ~Constants.p1left; break;
-			case 1: playerStates &= ~Constants.p2left; break;
-			default:
-		}
+		playerStates &= ~Constants.left;
 	}
 
 	@Override
 	public void moveRight(int playerID) {
-		switch (playerID)
-		{
-			case 0: playerStates |= Constants.p1right; break;
-			case 1: playerStates |= Constants.p2right; break;
-			default:
-		}
+		playerStates |= Constants.right;
 	}
 
 	@Override
 	public void releaseRight(int playerID) {
-		switch (playerID)
-		{
-			case 0: playerStates &= ~Constants.p1right; break;
-			case 1: playerStates &= ~Constants.p2right; break;
-			default:
-		}
+		playerStates &= ~Constants.right;
 	}
 
 	@Override
 	public void fire(int playerID) {
-		switch (playerID)
-		{
-			case 0: playerStates |= Constants.p1fire; break;
-			case 1: playerStates |= Constants.p2fire; break;
-			default:
-		}
+		playerStates |= Constants.fire;
 	}
 
 	@Override
 	public void releaseFire(int playerID) {
-		switch (playerID)
-		{
-			case 0: playerStates &= ~Constants.p1fire; break;
-			case 1: playerStates &= ~Constants.p2fire; break;
-			default:
-		}
+		playerStates &= ~Constants.fire;
 	}
 
 	@Override
