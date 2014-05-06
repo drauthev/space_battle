@@ -385,13 +385,12 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		dispose();	
 	}
 
-
 	public static void infoBox(String infoMessage)
 	{
 		JOptionPane.showMessageDialog(null, infoMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
 	}
 
- 
+
 	/**************** GRAPHICAL PROCEDURES **************************/
 
 	public void paint(Graphics g)
@@ -788,11 +787,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	public void drawTopScores(int curr, int high)
 	{
+		bufferGraphics.setFont(scoreFont);
 		bufferGraphics.setColor(Color.YELLOW);
 		bufferGraphics.drawString("SCORE",    GUI.frameWidth/8, 46);
 		bufferGraphics.drawString("HIGHSCORE", GUI.frameWidth/3+12, 46);
 
-		bufferGraphics.setFont(scoreFont);
 		bufferGraphics.setColor(Color.GREEN); 
 		bufferGraphics.drawString(Integer.toString(curr), GUI.frameWidth/8, 64);
 		bufferGraphics.drawString(Integer.toString(high), GUI.frameWidth/3+60, 64);
