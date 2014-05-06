@@ -20,6 +20,7 @@ import server.game_elements.Boom;
 import server.game_elements.Fastener;
 import server.game_elements.HostileType1;
 import server.game_elements.HostileType2;
+import server.game_elements.HostileType3;
 import server.game_elements.Laser;
 import server.game_elements.LeftRightSwitcher;
 import server.game_elements.Modifier;
@@ -143,6 +144,7 @@ public class Server implements AllServerInterfaces
 	private void trackChanges(){
 		if(!gameIsOver){
 			moveNPCs();
+			hostile3ShootingEnablerDisabler(); // auxiliary func; determines if Hostile3s can burst shoot or not
 			shootWithNPCs();
 			controlPlayers();	// move/shoot with players according to the pushed buttons
 			detectCollision();	// between players and hostiles
@@ -171,8 +173,31 @@ public class Server implements AllServerInterfaces
     	}
 	}
 	
+	private void hostile3ShootingEnablerDisabler(){
+		NPC tempNPC;
+		HostileType3 tempHostile;
+		long currentTime;
+		long timeSinceLastEnable;
+		for(int i=0; i<listOfNPCs.size(); i++){
+			tempNPC = listOfNPCs.get(i);
+			if(tempNPC instanceof HostileType3){
+				tempHostile = (HostileType3) tempNPC;
+				currentTime = java.lang.System.currentTimeMillis();
+				timeSinceLastEnable = currentTime - tempHostile.getShootingWasEnabled();
+				if( timeSinceLastEnable  > 3*tempNPC.getShootingFrequency() && !hostilesAreFrenzied || timeSinceLastEnable  > 1.5*tempNPC.getShootingFrequency() && hostilesAreFrenzied){
+					tempHostile.setShootingIsEnabled(false); // disable shooting
+					if( timeSinceLastEnable > Constants.hostile3timeBetweenBurstShots && !hostilesAreFrenzied || timeSinceLastEnable > Constants.hostile3timeBetweenBurstShots/2 && hostilesAreFrenzied){ // enabling shooting if enough time lasted
+						tempHostile.setShootingIsEnabled(true);
+						tempHostile.setShootingWasEnabled(currentTime);
+					}
+				}
+			}
+		}
+	}
+	
 	private void shootWithNPCs(){
 		NPC temp;
+		Projectile shot;
 		long lastShotTime;
 		long currentTime;
 		long timeSinceLastShot;
@@ -184,12 +209,15 @@ public class Server implements AllServerInterfaces
 				timeSinceLastShot = currentTime - lastShotTime;
 				if( (timeSinceLastShot > temp.getShootingFrequency() && !hostilesAreFrenzied) || (timeSinceLastShot > temp.getShootingFrequency()/2 && hostilesAreFrenzied) ){ // shoot only if enough time has lasted
 					temp.setLastShotTime(java.lang.System.currentTimeMillis());
-					listOfProjectiles.add(temp.shoot());
-					listOfNPCs.set(i, temp);
-					// playing sounds
-					client1.playSound(SoundType.shoot);
-					if(type == GameType.MULTI_NETWORK){
-						client2.playSound(SoundType.shoot);
+					shot = temp.shoot();
+					if( shot != null){
+						listOfProjectiles.add(shot);
+						listOfNPCs.set(i, temp);
+						// playing sounds
+						client1.playSound(SoundType.shoot);
+						if(type == GameType.MULTI_NETWORK){
+							client2.playSound(SoundType.shoot);
+						}
 					}
 				}
 			}
@@ -545,10 +573,13 @@ public class Server implements AllServerInterfaces
 							}
 						}
 						if(tempMod instanceof Laser){
-							if(tempPlayer.getID() == 0)
+							tempPlayer.setHasLaser(true);
+							if(tempPlayer.getID() == 0){
 								timer.schedule(taskElapseLaserPlayer1, Laser.getTimeItLasts());
-							else
+							}
+							else{
 								timer.schedule(taskElapseLaserPlayer2, Laser.getTimeItLasts());
+							}							
 						}
 						if(tempMod instanceof LeftRightSwitcher){
 							if(tempPlayer.getID() == 0){
@@ -741,9 +772,10 @@ public class Server implements AllServerInterfaces
 					currentNPC.put("className", "HostileType1");
 				else if( temp instanceof HostileType2)
 					currentNPC.put("className", "HostileType2");
-				else
+				else{
 					currentNPC.put("className", "HostileType3");
-				
+					currentNPC.put("teleportTime", ((HostileType3) temp).getTeleportTime());
+				}
 				currentNPC.put("x", temp.getCoordX());
 				currentNPC.put("y", temp.getCoordY());
 				currentNPC.put("creationTime", temp.getCreationTime());
@@ -871,8 +903,7 @@ public class Server implements AllServerInterfaces
 				listOfNPCs.add( new HostileType1(x, Constants.hostile1Height+100, difficulty) );	// TODO: az Å±rhaj�?³k be�?ºsz�?¡sa miatt t�?ºlsk�?¡l�?¡zni
 				}
 			}
-		};
-				
+		};		
 		TimerTask taskSpawnHostileType2 = new TimerTask() {
 			@Override
 			public void run() {
@@ -882,8 +913,23 @@ public class Server implements AllServerInterfaces
 					if(spawnOrNot > 0.5){
 						int x;
 						x = (int)(Math.random()*(Constants.gameFieldWidth - Constants.hostile2Width));
-						x += Constants.hostile1Width/2;
+						x += Constants.hostile2Width/2;
 						listOfNPCs.add( new HostileType2(x, Constants.hostile2Height+100, difficulty) );	// TODO: az Å±rhaj�?³k be�?ºsz�?¡sa miatt t�?ºlsk�?¡l�?¡zni
+					}
+				}
+			}
+		};
+		TimerTask taskSpawnHostileType3 = new TimerTask() {
+			@Override
+			public void run() {
+				if(isRunning){
+					// take some "randomness" into the spawning
+					double spawnOrNot = Math.random();
+					if(spawnOrNot > 0.5){
+						int x;
+						x = (int)(Math.random()*(Constants.gameFieldWidth - Constants.hostile3Width));
+						x += Constants.hostile3Width/2;
+						listOfNPCs.add( new HostileType3(x, Constants.hostile3Height+100, difficulty) );
 					}
 				}
 			}
@@ -894,6 +940,7 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				if(isRunning){
+					listOfModifiers.add( new HostileFrenzy(200, Modifier.getModifierheigth()+100) );
 					double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 					if(spawnOrNot >= 0.6){
 						// Determine the place of spawning
@@ -943,6 +990,17 @@ public class Server implements AllServerInterfaces
 			}
 		};
 		
+		TimerTask teleportHostileType3s = new TimerTask() {			
+			@Override
+			public void run() {
+				for(int i=0; i<listOfNPCs.size(); i++){
+					if(listOfNPCs.get(i) instanceof HostileType3){
+						((HostileType3) listOfNPCs.get(i)).teleport();
+					}
+				}	
+			}
+		};
+		
 		// Starting Timer 
 		timer = new Timer(false);
 		
@@ -950,10 +1008,12 @@ public class Server implements AllServerInterfaces
         timer.scheduleAtFixedRate(taskTrackChanges, 0, 1000/Constants.framePerSecond);	// 33.3333 millisecundumunk van megcsin�?¡lni, megjelen�?­teni mindent
 		// Spawn enemies at given rates
         timer.scheduleAtFixedRate(taskSpawnHostileType1, 0, Constants.hostile1spawningFrequency);
-        timer.scheduleAtFixedRate(taskSpawnHostileType2, 1000, Constants.hostile2spawningFrequency);
+        timer.scheduleAtFixedRate(taskSpawnHostileType2, 1535, Constants.hostile2spawningFrequency);
+        timer.scheduleAtFixedRate(taskSpawnHostileType3, 2768, Constants.hostile3spawningFrequency);
         // Spawn modifiers at given rates
         timer.scheduleAtFixedRate(taskSpawnModifiers, 300, 3000);
-       // timer.scheduleAtFixedRate(taskSpawnOneUp, 350, period);
+        // teleport HostileType3s
+        timer.scheduleAtFixedRate(teleportHostileType3s, 0, Constants.hostile3teleportFrequency);
 		
 	}
 	
@@ -986,7 +1046,7 @@ public class Server implements AllServerInterfaces
 				client1.updateObjects(allToJSON());
 				client2.updateObjects(allToJSON());
 				client1.changeGameState(GameState.WAITING);
-				client2.changeGameState(GameState.WAITING);
+				client2.changeGameState(GameState.PAUSED);
 			}	
 			if( c == client1 ){ // start requested by client1
 				client1Ready = true;

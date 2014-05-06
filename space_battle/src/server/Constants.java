@@ -5,13 +5,16 @@ public class Constants {
     public static int gameFieldWidth = 480;
     public static int gameFieldHeigth = 640;
     
-    public final static int timeBetweenShots = 1000;
-    public final static int timeBetweenShotsIfFastened = 500;
+    public final static int timeBetweenShots = 600; //1000-rel sztem nehez
+    public final static int timeBetweenShotsIfFastened = 300;
     
     // Hostile-related constants
+    public final static int hostile3teleportFrequency = 3000;
+    public final static int hostile3timeBetweenBurstShots = 8000;
+    public final static int hostile3burstShootingFrequency = 500;
+    //
     public final static int hostile1shootingFrequency = 2000;
     public final static int hostile2shootingFrequency = 2000;
-    public final static int hostile3shootingFrequency = 2000;
     //
     public final static int hostile1spawningFrequency = 7000;
     public final static int hostile2spawningFrequency = 10000; //should be 10000
