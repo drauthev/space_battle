@@ -2,7 +2,6 @@ package server.game_elements;
 
 import server.Constants;
 import enums.GameSkill;
-import enums.GameType;
 
 public class HostileType1 extends NPC {
 		

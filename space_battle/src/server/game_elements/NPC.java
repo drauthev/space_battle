@@ -1,7 +1,5 @@
 package server.game_elements;
 
-import server.Constants;
-
 abstract public class NPC extends ShootingObject {
 	
 	final int scoreIfDestroyed;

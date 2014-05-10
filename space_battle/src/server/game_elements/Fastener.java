@@ -1,10 +1,5 @@
 package server.game_elements;
 
-import java.util.TimerTask;
-
-import server.Constants;
-import enums.GameSkill;
-
 public class Fastener extends Modifier {
 	
 	private static int verticalMoveQuantity = 1;

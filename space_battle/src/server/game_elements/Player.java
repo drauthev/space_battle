@@ -17,9 +17,10 @@ public class Player extends ShootingObject {
 	//
 	private boolean isFastened = false;
 	private int timeBetweenShots = 1000; // will be less if player is fastened
-	//
+	private long lastShootTime = 0;
 	private boolean isShielded;
-	//
+	private boolean hasAmmo = true;
+	private boolean leftRighSwitched = false;
 	private boolean hasLaser; //TODO: ki lehet cselezni, ha sokszor losz; SOLUTION lehet: timeBetweenShots-ot magasabbra állítani ezido alatt, mint a LAser lastingja
 	
 	public Player(int x, int y, int ID){
@@ -30,25 +31,48 @@ public class Player extends ShootingObject {
 	}
 	
 	public void moveLeft(){
-		if(isFastened){
-			if (this.getCoordX() - horizontalMoveQuantityIfFastened >= 0 + playerWidth/2)	// only if there is enough space at the left edge
-				this.setCoordX(this.getCoordX() - horizontalMoveQuantityIfFastened);
+		if(leftRighSwitched){ // moving right..
+			if(isFastened){
+				if(this.getCoordX() + horizontalMoveQuantityIfFastened + playerWidth/2 <= Constants.gameFieldWidth-1) // only if there is enough space at the right edge
+					this.setCoordX(this.getCoordX() + horizontalMoveQuantityIfFastened);
+			}
+			else{
+				if(this.getCoordX() + horizontalMoveQuantity + playerWidth/2 <= Constants.gameFieldWidth-1) // only if there is enough space at the right edge
+					this.setCoordX(this.getCoordX() + horizontalMoveQuantity);
+			}	
 		}
-		else{
-			if (this.getCoordX() - horizontalMoveQuantity >= 0 + playerWidth/2)	// only if there is enough space at the left edge
-				this.setCoordX(this.getCoordX() - horizontalMoveQuantity);
+		else{ // normal operation
+			if(isFastened){
+				if (this.getCoordX() - horizontalMoveQuantityIfFastened >= 0 + playerWidth/2)	// only if there is enough space at the left edge
+					this.setCoordX(this.getCoordX() - horizontalMoveQuantityIfFastened);
+			}
+			else{
+				if (this.getCoordX() - horizontalMoveQuantity >= 0 + playerWidth/2)	// only if there is enough space at the left edge
+					this.setCoordX(this.getCoordX() - horizontalMoveQuantity);
+			}			
 		}
-		
 	}
 	
 	public void moveRight(){
-		if(isFastened){
-			if(this.getCoordX() + horizontalMoveQuantityIfFastened + playerWidth/2 <= Constants.gameFieldWidth-1) // only if there is enough space at the right edge
-				this.setCoordX(this.getCoordX() + horizontalMoveQuantityIfFastened);
+		if(leftRighSwitched){ // moving left..
+			if(isFastened){
+				if (this.getCoordX() - horizontalMoveQuantityIfFastened >= 0 + playerWidth/2)	// only if there is enough space at the left edge
+					this.setCoordX(this.getCoordX() - horizontalMoveQuantityIfFastened);
+			}
+			else{
+				if (this.getCoordX() - horizontalMoveQuantity >= 0 + playerWidth/2)	// only if there is enough space at the left edge
+					this.setCoordX(this.getCoordX() - horizontalMoveQuantity);
+			}		
 		}
-		else{
-			if(this.getCoordX() + horizontalMoveQuantity + playerWidth/2 <= Constants.gameFieldWidth-1) // only if there is enough space at the right edge
-				this.setCoordX(this.getCoordX() + horizontalMoveQuantity);
+		else{ // normal operation..
+			if(isFastened){
+				if(this.getCoordX() + horizontalMoveQuantityIfFastened + playerWidth/2 <= Constants.gameFieldWidth-1) // only if there is enough space at the right edge
+					this.setCoordX(this.getCoordX() + horizontalMoveQuantityIfFastened);
+			}
+			else{
+				if(this.getCoordX() + horizontalMoveQuantity + playerWidth/2 <= Constants.gameFieldWidth-1) // only if there is enough space at the right edge
+					this.setCoordX(this.getCoordX() + horizontalMoveQuantity);
+			}	
 		}
 	}
 	
@@ -134,6 +158,30 @@ public class Player extends ShootingObject {
 
 	public void setHasLaser(boolean hasLaser) {
 		this.hasLaser = hasLaser;
+	}
+
+	public boolean isHasAmmo() {
+		return hasAmmo;
+	}
+
+	public void setHasAmmo(boolean hasAmmo) {
+		this.hasAmmo = hasAmmo;
+	}
+
+	public boolean isLeftRighSwitched() {
+		return leftRighSwitched;
+	}
+
+	public void setLeftRighSwitched(boolean leftRighSwitched) {
+		this.leftRighSwitched = leftRighSwitched;
+	}
+
+	public long getLastShootTime() {
+		return lastShootTime;
+	}
+
+	public void setLastShootTime(long lastShootTime) {
+		this.lastShootTime = lastShootTime;
 	}
 
 	

@@ -14,7 +14,6 @@ import java.util.TreeMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.apache.commons.net.ftp.FTPClient;
 
 import server.game_elements.Boom;
 import server.game_elements.Fastener;
@@ -38,6 +37,7 @@ import server.game_elements.ProjectileGoingDown;
 import server.game_elements.ProjectileGoingUp;
 import server.game_elements.ProjectileLaser;
 import server.game_elements.Shield;
+import server.game_elements.SpaceShipSwitcher;
 import sound.SoundType;
 import enums.GameSkill;
 import enums.GameState;
@@ -51,7 +51,7 @@ public class Server implements AllServerInterfaces
 	//
 	private int score;
 	private boolean isRunning;	
-	// Booleans for player controlling
+	// Booleans, variables for player controlling
 	private boolean player1MovingLeft;
 	private boolean player1MovingRight;
 	private boolean player1Shooting;
@@ -68,18 +68,9 @@ public class Server implements AllServerInterfaces
 	private List<Projectile> listOfProjectiles;
 	private List<Modifier> listOfModifiers;
 	private List<NPC> listOfNPCs;
-	// JSON arrays of GameElements
-	private String playersJSON;
-	private String projectilesJSON;
-	private String modifiersJSON;
-	private String npcsJSON;
 	// Game Experience modifying flags
-	private boolean changedControls;
-	private boolean leftRightIsSwitchedPlayer1;
-	private boolean leftRightIsSwitchedPlayer2;
+	private boolean spaceShipsSwitched = false;
 	private boolean hostilesAreFrenzied;
-	private boolean noAmmoPlayer1;
-	private boolean noAmmoPlayer2;
 	private boolean halfScores;
 	// Client interfaces
 	private ClientForServer client1;
@@ -256,59 +247,47 @@ public class Server implements AllServerInterfaces
 		for(int i=0; i<listOfPlayers.size(); i++){
 			temp = listOfPlayers.get(i);
 			if(temp.getID() == 0){
-				if(player1MovingLeft){
-					if(!leftRightIsSwitchedPlayer1)
-						temp.moveLeft();
-					else
-						temp.moveRight();
+				if( (player1MovingLeft && !spaceShipsSwitched) || (player2MovingLeft && spaceShipsSwitched) ){
+					temp.moveLeft();
 				}
-				if(player1MovingRight){
-					if(!leftRightIsSwitchedPlayer1)
-						temp.moveRight();
-					else
-						temp.moveLeft();
-				}
-				if(player1Shooting && !noAmmoPlayer1){
+				if( (player1MovingRight && !spaceShipsSwitched) || (player2MovingRight && spaceShipsSwitched) ){
+					temp.moveRight();
+				}			
+				if( (player1Shooting && !spaceShipsSwitched) || (player2Shooting && spaceShipsSwitched) ){
 					currentTime = java.lang.System.currentTimeMillis();
-					if(currentTime - player1ShootTime > temp.getTimeBetweenShots()){
-						player1ShootTime = currentTime;
+					if( temp.isHasAmmo() && (currentTime - temp.getLastShootTime() > Constants.timeBetweenShots) ){
+						temp.setLastShootTime(currentTime);
 						Projectile shot = temp.shoot();
 						listOfProjectiles.add(shot);
 						// playing sounds
 						client1.playSound(SoundType.shoot);
 						if(type == GameType.MULTI_NETWORK){
 							client2.playSound(SoundType.shoot);
-						}
-					}	
+						}					
+					}
 				}
 				listOfPlayers.set(i, temp); // Update the player list
 			}
 			else if(temp.getID() == 1){
-				if(player2MovingLeft){
-					if(!leftRightIsSwitchedPlayer2)
-						temp.moveLeft();
-					else
-						temp.moveRight();
+				if( (player2MovingLeft && !spaceShipsSwitched) || (player1MovingLeft && spaceShipsSwitched) ){
+					temp.moveLeft();
 				}
-				if(player2MovingRight){
-					if(!leftRightIsSwitchedPlayer2)
-						temp.moveRight();
-					else
-						temp.moveLeft();
+				if( (player2MovingRight && !spaceShipsSwitched) || (player1MovingRight && spaceShipsSwitched) ){
+					temp.moveRight();
 				}
-				if(player2Shooting && !noAmmoPlayer2){
+				if( (player2Shooting && !spaceShipsSwitched) || (player1Shooting && spaceShipsSwitched) ){
 					currentTime = java.lang.System.currentTimeMillis();
-					if(currentTime - player2ShootTime > temp.getTimeBetweenShots()){
-						player2ShootTime = currentTime;
-						Projectile shot = temp.shoot();
-						listOfProjectiles.add(shot);
-						// playing sounds
-						client1.playSound(SoundType.shoot);
-						if(type == GameType.MULTI_NETWORK){
-							client2.playSound(SoundType.shoot);
-						}
-					}	
-				}
+					if( temp.isHasAmmo() && (currentTime - temp.getLastShootTime() > Constants.timeBetweenShots) ){
+							temp.setLastShootTime(currentTime);
+							Projectile shot = temp.shoot();
+							listOfProjectiles.add(shot);
+							// playing sounds
+							client1.playSound(SoundType.shoot);
+							if(type == GameType.MULTI_NETWORK){
+								client2.playSound(SoundType.shoot);
+							}
+					}
+				}				
 			}
 		}
 	}
@@ -338,6 +317,7 @@ public class Server implements AllServerInterfaces
 					// checking Player's lives
 					// if it's 0, explode it; else indicating a hit
 					if(tempPlayer.getLives() == 0){
+						spaceShipsSwitched = false; // giving back the control to the original player if there is only one spaceship left
 						if(tempPlayer.getID()==0)
 							player1Dead = true;
 						else
@@ -358,7 +338,6 @@ public class Server implements AllServerInterfaces
 	private void detectHits(){
 		Projectile proj;
 		NPC npc;
-		Modifier mod;
 		int npcLives;
 		for(int i=0; i<listOfProjectiles.size(); i++){
 			proj = listOfProjectiles.get(i);
@@ -420,6 +399,7 @@ public class Server implements AllServerInterfaces
 							if(!player.isShielded()){
 								player.setLives(--playerLives);
 								if( playerLives == 0 ){
+									spaceShipsSwitched = false; // giving back the control to the original player if there is only one spaceship left
 									player.setExplosionTime(java.lang.System.currentTimeMillis());
 									if(player.getID()==0)
 										player1Dead = true;
@@ -468,8 +448,7 @@ public class Server implements AllServerInterfaces
 								listOfProjectiles.remove(i); // remove projectile which hit, except it is a ProjectileLaser
 							}
 						}
-					}
-				
+					}			
 				}	
 			}
 		}
@@ -496,14 +475,30 @@ public class Server implements AllServerInterfaces
 					listOfModifiers.add( new HostileFrenzy(x, y) );
 				}
 				else{ // spawning a medium frequent one (no rare PowerDowns exist)
-					if(whatToSpawn <= 0.3){
-						listOfModifiers.add( new LeftRightSwitcher(x, y) );
-					}
-					else if(whatToSpawn > 0.3 && whatToSpawn <= 0.6){
-						listOfModifiers.add( new NoAmmo(x, y) );
+					if( listOfPlayers.size() == 2 ){ // SpaceShipSwitcher only available in MULTIPLAYER (and spawn it only if both players are alive)
+						if(whatToSpawn <= 0.25){
+							listOfModifiers.add( new LeftRightSwitcher(x, y) );
+						}
+						else if(whatToSpawn > 0.25 && whatToSpawn <= 0.5){
+							listOfModifiers.add( new NoAmmo(x, y) );
+						}
+						else if(whatToSpawn > 0.5 && whatToSpawn <= 0.75){
+							listOfModifiers.add( new HalfScores(x, y) );	
+						}
+						else{
+							listOfModifiers.add( new SpaceShipSwitcher(x, y) );	
+						}
 					}
 					else{
-						listOfModifiers.add( new HalfScores(x, y) );	
+						if(whatToSpawn <= 0.3){
+							listOfModifiers.add( new LeftRightSwitcher(x, y) );
+						}
+						else if(whatToSpawn > 0.3 && whatToSpawn <= 0.6){
+							listOfModifiers.add( new NoAmmo(x, y) );
+						}
+						else{
+							listOfModifiers.add( new HalfScores(x, y) );	
+						}
 					}
 				}
 			}
@@ -539,28 +534,47 @@ public class Server implements AllServerInterfaces
 			if(whichFrequency <= 0.4){
 				if(whatToSpawn >= 0.5)
 					listOfModifiers.add( new Fastener(x, y) );
-				else//TODO hostileFrenzy
+				else
 					listOfModifiers.add( new HostileFrenzy(x, y) );
 			}
-			//spawn a mod with medium frequency [Shield, Laser, controlChangerMULTIONLY, LeftRightSwitcher, noAmmo, HalfScores]
+			//spawn a mod with medium frequency [Shield, Laser, controlChangerMULTIONLY, LeftRightSwitcher, noAmmo, HalfScores, SpaceShipSwitcher]
 			else if(whichFrequency > 0.4 && whichFrequency < 0.8){
-				if(whatToSpawn < 0.1667){
-					listOfModifiers.add( new Shield(x, y) );
-				}
-				else if(whatToSpawn >= 0.1667 && whatToSpawn < 0.333){
-					listOfModifiers.add( new Laser(x, y) );
-				}
-				else if(whatToSpawn >= 0.333 && whatToSpawn < 0.5){
-					listOfModifiers.add( new LeftRightSwitcher(x, y) );
-				}
-				else if(whatToSpawn >= 0.5 && whatToSpawn < 0.667){
-					listOfModifiers.add( new NoAmmo(x, y) );
-				}
-				else if(whatToSpawn >= 0.667 && whatToSpawn < 0.8333){
-					listOfModifiers.add( new HalfScores(x, y) );
+				if( listOfPlayers.size() == 2){ // SpaceShipSwitcher only available in MULTIPLAYER (and spawn it only if both players are alive)
+					if(whatToSpawn < 0.1667){
+						listOfModifiers.add( new Shield(x, y) );
+					}
+					else if(whatToSpawn >= 0.1667 && whatToSpawn < 0.333){
+						listOfModifiers.add( new Laser(x, y) );
+					}
+					else if(whatToSpawn >= 0.333 && whatToSpawn < 0.5){
+						listOfModifiers.add( new LeftRightSwitcher(x, y) );
+					}
+					else if(whatToSpawn >= 0.5 && whatToSpawn < 0.667){
+						listOfModifiers.add( new NoAmmo(x, y) );
+					}
+					else if(whatToSpawn >= 0.667 && whatToSpawn < 0.8333){
+						listOfModifiers.add( new HalfScores(x, y) );
+					}
+					else{
+						listOfModifiers.add( new SpaceShipSwitcher(x, y) );
+					}
 				}
 				else{
-					
+					if(whatToSpawn < 0.2){
+						listOfModifiers.add( new Shield(x, y) );
+					}
+					else if(whatToSpawn >= 0.2 && whatToSpawn < 0.4){
+						listOfModifiers.add( new Laser(x, y) );
+					}
+					else if(whatToSpawn >= 0.4 && whatToSpawn < 0.6){
+						listOfModifiers.add( new LeftRightSwitcher(x, y) );
+					}
+					else if(whatToSpawn >= 0.6 && whatToSpawn < 0.8){
+						listOfModifiers.add( new NoAmmo(x, y) );
+					}
+					else{
+						listOfModifiers.add( new HalfScores(x, y) );
+					}
 				}
 			}
 			// spawn a rare modifier [OneUp, Boom]
@@ -574,7 +588,7 @@ public class Server implements AllServerInterfaces
 	}
 	
 	private void detectModifierPickUps(){
-		// TimerTasks for elapsing of the modfier-effects
+		// TimerTasks for elapsing the modfier-effects
 		TimerTask taskElapseFastenerPlayer1 = new TimerTask() {
 			@Override
 			public void run() {
@@ -640,16 +654,24 @@ public class Server implements AllServerInterfaces
 			}
 		};
 		//
+		TimerTask taskElapseLeftRightSwitcherPlayer0 = new TimerTask() {
+			@Override
+			public void run() {
+				for(int i=0; i<listOfPlayers.size(); i++){
+					if(listOfPlayers.get(i).getID() == 0){
+						listOfPlayers.get(i).setLeftRighSwitched(false);
+					}
+				}
+			}
+		};
 		TimerTask taskElapseLeftRightSwitcherPlayer1 = new TimerTask() {
 			@Override
 			public void run() {
-				leftRightIsSwitchedPlayer1 = false;
-			}
-		};
-		TimerTask taskElapseLeftRightSwitcherPlayer2 = new TimerTask() {
-			@Override
-			public void run() {
-				leftRightIsSwitchedPlayer2 = false;
+				for(int i=0; i<listOfPlayers.size(); i++){
+					if(listOfPlayers.get(i).getID() == 1){
+						listOfPlayers.get(i).setLeftRighSwitched(false);
+					}
+				}
 			}
 		};
 		//
@@ -660,16 +682,24 @@ public class Server implements AllServerInterfaces
 				}
 		};
 		//
+		TimerTask taskElapseNoAmmoPlayer0 = new TimerTask() {
+			@Override
+			public void run() {
+					for(int i=0; i<listOfPlayers.size(); i++){
+						if(listOfPlayers.get(i).getID() == 0){
+							listOfPlayers.get(i).setHasAmmo(true);
+						}
+					}
+				}
+		};
 		TimerTask taskElapseNoAmmoPlayer1 = new TimerTask() {
 			@Override
 			public void run() {
-					noAmmoPlayer1 = false;
+				for(int i=0; i<listOfPlayers.size(); i++){
+					if(listOfPlayers.get(i).getID() == 1){
+						listOfPlayers.get(i).setHasAmmo(true);
+					}
 				}
-		};
-		TimerTask taskElapseNoAmmoPlayer2 = new TimerTask() {
-			@Override
-			public void run() {
-					noAmmoPlayer2 = false;
 				}
 		};
 		//
@@ -679,6 +709,14 @@ public class Server implements AllServerInterfaces
 					halfScores = false;
 				}
 		};
+		//
+		TimerTask taskElapseSpaceShipSwitcher = new TimerTask() {
+			@Override
+			public void run() {
+					spaceShipsSwitched = false;
+				}
+		};
+
 		
 		for(int i=0; i<listOfPlayers.size(); i++){
 			Player tempPlayer = listOfPlayers.get(i);
@@ -738,13 +776,12 @@ public class Server implements AllServerInterfaces
 								}							
 							}
 							if(tempMod instanceof LeftRightSwitcher){
+								tempPlayer.setLeftRighSwitched(true);
 								if(tempPlayer.getID() == 0){
-									leftRightIsSwitchedPlayer1 = true;
-									timer.schedule(taskElapseLeftRightSwitcherPlayer1, LeftRightSwitcher.getTimeItLasts());
+									timer.schedule(taskElapseLeftRightSwitcherPlayer0, LeftRightSwitcher.getTimeItLasts());
 								}	
 								else{
-									leftRightIsSwitchedPlayer2 = true;
-									timer.schedule(taskElapseLeftRightSwitcherPlayer2, LeftRightSwitcher.getTimeItLasts());
+									timer.schedule(taskElapseLeftRightSwitcherPlayer1, LeftRightSwitcher.getTimeItLasts());
 								}
 							}
 							if(tempMod instanceof HostileFrenzy){
@@ -752,18 +789,23 @@ public class Server implements AllServerInterfaces
 								timer.schedule(taskElapseHostileFrenzy, HostileFrenzy.getTimeItLasts());		
 							}
 							if(tempMod instanceof NoAmmo){
+								tempPlayer.setHasAmmo(false);
 								if(tempPlayer.getID() == 0){
-									noAmmoPlayer1 = true;
-									timer.schedule(taskElapseNoAmmoPlayer1, NoAmmo.getTimeItLasts());
+									timer.schedule(taskElapseNoAmmoPlayer0, NoAmmo.getTimeItLasts());
 								}	
 								else{
-									noAmmoPlayer2 = true;
-									timer.schedule(taskElapseNoAmmoPlayer2, NoAmmo.getTimeItLasts());
+									timer.schedule(taskElapseNoAmmoPlayer1, NoAmmo.getTimeItLasts());
 								}	
 							}
 							if(tempMod instanceof HalfScores){
 								halfScores = true;
 								timer.schedule(taskElapseHalfScores, HalfScores.getTimeItLasts());
+							}
+							if(tempMod instanceof SpaceShipSwitcher){
+								if( listOfPlayers.size() == 2){ // there could be a remainder switcher, which MUST NOT take effect, as the player would lose control over the only spaceship
+									spaceShipsSwitched = true; // picking up a switcher during the effect of a previously picked up won't revert its effect, only lengthen it;
+									timer.schedule(taskElapseSpaceShipSwitcher, SpaceShipSwitcher.getTimeItLasts());
+								}
 							}
 						}
 					}
@@ -816,8 +858,17 @@ public class Server implements AllServerInterfaces
 		for(int i=0; i<listOfPlayers.size(); i++){
 			// removing from list, if !!3sec!!? is lated since explosion
 			explosionTime = listOfPlayers.get(i).getExplosionTime();
-			if( (currentTime -  explosionTime > 2000) && explosionTime!=0 ){//TODO: hany masodperc utan?
+			if( (currentTime - explosionTime > 2000) && explosionTime!=0 ){//TODO: hany masodperc utan?
 				listOfPlayers.remove(i);
+			}
+		}
+		
+		// Remove exploded Modifiers
+		for(int i=0; i<listOfModifiers.size(); i++){
+			// removing from list, if !!3sec!!? is lated since explosion
+			explosionTime = listOfModifiers.get(i).getExplosionTime();
+			if( (currentTime - explosionTime > 1000) && explosionTime!=0 ){//TODO: hany masodperc utan?
+				listOfModifiers.remove(i);
 			}
 		}
 		
@@ -1023,8 +1074,6 @@ public class Server implements AllServerInterfaces
 				// type for GUI to paint the proper skin
 				if( temp instanceof Fastener)
 					currentModifier.put("className", "Fastener");
-//				else if( temp instanceof ProjectileGoingDown)
-//					currentModifier.put("className", "ProjectileGoingDown");
 				else if(temp instanceof OneUp)
 					currentModifier.put("className", "OneUp");
 				else if(temp instanceof Shield)
@@ -1045,6 +1094,9 @@ public class Server implements AllServerInterfaces
 				}
 				else if(temp instanceof HalfScores){
 					currentModifier.put("className", "HalfScores");
+				}
+				else{
+					currentModifier.put("className", "SpaceShipSwitcher");
 				}
 				
 				currentModifier.put("x", temp.getCoordX());
@@ -1286,34 +1338,72 @@ public class Server implements AllServerInterfaces
 			if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==0 ){
 				player1Shooting = true;
 				// Shooting one projectile here; for the reason if the player presses the button for a very short amount of time
-				// otherwise it can happen, if in the TimerTask, playerShooting flag will already be false and no shooting happen
+				// otherwise it can happen, that in the TimerTask trackChanges, playerShooting flag will already be false and no shooting happen
+				Player temp;
+				Projectile shot;
 				long currentTime = java.lang.System.currentTimeMillis();
-				if(currentTime - player1ShootTime > Constants.timeBetweenShots && !noAmmoPlayer1){
-					player1ShootTime = java.lang.System.currentTimeMillis();
-					Projectile shot = listOfPlayers.get(0).shoot();
-					listOfProjectiles.add(shot);
-					// playing sounds
-					client1.playSound(SoundType.shoot);
-					if(type == GameType.MULTI_NETWORK){
-						client2.playSound(SoundType.shoot);
+				for(int i=0; i<listOfPlayers.size(); i++){
+					temp = listOfPlayers.get(i);
+					if(!spaceShipsSwitched){
+						if(temp.getID() == 0 && temp.isHasAmmo() && (currentTime - temp.getLastShootTime() > Constants.timeBetweenShots) ){
+							temp.setLastShootTime(currentTime);
+							shot = temp.shoot();
+							listOfProjectiles.add(shot);
+							// playing sounds
+							client1.playSound(SoundType.shoot);
+							if(type == GameType.MULTI_NETWORK){
+								client2.playSound(SoundType.shoot);
+							}
+						}
+					}
+					else{ // space ships are switched, shooting with the other player's ship | NO GOING here if only one player is alive (cause in that case, spaceShipsSwitched==false, so no prob
+						if(temp.getID() == 1 && temp.isHasAmmo() && (currentTime - temp.getLastShootTime() > Constants.timeBetweenShots) ){
+							temp.setLastShootTime(currentTime);
+							shot = temp.shoot();
+							listOfProjectiles.add(shot);
+							// playing sounds
+							client1.playSound(SoundType.shoot);
+							if(type == GameType.MULTI_NETWORK){
+								client2.playSound(SoundType.shoot);
+							}
+						}
 					}
 				}
 			}
 		}
-		else if(playerID == 1 && (type == GameType.MULTI_LOCAL || type == GameType.MULTI_NETWORK)){
-			if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==1){
+		else{ // playerID == 1 -> player2 wants to shoot
+			if(listOfPlayers.size() == 2 || listOfPlayers.get(0).getID()==1 ){ // 2 players alive, or only player2 is alive
 				player2Shooting = true;
 				// Shooting one projectile here; for the reason if the player presses the button for a very short amount of time
-				// otherwise it can happen, if in the TimerTask, playerShooting flag will already be false and no shooting happen
+				// otherwise it can happen, that in the TimerTask trackChanges, playerShooting flag will already be false and no shooting happen
+				Player temp;
+				Projectile shot;
 				long currentTime = java.lang.System.currentTimeMillis();
-				if(currentTime - player2ShootTime > Constants.timeBetweenShots && !noAmmoPlayer2){
-					player2ShootTime = java.lang.System.currentTimeMillis();
-					Projectile shot = listOfPlayers.get(1).shoot();
-					listOfProjectiles.add(shot);
-					// playing sounds
-					client1.playSound(SoundType.shoot);
-					if(type == GameType.MULTI_NETWORK){
-						client2.playSound(SoundType.shoot);
+				for(int i=0; i<listOfPlayers.size(); i++){
+					temp = listOfPlayers.get(i);
+					if(!spaceShipsSwitched){
+						if(temp.getID() == 1 && temp.isHasAmmo() && (currentTime - temp.getLastShootTime() > Constants.timeBetweenShots) ){
+							temp.setLastShootTime(currentTime);
+							shot = temp.shoot();
+							listOfProjectiles.add(shot);
+							// playing sounds
+							client1.playSound(SoundType.shoot);
+							if(type == GameType.MULTI_NETWORK){
+								client2.playSound(SoundType.shoot);
+							}
+						}
+					}
+					else{ // space ships are switched, shooting with the other player's ship | | NO GOING here if only one player is alive (cause in that case, spaceShipsSwitched==false, so no prob
+						if(temp.getID() == 0 && temp.isHasAmmo() && (currentTime - temp.getLastShootTime() > Constants.timeBetweenShots) ){
+							temp.setLastShootTime(currentTime);
+							shot = temp.shoot();
+							listOfProjectiles.add(shot);
+							// playing sounds
+							client1.playSound(SoundType.shoot);
+							if(type == GameType.MULTI_NETWORK){
+								client2.playSound(SoundType.shoot);
+							}
+						}
 					}
 				}
 			}
