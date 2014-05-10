@@ -503,7 +503,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					}
 					else 
 					{
-						//if (localObjectBuffer.player[i].isShielded)
+						if (localObjectBuffer.player[i].isShielded)
 							drawObject(shieldImg, localPlayer.x, localPlayer.y, shieldWidth, shieldHeight);
 						drawObject(spaceShipImg[localObjectBuffer.player[i].id], localPlayer.x, localPlayer.y, spaceShipWidth, spaceShipHeight);
 					}
