@@ -89,7 +89,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private static BufferedImage[] spaceShipBombImg = new BufferedImage[5];
 	private static BufferedImage[] spaceShipImg = new BufferedImage[6];
 	private static BufferedImage lifeImg;
-	private static BufferedImage powerUpImg;
+	private static BufferedImage[] powerUpImg= new BufferedImage[5];
 	private static BufferedImage powerDownImg;
 	private static BufferedImage[] powerUpBlowImg = new BufferedImage[4];
 	private static BufferedImage shieldImg;
@@ -214,7 +214,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			spaceShipImg[3] 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg4.png"));
 			spaceShipImg[4]	      = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg5.png"));
 			spaceShipImg[5]	   	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg6.png"));
-			powerUpImg	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg.png"));
+			powerUpImg[0]	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg1.png"));
+			powerUpImg[1]	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg2.png"));
+			powerUpImg[2]	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg3.png"));
+			powerUpImg[3]	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg4.png"));
+			powerUpImg[4]	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg5.png"));
 			powerDownImg	  	  = ImageIO.read(new File(projdir + "/res/sprites/powerDownImg.png"));
 			shieldImg	  	      = ImageIO.read(new File(projdir + "/res/sprites/shieldImg.png"));
 			powerUpBlowImg[0]  	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpBlowImg1.png"));
@@ -241,8 +245,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		enemyBWidth       	= enemyBImg[0].getWidth();
 		enemyCHeight      	= enemyCImg[0].getHeight();
 		enemyCWidth       	= enemyCImg[0].getWidth();
-		powerHeight     	= powerUpImg.getHeight();
-		powerWidth      	= powerUpImg.getWidth();
+		powerHeight     	= powerUpImg[0].getHeight();
+		powerWidth      	= powerUpImg[0].getWidth();
 		spaceShipBombHeight = spaceShipBombImg[0].getHeight();
 		spaceShipBombWidth 	= spaceShipBombImg[0].getWidth();
 		enemyABlowHeight	= enemyABlowImg[0].getHeight();
@@ -528,7 +532,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				for (int i = 0; i < localObjectBuffer.projCount; i++)
 				{
 					CProjectile localProjectile = localObjectBuffer.proj[i];
-
+					
 					if (localProjectile.className.equals("ProjectileGoingUp"))
 						drawObject(bulletImg[0]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
 					else if (localProjectile.className.equals("ProjectileGoingDown"))
@@ -573,6 +577,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					}
 
 
+					
 					if (localModifier.explosionTime != 0)
 					{
 						int tickDiff_div = (int) (serverTick-localModifier.explosionTime)/100;
@@ -582,8 +587,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					
 					else if (localModifier.pickupTime == 0)
 					{
-						if (isUp)
-							drawObject(powerUpImg	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+						if     (localModifier.className.equals("Shield"))	drawObject(powerUpImg[2]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+						else if(localModifier.className.equals("Boom"))		drawObject(powerUpImg[3]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+						else if(localModifier.className.equals("Fastener")) drawObject(powerUpImg[0]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+						else if(localModifier.className.equals("Laser"))	drawObject(powerUpImg[4]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+						else if(localModifier.className.equals("OneUp"))	drawObject(powerUpImg[1]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
 						else
 							drawObject(powerDownImg		, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
 					}
@@ -678,7 +686,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				drawTitle("HIGH SCORE");
 
 				for(int j = 0; j < lastMenuHS-1; j++) 
-					drawOptionsLine(j,highScoreString[j],highScoreValues[j]);
+					drawOptionsLine(j+1,highScoreString[j],highScoreValues[j]);
 
 				drawMenuLine   (lastMenuHS,"Back");
 			}
