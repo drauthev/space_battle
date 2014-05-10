@@ -160,6 +160,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int lastMenuHS = 1;
 	private String highScoreValues[] = new String[10];
 	private String highScoreString[] = new String[10];
+	private int currentHighScore;
 
 	private static final String[] actionKeysNames = {"P1 Left","P1 Right","P1 Fire","P2 Left","P2 Right","P2 Fire"};
 
@@ -477,9 +478,9 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				for (int i = 0; i < localObjectBuffer.playerCount; i++)
 				{
 					CPlayer localPlayer = localObjectBuffer.player[i];
-
-					if (i == 0) numberOfLivesA = localPlayer.numberOfLives;
-					else if (i == 1) numberOfLivesB = localPlayer.numberOfLives;
+					
+					if (localObjectBuffer.player[i].id == 0) numberOfLivesA = localPlayer.numberOfLives;
+					else numberOfLivesB = localPlayer.numberOfLives;
 
 					if (localPlayer.explosionTime != 0 )
 					{
@@ -487,7 +488,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						if      (tickDiff_div < 5) drawObject(spaceShipBombImg[tickDiff_div], localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
 					}
 					else 
-						drawObject(spaceShipImg[i], localPlayer.x, localPlayer.y, spaceShipWidth, spaceShipHeight);
+						drawObject(spaceShipImg[localObjectBuffer.player[i].id], localPlayer.x, localPlayer.y, spaceShipWidth, spaceShipHeight);
 				}
 
 				for (int i = 0; i < localObjectBuffer.projCount; i++)
@@ -548,7 +549,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 				drawLives(numberOfLivesA,numberOfLivesB);
 
-				drawTopScores(localObjectBuffer.score,client.getHighestScore());
+				drawTopScores(localObjectBuffer.score,currentHighScore);
 
 			}
 
@@ -838,15 +839,27 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 			else if (currentMenuState == MenuState.NEW_GAME_MENU)
 			{
-				if      (currentLine == 1) client.newGame(GameType.SINGLE);
+				if      (currentLine == 1) 
+				{
+						client.newGame(GameType.SINGLE);
+						currentHighScore = client.getHighestScore();
+				}
 				else if (currentLine == 2) setMenuState(MenuState.MULTI_MENU);
 				else if (currentLine == 3) setMenuState(MenuState.MAIN_MENU);
 			}
 			else if (currentMenuState == MenuState.MULTI_MENU)
 			{
 
-				if      (currentLine == 1) client.newGame(GameType.MULTI_LOCAL);
-				else if (currentLine == 2) client.newGame(GameType.MULTI_NETWORK);
+				if      (currentLine == 1)
+				{
+					currentHighScore = client.getHighestScore();
+					client.newGame(GameType.MULTI_LOCAL);
+				}
+				else if (currentLine == 2)
+				{
+					currentHighScore = client.getHighestScore();
+					client.newGame(GameType.MULTI_NETWORK);
+				}
 				else if (currentLine == 3) setMenuState(MenuState.NEW_GAME_MENU);
 			}	
 
