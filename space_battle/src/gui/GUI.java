@@ -1,25 +1,20 @@
 package gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
-
-import javax.swing.*;
-import javax.imageio.ImageIO;
-
-import client.CModifier;
-import client.CNPC;
-import client.CPlayer;
-import client.CProjectile;
-import client.ObjectBuffer;
-import enums.*;
-import interfaces.*;
-
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.io.File;
 import java.io.IOException;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import javax.swing.*;
+import javax.imageio.ImageIO;
+
+import client.*;
+import enums.*;
+import interfaces.*;
+
 
 public class GUI extends JFrame implements KeyListener, MouseListener, GUIForClient {
 
@@ -32,13 +27,14 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private double backgroundImgY = 0;
 	private static final double backgroundSpeed = 0.2;
 
-	// Parameters for positioning the images
+	// Parameters for positioning the images and text
 	private static final int optionsAX = frameWidth/4+30;
 	private static final int optionsBX = 3*frameWidth/4-30;
 	private static final int middleX   = frameWidth/2;
 	private static final int firstLineY = 150;
 	private static final int lineHeight = 50;
-	private int dotCorX; 
+	
+	private int dotX; 
 
 	// Fonts
 	private static Font scoreFont;
@@ -741,7 +737,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		int CoordinateX = middleX - bufferGraphics.getFontMetrics().stringWidth(content)/2;
 		int CoordinateY = firstLineY + lineNumber * lineHeight;
 		bufferGraphics.drawString(content,CoordinateX, CoordinateY);
-		if (dotLineToDraw == lineNumber) dotCorX = CoordinateX;
+		if (dotLineToDraw == lineNumber) dotX = CoordinateX;
 	}
 
 	public void drawPowerTitle(int lineNumber, String content, boolean isPowerUp)
@@ -767,7 +763,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 		if (localTick/1000 % 2 == 0) bufferGraphics.drawString(content,      CoordinateX, CoordinateY);
 		else 							 bufferGraphics.drawString(content + "_",CoordinateX, CoordinateY);
-		if (dotLineToDraw == lineNumber) dotCorX = CoordinateX;
+		if (dotLineToDraw == lineNumber) dotX = CoordinateX;
 	}
 
 	public void drawOptionsLine(int lineNumber, String content1, String content2)
@@ -778,7 +774,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 		int CoordinateX = optionsAX - bufferGraphics.getFontMetrics().stringWidth(content1)/2;
 		bufferGraphics.drawString(content1,CoordinateX, CoordinateY);
-		if (dotLineToDraw == lineNumber) dotCorX = CoordinateX;
+		if (dotLineToDraw == lineNumber) dotX = CoordinateX;
 
 		CoordinateX = optionsBX - bufferGraphics.getFontMetrics().stringWidth(content2)/2;
 		bufferGraphics.drawString(content2,CoordinateX, CoordinateY);
@@ -788,7 +784,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	public void drawDot()
 	{
 		int CoordinateY = firstLineY - 20 + dotLineToDraw * lineHeight;
-		int CoordinateX = dotCorX - 50;
+		int CoordinateX = dotX - 50;
 		bufferGraphics.drawImage(lifeImg	, CoordinateX	, CoordinateY	, lifeImgWidth	,lifeImgHeight,null);
 
 	}	
@@ -866,8 +862,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			{
 				if      (currentLine == 1) 
 				{
-						client.newGame(GameType.SINGLE);
 						currentHighScore = client.getHighestScore();
+						client.newGame(GameType.SINGLE);
 				}
 				else if (currentLine == 2) setMenuState(MenuState.MULTI_MENU);
 				else if (currentLine == 3) setMenuState(MenuState.MAIN_MENU);
@@ -1039,14 +1035,14 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					{
 						if  (dotLine != 1) dotLine--;
 						//System.out.println("Current Line:" + dotLine);
-						System.out.println("Last Menu State: " + lastMenuHS);
+						//System.out.println("Last Menu State: " + lastMenuHS);
 					}
 
 					else if (keyCode == KeyEvent.VK_DOWN)
 					{
 						if      (dotLine != getLastLine()) dotLine++;
 						//System.out.println("Current Line:" + dotLine);
-						System.out.println("Last Menu State: " + lastMenuHS);
+						//System.out.println("Last Menu State: " + lastMenuHS);
 					}
 
 
