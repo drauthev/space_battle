@@ -540,7 +540,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					CModifier localModifier = localObjectBuffer.mod[i];	
 					//if (localModifier.pickupTime == 0 || (serverTick - localModifier.pickupTime > 1000) || ((serverTick - localModifier.pickupTime)/200) % 2 == 0) ;
 
-					if (localModifier.className.equals("ProjectileLaser") || localModifier.className.equals("Shield") ||
+					if (localModifier.className.equals("Shield") ||
 							localModifier.className.equals("Boom") || localModifier.className.equals("Fastener") ||
 							localModifier.className.equals("Laser") || localModifier.className.equals("OneUp"))
 						isUp = true;
@@ -1067,8 +1067,18 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						{
 							if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_RIGHT) 
 							{
-								if (isEffectOn == true) isEffectOn = false;
-								else isEffectOn = true;
+								if (isEffectOn == true)
+								{
+									isEffectOn = false;
+									client.setSound(false);
+								}
+								else
+								{
+									isEffectOn = true;
+									client.setSound(true);
+								}
+								
+								
 							}
 						}
 						else if (dotLine == 2) 
