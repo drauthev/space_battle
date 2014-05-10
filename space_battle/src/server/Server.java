@@ -529,7 +529,6 @@ public class Server implements AllServerInterfaces
 	}
 	
 	private void spawnModifier(int x, int y){
-		listOfModifiers.add( new Laser(200, y) );
 		double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 		if(spawnOrNot >= 0.6){
 			// Choosing what to spawn
