@@ -174,6 +174,7 @@ public class Client implements ClientForGUI, ClientForServer {
 				objectBuffer[idx].player[i].explosionTime = curr.getLong("explosionTime");
 				objectBuffer[idx].player[i].hitTime = curr.getLong("hitTime");
 				objectBuffer[idx].player[i].id = curr.getInt("id");
+				objectBuffer[idx].player[i].isShielded = curr.getBoolean("isShielded");
 			}
 			
 			JSONArray proj = wrapper.getJSONArray("projectiles");
