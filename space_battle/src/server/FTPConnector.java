@@ -8,24 +8,27 @@ import java.net.SocketTimeoutException;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
 
 public class FTPConnector {
 	FTPClient ftp;
 	
 	public FTPConnector(String host, String user, String pwd) throws Exception {
         ftp = new FTPClient();
-        ftp.setConnectTimeout(5); // set connection timeout to 5 seconds
+        ftp.setConnectTimeout(120); //TODO
         try{
 	        ftp.connect(host);
 			boolean login = ftp.login(user, pwd); 
 			if (login){
-				System.out.println("FTP Connection successful");
+				//System.out.println("FTP Connection successful");
 			}
 			else{
-				System.out.println("FTP Connection failed...");  
+				//System.out.println("FTP Connection failed...");  
 			}
+			ftp.setDefaultTimeout(120);
+	        ftp.setDataTimeout(5000);
 	        ftp.setFileType(FTP.ASCII_FILE_TYPE);
-	        ftp.enterLocalPassiveMode();
+	        //ftp.enterLocalPassiveMode();
         }
         catch(SocketTimeoutException e){
         	System.out.println("FTPConnector catch block - ftp connection could not be established in the first place - new high score will not be handled");
@@ -52,12 +55,29 @@ public class FTPConnector {
     	
     	InputStream istream;
     	String fileContent = null;
+    	
 		try {
+			//ftp.setSoTimeout(2000);
 			istream = this.ftp.retrieveFileStream(remoteFilePath);
-			fileContent = getStringFromInputStream(istream);			
-		} catch (IOException e) {
+            
+			fileContent = getStringFromInputStream(istream);
+			ftp.completePendingCommand();
+		} catch (Exception e) {
 			e.printStackTrace();
+			System.out.println("downloadFileAndCopyToString(): catch block");
 		}
+		int reply = ftp.getReplyCode();
+		if (!FTPReply.isPositiveCompletion(reply)) {
+            try {
+				throw new Exception("Connect failed: " + ftp.getReplyString());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+         }
+         else{
+          	System.out.println("FTP reply: " + ftp.getReplyString());
+         }
 		return fileContent;
     }
      

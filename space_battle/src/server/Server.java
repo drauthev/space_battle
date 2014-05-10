@@ -380,6 +380,7 @@ public class Server implements AllServerInterfaces
 								if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.beepA);
 							}
 							listOfProjectiles.remove(i); // remove projectile which hit
+							break; // should not check for the other NPCs, if Projectile is not laser.. this could cause exceptions in some cases, if the projectile would hit more than one NPC (e.g. teleporting hostiletype3s...)
 						}
 						listOfNPCs.set(j, npc);
 					}
@@ -1421,20 +1422,24 @@ public class Server implements AllServerInterfaces
 
 	@Override
 	public void sendName(String name) {
-		// TODO A végén setGameState(GameState.NONE) !!!
+		// TODO A végén setGameState(GameState.NONE)
+		System.out.println("SENDNAME CALLED");
 		FTPConnector ftp;
-		SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
-		
+		SortedMap<Integer, String> highScores = getHighScores();
 		highScores.put(score, name);
+		
 		int highscoreSize = highScores.size();
-		while( highscoreSize > 10 ){ // trimming the HighScore table to 10 record
-			highScores.remove(highscoreSize-1);
-		}
+		System.out.println("highscores: " + highScores);
+		System.out.println("highscoresize: " + highscoreSize);
+//		while( highscoreSize > 10 ){ // trimming the HighScore table to 10 record
+//			highScores.remove(highscoreSize-1);
+//		}
 		// making a String from the highscore table
 		String sortedMapContent = ""; // String to write to highscores.txt
 		int key;
 		String value;
 		while( highscoreSize > 0 ){
+			System.out.println("highscores: " + highScores);
 			key = highScores.lastKey(); // iterating from the highest score to the last (the direction doesnt matter too much..)
 			value = highScores.get(key);
 			sortedMapContent = sortedMapContent + key + value + ",";
@@ -1493,43 +1498,62 @@ public class Server implements AllServerInterfaces
 		ftp = new FTPConnector("drauthev.sch.bme.hu", "space_battle", "");
 		if( ftp.getFtp().isConnected() ){
 			highscoresFileContent = ftp.downloadFileAndCopyToString("highscores.txt");
+			//System.out.println("getHighScore(): ideertem ftp isconnected");
 			
 			if(highscoresFileContent != null){
+				//System.out.println("van ilyen file az FTPn ");
+				System.out.println("highscoreFileContent: " + highscoresFileContent);
 				highscoreEntries = highscoresFileContent.split(","); // each odd member of the String[] will be a score, the next even member will be the playerName attached to it
 				for(int i=0; i<highscoreEntries.length/2; i+=2){
+					System.out.println("highscorecontent " + i + " : " + highscoreEntries[i]);
 					int key = Integer.parseInt(highscoreEntries[i]);
 					String value = highscoreEntries[i+1];
 					highScores.put(key, value);			
 				}
 			}
 			else{ // if there is no highscores.txt on the FTP server, creating an empty one, and returning an empty SortedMap
+				System.out.println("getHighScore(): nincs ilyen file az FTPn ");
 				OutputStream ostream = ftp.getFtp().storeFileStream("highscores.txt");
+				String dummyHighScoreTable = "10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers";
+				ostream.write(dummyHighScoreTable.getBytes());
 				ostream.close();
+				System.out.println("GethighScores(): ostream csukasa utan");
+				//ftp.getFtp().completePendingCommand();
+				boolean completed = ftp.getFtp().completePendingCommand();
+	            if (completed) {
+	                System.out.println("getHighScore(): Empty highscore table uploaded successfully.");
+	            }
+	            else{
+	            	 System.out.println("getHighScore(): nem sikerult az ures highscore tabla feltoltese.");
+	            }
 			}
 			
 			ftp.disconnect();
+			//System.out.println("getHighScore(): vege, ftp disconnected");
 		}
 		// else returning an empty sortedmap	
 	  } catch (Exception e) {
 		// TODO Auto-generated catch block
-		//e.printStackTrace();
-		  System.out.println("getHighScores catch block"); // should not get here because of the if isConnected
+		e.printStackTrace();
+		  System.out.println("getHighScore(): catch block"); // should not get here because of the if isConnected
 	  }
 	  return highScores;
 	}
 	
 	public static int getHighestScore()
 	{
-//		SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
-//		highScores = getHighScores();
-//		if( highScores.size() == 0){ // no valid highScore table -- broken FTP connection
-//			return 0;
-//		}
-//		else{
-//			int highestScore = highScores.lastKey(); // returns the highest key
-//			return highestScore;
-//		}
-		return 0;
+		SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
+		highScores = getHighScores();
+		if( highScores.size() == 0){ // no valid highScore table -- broken FTP connection
+			System.out.println("gethighestscore vege, highscores size == 0, broken ftp");
+			return 0;
+		}
+		else{
+			int highestScore = highScores.lastKey(); // returns the highest key
+			System.out.println("gethighestscore vege, valid highscore recovered from ftp");
+			return highestScore;
+		}
+//		return 0;
 	}
 
 
