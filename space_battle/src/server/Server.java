@@ -440,14 +440,12 @@ public class Server implements AllServerInterfaces
 				if( mod.getExplosionTime() == 0 && (java.lang.System.currentTimeMillis() - mod.getCreationTime() > 1000) ){ // doing nothing if the modifier is already exploded, or was just created
 					if( proj instanceof ProjectileGoingUp || proj instanceof ProjectileLaser){ // only investigating for player-shooted powerups
 						if( proj.isHit(mod) ){
-							//mod.setExplosionTime(java.lang.System.currentTimeMillis()); // nem kell Iminek, h bent maradjon
-							
+							mod.setExplosionTime(java.lang.System.currentTimeMillis());
 							// playing sound
 							client1.playSound(SoundType.enemyExplosion);
 							if(type == GameType.MULTI_NETWORK) client2.playSound(SoundType.enemyExplosion);
 							// Spawning 2 new modifiers from the exploded one
 							createModifiersFromAnExplodedOne(mod);
-							listOfModifiers.remove(mod);
 							if( !(proj instanceof ProjectileLaser) ){ 
 								listOfProjectiles.remove(i); // remove projectile which hit, except it is a ProjectileLaser
 							}
