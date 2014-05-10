@@ -760,6 +760,7 @@ public class Server implements AllServerInterfaces
 							}
 							if(tempMod instanceof Boom){
 								for(int i1=0; i1<listOfNPCs.size(); i1++){
+									score += listOfNPCs.get(i1).getScoreIfDestroyed();
 									listOfNPCs.get(i1).setLives(0);
 									listOfNPCs.get(i1).setExplosionTime(java.lang.System.currentTimeMillis());
 									// playing sound
