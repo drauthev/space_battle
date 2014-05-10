@@ -1,24 +1,25 @@
 package server;
+import interfaces.AllServerInterfaces;
+import interfaces.ClientForServer;
+
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.apache.commons.net.ftp.FTPClient;
 
-import com.sun.jmx.snmp.tasks.Task;
-import com.sun.org.apache.xpath.internal.operations.Mod;
-
-import enums.*;
-import interfaces.AllServerInterfaces;
-import interfaces.ClientForServer;
-import server.game_elements.HalfScores;
-import server.game_elements.HostileFrenzy;
 import server.game_elements.Boom;
 import server.game_elements.Fastener;
+import server.game_elements.HalfScores;
+import server.game_elements.HostileFrenzy;
 import server.game_elements.HostileType1;
 import server.game_elements.HostileType2;
 import server.game_elements.HostileType3;
@@ -36,6 +37,9 @@ import server.game_elements.ProjectileGoingUp;
 import server.game_elements.ProjectileLaser;
 import server.game_elements.Shield;
 import sound.SoundType;
+import enums.GameSkill;
+import enums.GameState;
+import enums.GameType;
 
 public class Server implements AllServerInterfaces
 {
@@ -172,7 +176,9 @@ public class Server implements AllServerInterfaces
     		long currentTime = java.lang.System.currentTimeMillis();
 			if(listOfNPCs.get(i) instanceof HostileType3){
 				if( currentTime - ((HostileType3) listOfNPCs.get(i)).getTeleportTime() > Constants.hostile3TeleportFrequency){
-					((HostileType3) listOfNPCs.get(i)).teleport();
+					if( listOfNPCs.get(i).getCoordY() < Constants.gameFieldHeigth-Player.getPlayerheight()-100){ // don't teleport under a perimeter -- avoiding teleportation onto Players
+						((HostileType3) listOfNPCs.get(i)).teleport();
+					}		
 				}
 			}
     	}
@@ -241,7 +247,6 @@ public class Server implements AllServerInterfaces
 			temp = listOfPlayers.get(i);
 			if(temp.getID() == 0){
 				if(player1MovingLeft){
-					System.out.println("player 1 balra");
 					if(!leftRightIsSwitchedPlayer1)
 						temp.moveLeft();
 					else
@@ -823,11 +828,23 @@ public class Server implements AllServerInterfaces
 			@Override
 			public void run() {
 				if(type == GameType.SINGLE || type == GameType.MULTI_LOCAL){
-					client1.changeGameState(GameState.GAMEOVER);
+					if(isThereNewHighScore()){
+						client1.changeGameState(GameState.GAMEOVER_NEW_HIGHSCORE);
+					}
+					else{
+						client1.changeGameState(GameState.GAMEOVER);
+					}				
 				}
 				else{ // network game
-					client1.changeGameState(GameState.GAMEOVER);
-					client2.changeGameState(GameState.GAMEOVER);
+					if(isThereNewHighScore()){
+						client1.changeGameState(GameState.GAMEOVER_NEW_HIGHSCORE);
+					}
+					else{
+						client1.changeGameState(GameState.GAMEOVER);
+						
+					}
+					client2.changeGameState(GameState.GAMEOVER); // ONLY client1 types the new highscore;
+					
 				}
 			}
 		};
@@ -843,6 +860,21 @@ public class Server implements AllServerInterfaces
 				timer.schedule(taskGameOver, 2000);
 			}
 		}
+	}
+	
+	private boolean isThereNewHighScore(){
+		SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
+		highScores = getHighScores();
+		if( highScores.size() == 0){ // no valid highsscore table is available - FTP problems
+			return false;
+		}
+		if( score > highScores.firstKey() ){ // new highscore! firstKey return the lowest key, that is the least score
+			return true;
+		}
+		else{
+			return false;
+		}
+
 	}
 	
 	// JSON converters
@@ -1284,8 +1316,51 @@ public class Server implements AllServerInterfaces
 
 	@Override
 	public void sendName(String name) {
-		// TODO Auto-generated method stub
 		// TODO A végén setGameState(GameState.NONE) !!!
+		FTPConnector ftp;
+		SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
+		
+		highScores.put(score, name);
+		int highscoreSize = highScores.size();
+		while( highscoreSize > 10 ){ // trimming the HighScore table to 10 record
+			highScores.remove(highscoreSize-1);
+		}
+		// making a String from the highscore table
+		String sortedMapContent = ""; // String to write to highscores.txt
+		int key;
+		String value;
+		while( highscoreSize > 0 ){
+			key = highScores.lastKey(); // iterating from the highest score to the last (the direction doesnt matter too much..)
+			value = highScores.get(key);
+			sortedMapContent = sortedMapContent + key + value + ",";
+			highScores.remove(key);
+		}
+		// Converting String to a byte[], than uploading the new high score table to the FTP server
+		byte[] byteArrayToUpload = sortedMapContent.getBytes(Charset.forName("US-ASCII"));
+		try {
+			// Uploading it to the FTP server
+			ftp = new FTPConnector("drauthev.sch.bme.hu", "space_battle", "");
+			ftp.setFileTypeToBinary();
+			OutputStream ostream = ftp.getFtp().storeFileStream("newhighscores.txt");
+			ostream.write(byteArrayToUpload);
+			ostream.close();
+			boolean completed = ftp.getFtp().completePendingCommand();
+	            if (completed) {
+	                System.out.println("New highscore table uploaded successfully.");
+	            }
+	        // Renaming the uploaded newhighscores.txt to highscores.txt -- renaming is an atomic operation, but there could be errors during uploading -- this grants that no compromise will happen to the existing highscore table
+	        ftp.getFtp().rename("newhighscores.txt", "highscores.txt");
+	        completed = ftp.getFtp().completePendingCommand();
+            if (completed) {
+                System.out.println("New highscore table updated successfully.");
+            }
+	        
+	        ftp.disconnect();
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -1304,15 +1379,51 @@ public class Server implements AllServerInterfaces
 	
 	public static SortedMap<Integer, String> getHighScores()
 	{
-		// TODO Itt kell majd valami értelmes highscore táblát visszaadni...
-
-		// TODO return előtt setGameState(GameStates.NONE) !!!
-		return null;
+	  SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
+	  FTPConnector ftp;
+	  String highscoresFileContent;
+	  String[] highscoreEntries;
+	  
+	  try {
+		ftp = new FTPConnector("drauthev.sch.bme.hu", "space_battle", "");
+		if( ftp.getFtp().isConnected() ){
+			highscoresFileContent = ftp.downloadFileAndCopyToString("highscores.txt");
+			
+			if(highscoresFileContent != null){
+				highscoreEntries = highscoresFileContent.split(","); // each odd member of the String[] will be a score, the next even member will be the playerName attached to it
+				for(int i=0; i<highscoreEntries.length/2; i+=2){
+					int key = Integer.parseInt(highscoreEntries[i]);
+					String value = highscoreEntries[i+1];
+					highScores.put(key, value);			
+				}
+			}
+			else{ // if there is no highscores.txt on the FTP server, creating an empty one, and returning an empty SortedMap
+				OutputStream ostream = ftp.getFtp().storeFileStream("highscores.txt");
+				ostream.close();
+			}
+			
+			ftp.disconnect();
+		}
+		// else returning an empty sortedmap	
+	  } catch (Exception e) {
+		// TODO Auto-generated catch block
+		//e.printStackTrace();
+		  System.out.println("getHighScores catch block"); // should not get here because of the if isConnected
+	  }
+	  return highScores;
 	}
 	
 	public static int getHighestScore()
 	{
-		// TODO Ezt is meg kell csinálni faszául.
+//		SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
+//		highScores = getHighScores();
+//		if( highScores.size() == 0){ // no valid highScore table -- broken FTP connection
+//			return 0;
+//		}
+//		else{
+//			int highestScore = highScores.lastKey(); // returns the highest key
+//			return highestScore;
+//		}
 		return 0;
 	}
 
