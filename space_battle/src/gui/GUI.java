@@ -91,6 +91,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private static BufferedImage lifeImg;
 	private static BufferedImage powerUpImg;
 	private static BufferedImage powerDownImg;
+	private static BufferedImage[] powerUpBlowImg = new BufferedImage[4];
 	private static BufferedImage shieldImg;
 	private static BufferedImage projectileGoingDiagonallyLeftImg;
 	private static BufferedImage projectileGoingDiagonallyRightImg;
@@ -214,6 +215,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			powerUpImg	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg.png"));
 			powerDownImg	  	  = ImageIO.read(new File(projdir + "/res/sprites/powerDownImg.png"));
 			shieldImg	  	      = ImageIO.read(new File(projdir + "/res/sprites/shieldImg.png"));
+			powerUpBlowImg[0]  	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpBlowImg1.png"));
+			powerUpBlowImg[1] 	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpBlowImg2.png"));
+			powerUpBlowImg[2] 	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpBlowImg3.png"));
+			powerUpBlowImg[3] 	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpBlowImg4.png"));
 			projectileGoingDiagonallyLeftImg	= ImageIO.read(new File(projdir + "/res/sprites/projectileGoingDiagonallyLeftImg.png"));
 			projectileGoingDiagonallyRightImg	= ImageIO.read(new File(projdir + "/res/sprites/projectileGoingDiagonallyRightImg.png"));
 
@@ -553,7 +558,15 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					}
 
 
-					if (localModifier.pickupTime == 0)
+					System.out.println(localModifier.explosionTime + "    " + localModifier.pickupTime );
+					if (localModifier.explosionTime != 0)
+					{
+						int tickDiff_div = (int) (serverTick-localModifier.explosionTime)/100;
+						if (tickDiff_div < 4) drawObject(powerUpBlowImg[tickDiff_div], localModifier.x, localModifier.y, enemyBlowWidth,enemyBlowHeight);
+					}
+					
+					
+					else if (localModifier.pickupTime == 0)
 					{
 						if (isUp)
 							drawObject(powerUpImg	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
@@ -925,7 +938,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			}
 		}
 		else if (currentGameState == GameState.GAMEOVER_NEW_HIGHSCORE) 
+		{
+			System.out.println("client.sendName(textField);");
 			client.sendName(textField);
+		}
 
 	}
 
@@ -992,12 +1008,12 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 				else
 				{
-					if (currentGameState == GameState.DISCONNECTED || currentGameState == GameState.GAMEOVER_NEW_HIGHSCORE || currentGameState == GameState.GAMEOVER)
+					if (currentGameState == GameState.DISCONNECTED || currentGameState == GameState.GAMEOVER)
 					{
 						client.resetGameState();
 						setMenuState(MenuState.MAIN_MENU);
 					}
-					else
+					else if (currentGameState != GameState.GAMEOVER_NEW_HIGHSCORE)
 					{
 						if (currentGameState != GameState.PAUSED) client.pauseRequest();
 						setMenuState(MenuState.PAUSED_MENU); // Game Paused or Something else..!
@@ -1012,6 +1028,19 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				someThingIsEntered(dotLineToDraw,1);
 			}
 
+			else if (currentGameState == GameState.GAMEOVER_NEW_HIGHSCORE)
+			{
+					if (keyCode == KeyEvent.VK_BACK_SPACE)
+						textField = textField.substring(0, textField.length() - 1);
+					else 
+					{
+						if (e.getKeyChar() == ',' && keyCode != KeyEvent.VK_COMMA) textField = textField + ".";
+						else						   textField = textField + e.getKeyChar();
+						textField = textField.toUpperCase();
+						
+					}
+			}
+			
 			else if (currentGameState == GameState.NONE || currentGameState == GameState.PAUSED)
 			{
 				if (keyBoardChangeSelected == 1)
@@ -1029,26 +1058,18 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				}
 				else
 				{
-
 					if (keyCode == KeyEvent.VK_UP)
-
 					{
 						if  (dotLine != 1) dotLine--;
-						//System.out.println("Current Line:" + dotLine);
-						//System.out.println("Last Menu State: " + lastMenuHS);
 					}
-
+					
 					else if (keyCode == KeyEvent.VK_DOWN)
 					{
 						if      (dotLine != getLastLine()) dotLine++;
-						//System.out.println("Current Line:" + dotLine);
-						//System.out.println("Last Menu State: " + lastMenuHS);
 					}
-
 
 					else if (isTextLine())
 					{
-
 						if (keyCode == KeyEvent.VK_BACK_SPACE)
 							textField = textField.substring(0, textField.length() - 1);
 						else 
