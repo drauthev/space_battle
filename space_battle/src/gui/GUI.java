@@ -390,6 +390,9 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		mainDot = 1;
 		optionsDot = 1;
 		newGameDot = 1;
+		
+		if (gs == GameState.PAUSED) setMenuState(MenuState.PAUSED_MENU);
+		else if  (gs == GameState.NONE) setMenuState(MenuState.MAIN_MENU);
 
 		currentGameState = gs;
 		System.out.println("GameState changed to " + currentGameState);
