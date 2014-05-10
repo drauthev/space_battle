@@ -56,9 +56,18 @@ public class HostileType2 extends NPC {
 	}
 	
 	public Projectile shoot(){
-		//TODO: shoot 2 projectiles
 		ProjectileGoingDown dummy = new ProjectileGoingDown(this.getCoordX(), this.getCoordY() + Constants.hostile2Height/2 + Projectile.getProjectileheight()/2);
 		return dummy;
+	}
+	
+	public Projectile shootDiagonallyLeft(){
+		ProjectileGoingDiagonallyLeft shot = new ProjectileGoingDiagonallyLeft(this.getCoordX(), this.getCoordY() + Constants.hostile2Height/2 + Projectile.getProjectileheight()/2);
+		return shot;
+	}
+	
+	public Projectile shootDiagonallyRight(){
+		ProjectileGoingDiagonallyRight shot = new ProjectileGoingDiagonallyRight(this.getCoordX(), this.getCoordY() + Constants.hostile2Height/2 + Projectile.getProjectileheight()/2);
+		return shot;
 	}
 
 	// Getters, setters

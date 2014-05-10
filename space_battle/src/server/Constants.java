@@ -25,7 +25,7 @@ public class Constants {
     public final static int hostile3scoreIfDestroyed = 50;
     //
     public final static int hostile1Width = 34;
-    public final static int hostile2Width = 49; //TODO. negyzet alaku hitbox nem az igazi :/
+    public final static int hostile2Width = 49; //TODO. negyzet alaku hitbox nem az igazi
     public final static int hostile3Width = 54;
     //
     public final static int hostile1Height = 22;

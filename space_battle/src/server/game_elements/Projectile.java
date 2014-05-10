@@ -30,8 +30,3 @@ public abstract class Projectile extends NonShootingObject {
 	}
 	 
 }
-//	Projectile(int x, int y){
-//		this.coordX = x;
-//		this.coordY = y;
-//		this.elementHitbox = new HitBox(projectileWidth, projectileHeight);
-//	}

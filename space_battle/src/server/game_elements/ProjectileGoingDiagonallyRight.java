@@ -1,19 +1,21 @@
 package server.game_elements;
 
-
-public class ProjectileGoingDown extends Projectile {
-
-	ProjectileGoingDown(int x, int y) {
+public class ProjectileGoingDiagonallyRight extends Projectile {
+	
+	private static int horizontalMoveQuantity = 1;
+	
+	ProjectileGoingDiagonallyRight(int x, int y) {
 		super(x,y);
 	}
 	
 	@Override
 	public void autoMove(){
+		super.setCoordX(super.getCoordX() + horizontalMoveQuantity);
 		super.setCoordY(super.getCoordY() + super.getVerticalMoveQuantity()); // (x,y)=(0,0) is the top-left corner of gamespace
 	}
 
 	@Override
-	public boolean isHit(GameElement object) { // TODO: oldal, teteje? ha blemaszik a palyer?
+	public boolean isHit(GameElement object) { //TODO!!
 		// projectile-related
 		int bottom = getCoordY() + super.getProjectileheight()/2;
 		int projX = getCoordX();
@@ -31,5 +33,5 @@ public class ProjectileGoingDown extends Projectile {
 		else return false; 
 		
 	}
-
 }
+

@@ -32,6 +32,8 @@ import server.game_elements.OneUp;
 import server.game_elements.Player;
 import server.game_elements.PowerDown;
 import server.game_elements.Projectile;
+import server.game_elements.ProjectileGoingDiagonallyLeft;
+import server.game_elements.ProjectileGoingDiagonallyRight;
 import server.game_elements.ProjectileGoingDown;
 import server.game_elements.ProjectileGoingUp;
 import server.game_elements.ProjectileLaser;
@@ -226,14 +228,22 @@ public class Server implements AllServerInterfaces
 				if( (timeSinceLastShot > temp.getShootingFrequency() && !hostilesAreFrenzied) || (timeSinceLastShot > temp.getShootingFrequency()/2 && hostilesAreFrenzied) ){ // shoot only if enough time has lasted
 					temp.setLastShotTime(java.lang.System.currentTimeMillis());
 					shot = temp.shoot();
-					if( shot != null){
+					if( shot != null){ // HostileType3's shoot() returns null if its shooting is currently disabled
 						listOfProjectiles.add(shot);
+						// shooting diagonally-moving projectile if temp is a HostileType2		
+						if( temp instanceof HostileType2 ){
+							shot = ((HostileType2) temp).shootDiagonallyLeft();
+							listOfProjectiles.add(shot);
+							shot = ((HostileType2) temp).shootDiagonallyRight();
+							listOfProjectiles.add(shot);
+						}
+						// update NPC
 						listOfNPCs.set(i, temp);
 						// playing sounds
 						client1.playSound(SoundType.shoot);
 						if(type == GameType.MULTI_NETWORK){
 							client2.playSound(SoundType.shoot);
-						}
+						}								
 					}
 				}
 			}
@@ -399,13 +409,14 @@ public class Server implements AllServerInterfaces
 			}		
 			// Projectile is shot by an NPC
 			else{ 
-				if( proj instanceof ProjectileGoingDown ){
+				if( proj instanceof ProjectileGoingDown || proj instanceof ProjectileGoingDiagonallyLeft || proj instanceof ProjectileGoingDiagonallyRight ){
 					for(int j=0; j<listOfPlayers.size(); j++){
 						Player player = listOfPlayers.get(j);
 						int playerLives = player.getLives();
 						
 						if (proj.isHit(player)){//TODO: lehet, hogy y coordot itt kellene nezni, ProjGoingDown isHit()-jeben nem, es csak azokra meghivni
 							listOfProjectiles.remove(i); // remove projectile which hit
+							// explode player or decrement player's lives
 							if(!player.isShielded()){
 								player.setLives(--playerLives);
 								if( playerLives == 0 ){
@@ -979,6 +990,10 @@ public class Server implements AllServerInterfaces
 					currentProjectile.put("className", "ProjectileGoingDown");
 				else if( temp instanceof ProjectileLaser)
 					currentProjectile.put("className", "ProjectileLaser");
+				else if( temp instanceof ProjectileGoingDiagonallyLeft )
+					currentProjectile.put("className", "ProjectileGoingDiagonallyLeft");
+				else
+					currentProjectile.put("className", "ProjectileGoingDiagonallyRight");
 				
 				currentProjectile.put("x", temp.getCoordX());
 				currentProjectile.put("y", temp.getCoordY());
