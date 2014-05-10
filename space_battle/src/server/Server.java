@@ -1238,6 +1238,9 @@ public class Server implements AllServerInterfaces
 				client2.changeGameState(GameState.PAUSED);
 			}	
 			if( c == client1 ){ // start requested by client1
+				System.out.println("player1 startReq");
+				System.out.println("player1ready: " + client1Ready);
+				System.out.println("player2ready: " + client2Ready);
 				client1Ready = true;
 				if(client2Ready){ // starting the game
 					isRunning = true;
@@ -1249,13 +1252,16 @@ public class Server implements AllServerInterfaces
 				}
 			}
 			else{ // start requested by client2
+				System.out.println("player2 startReq");
+				System.out.println("player1ready: " + client1Ready);
+				System.out.println("player2ready: " + client2Ready);
 				client2Ready = true;
 				if(client1Ready){ // starting the game
-					if(initState == true){
-						initState = false;
-						client1.updateObjects(allToJSON());
-						client2.updateObjects(allToJSON());
-					}
+//					if(initState == true){
+//						initState = false;
+//						client1.updateObjects(allToJSON());
+//						client2.updateObjects(allToJSON());
+//					}
 					isRunning = true;
 					client1.changeGameState(GameState.RUNNING);
 					client2.changeGameState(GameState.RUNNING);
@@ -1275,16 +1281,10 @@ public class Server implements AllServerInterfaces
 		}
 		// MULTI_NETWORK -> 2 clients
 		else{
-			if( c == client1 ){ // pause requested by client1
-				client1Ready = false;
-				client1.changeGameState(GameState.PAUSED);
-				client2.changeGameState(GameState.PAUSED); //TODO: Erre van kitalalva ez az allapot??
-			}
-			else{ // pause requested by client2
-				client2Ready = false;
-				client2.changeGameState(GameState.PAUSED);
-				client1.changeGameState(GameState.PAUSED); //TODO: Erre van kitalalva ez az allapot??
-			}
+			client1Ready = false;
+			client2Ready = false;
+			client1.changeGameState(GameState.PAUSED);
+			client2.changeGameState(GameState.PAUSED);
 		}	
 	}
 	
