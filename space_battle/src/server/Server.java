@@ -178,7 +178,9 @@ public class Server implements AllServerInterfaces
 				
     	// Moving Modifiers
     	for(int i=0; i < listOfModifiers.size(); i++){
-    		listOfModifiers.get(i).autoMove();
+    		if( listOfModifiers.get(i).getExplosionTime() == 0){ // exploded modifiers don't move
+    			listOfModifiers.get(i).autoMove();
+    		}
     	}
 	}
 	
