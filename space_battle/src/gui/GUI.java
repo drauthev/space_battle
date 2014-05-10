@@ -95,7 +95,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private static BufferedImage lifeImg;
 	private static BufferedImage powerUpImg;
 	private static BufferedImage powerDownImg;
-
+	private static BufferedImage shieldImg;
+	private static BufferedImage projectileGoingDiagonallyLeftImg;
+	private static BufferedImage projectileGoingDiagonallyRightImg;
+	
 	// Image widths and heights
 	private int backgroundWidth;
 	private int backgroundHeight;
@@ -125,6 +128,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int powerWidth;
 	private int projectTileHeight;
 	private int projectTileWidth;
+	private int shieldHeight;
+	private int shieldWidth;
+	private int projectileGoingDiagonallyHeight;
+	private int projectileGoingDiagonallyWidth;
 
 	// Used for double buffering
 	Graphics2D bufferGraphics;  
@@ -210,6 +217,9 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			spaceShipImg[5]	   	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg6.png"));
 			powerUpImg	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg.png"));
 			powerDownImg	  	  = ImageIO.read(new File(projdir + "/res/sprites/powerDownImg.png"));
+			shieldImg	  	      = ImageIO.read(new File(projdir + "/res/sprites/shieldImg.png"));
+			projectileGoingDiagonallyLeftImg	= ImageIO.read(new File(projdir + "/res/sprites/projectileGoingDiagonallyLeftImg.png"));
+			projectileGoingDiagonallyRightImg	= ImageIO.read(new File(projdir + "/res/sprites/projectileGoingDiagonallyRightImg.png"));
 
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
@@ -240,6 +250,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		enemyCBlowWidth 	= enemyCBlowImg[0].getWidth();
 		projectTileHeight   = bulletImg[0].getHeight();
 		projectTileWidth    = bulletImg[0].getWidth();
+		shieldHeight        = shieldImg.getHeight();
+		shieldWidth         = shieldImg.getWidth();
+		projectileGoingDiagonallyHeight        = projectileGoingDiagonallyRightImg.getHeight();
+		projectileGoingDiagonallyWidth         = projectileGoingDiagonallyRightImg.getWidth();
 
 		// Initializing fonts for writing strings to the monitor
 		scoreFont = new Font("monospscoreFont", Font.BOLD, scoreSize);
@@ -481,14 +495,18 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					
 					if (localObjectBuffer.player[i].id == 0) numberOfLivesA = localPlayer.numberOfLives;
 					else numberOfLivesB = localPlayer.numberOfLives;
-
+					
 					if (localPlayer.explosionTime != 0 )
 					{
 						int tickDiff_div = (int) (serverTick - localPlayer.explosionTime)/200;
 						if      (tickDiff_div < 5) drawObject(spaceShipBombImg[tickDiff_div], localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
 					}
 					else 
+					{
+						//if (localObjectBuffer.player[i].isShielded)
+							drawObject(shieldImg, localPlayer.x, localPlayer.y, shieldWidth, shieldHeight);
 						drawObject(spaceShipImg[localObjectBuffer.player[i].id], localPlayer.x, localPlayer.y, spaceShipWidth, spaceShipHeight);
+					}
 				}
 
 				for (int i = 0; i < localObjectBuffer.projCount; i++)
@@ -501,6 +519,12 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						drawObject(bulletImg[1]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
 					else if (localProjectile.className.equals("ProjectileLaser"))
 						drawObject(bulletImg[2]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+					
+					else if (localProjectile.className.equals("ProjectileGoingDiagonallyRight"))
+						drawObject(projectileGoingDiagonallyRightImg, localProjectile.x	, localProjectile.y	, projectileGoingDiagonallyWidth,projectileGoingDiagonallyHeight);
+					else if (localProjectile.className.equals("ProjectileGoingDiagonallyLeft"))
+						drawObject(projectileGoingDiagonallyLeftImg, localProjectile.x	, localProjectile.y	, projectileGoingDiagonallyWidth,projectileGoingDiagonallyHeight);
+
 					else
 					{
 						drawObject(bulletImg[1]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
@@ -522,7 +546,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						isUp = true;
 
 					else if (localModifier.className.equals("HalfScores") || localModifier.className.equals("HostileFrenzy") ||
-							localModifier.className.equals("LeftRightSwitcher") || localModifier.className.equals("NoAmmo"))
+							localModifier.className.equals("LeftRightSwitcher") || localModifier.className.equals("NoAmmo") ||
+							localModifier.className.equals("SpaceShipSwitcher"))
 						isUp = false;
 
 					else
