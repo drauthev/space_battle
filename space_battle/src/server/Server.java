@@ -529,6 +529,7 @@ public class Server implements AllServerInterfaces
 	}
 	
 	private void spawnModifier(int x, int y){
+		listOfModifiers.add( new Laser(200, y) );
 		double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 		if(spawnOrNot >= 0.6){
 			// Choosing what to spawn
@@ -1040,12 +1041,12 @@ public class Server implements AllServerInterfaces
 				temp = list.get(i);
 				currentProjectile = new JSONObject();
 				// type for GUI to paint the proper skin
-				if( temp instanceof ProjectileGoingUp)
-					currentProjectile.put("className", "ProjectileGoingUp");
-				else if( temp instanceof ProjectileGoingDown)
+				if( temp instanceof ProjectileGoingDown)
 					currentProjectile.put("className", "ProjectileGoingDown");
 				else if( temp instanceof ProjectileLaser)
-					currentProjectile.put("className", "ProjectileLaser");
+					currentProjectile.put("className", "ProjectileLaser"); // HAVE to precede ProjGoingUp, projLaser extends it
+				else if( temp instanceof ProjectileGoingUp)
+					currentProjectile.put("className", "ProjectileGoingUp");
 				else if( temp instanceof ProjectileGoingDiagonallyLeft )
 					currentProjectile.put("className", "ProjectileGoingDiagonallyLeft");
 				else

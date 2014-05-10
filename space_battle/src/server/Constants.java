@@ -5,7 +5,7 @@ public class Constants {
     public static int gameFieldWidth = 480;
     public static int gameFieldHeigth = 640;
     
-    public final static int timeBetweenShots = 600; //1000-rel sztem nehez
+    public final static int timeBetweenShots = 400; //1000-rel sztem nehez
     public final static int timeBetweenShotsIfFastened = 300;
     
     // Hostile-related constants
