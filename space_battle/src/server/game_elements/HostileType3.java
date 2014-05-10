@@ -30,7 +30,9 @@ public class HostileType3 extends NPC {
 	
 	public void teleport(){
 		teleportTime = java.lang.System.currentTimeMillis();
-		super.setCoordX((int)(Math.random()*(Constants.gameFieldWidth - Constants.hostile3Width)));
+		int x = (int)(Math.random()*(Constants.gameFieldWidth - Constants.hostile3Width));
+		x += Constants.hostile3Width/2;
+		super.setCoordX(x);
 		super.setCoordY(super.getCoordY() + 10);
 	}
 	
