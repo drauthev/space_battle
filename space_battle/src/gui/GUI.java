@@ -129,6 +129,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int shieldWidth;
 	private int projectileGoingDiagonallyHeight;
 	private int projectileGoingDiagonallyWidth;
+	private int powerUpBlowHeight;
+	private int powerUpBlowWidth;
 
 	// Used for double buffering
 	Graphics2D bufferGraphics;  
@@ -255,6 +257,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		shieldWidth         = shieldImg.getWidth();
 		projectileGoingDiagonallyHeight        = projectileGoingDiagonallyRightImg.getHeight();
 		projectileGoingDiagonallyWidth         = projectileGoingDiagonallyRightImg.getWidth();
+		powerUpBlowHeight  =powerUpBlowImg[0].getHeight();
+		powerUpBlowWidth  =powerUpBlowImg[0].getWidth();
 
 		// Initializing fonts for writing strings to the monitor
 		scoreFont = new Font("monospscoreFont", Font.BOLD, scoreSize);
@@ -480,7 +484,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					}
 					else if (localNPC.hitTime != 0 && ((serverTick - localNPC.hitTime) < 1500)) 
 					{							
-						int tickDiff_div = (int) (serverTick-localNPC.creationTime)/200;
+						int tickDiff_div = (int) (serverTick-localNPC.hitTime)/200;
 						if (tickDiff_div % 2 == 0) drawObject(enemyImg[0], localNPC.x, localNPC.y, enemyWidth,enemyHeight);
 					}
 					else 
@@ -502,7 +506,18 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						int tickDiff_div = (int) (serverTick - localPlayer.explosionTime)/200;
 						if      (tickDiff_div < 5) drawObject(spaceShipBombImg[tickDiff_div], localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
 					}
-					else 
+					
+					else if (localPlayer.hitTime != 0 && ((serverTick - localPlayer.hitTime) < 1500)) 
+					{							
+						int tickDiff_div = (int) (serverTick-localPlayer.hitTime)/200;
+						if (tickDiff_div % 2 == 1) 
+						{
+							if (localObjectBuffer.player[i].isShielded)
+								drawObject(shieldImg, localPlayer.x, localPlayer.y, shieldWidth, shieldHeight);
+							drawObject(spaceShipImg[localObjectBuffer.player[i].id], localPlayer.x, localPlayer.y, spaceShipWidth, spaceShipHeight);
+						}
+					}
+					else
 					{
 						if (localObjectBuffer.player[i].isShielded)
 							drawObject(shieldImg, localPlayer.x, localPlayer.y, shieldWidth, shieldHeight);
@@ -558,11 +573,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					}
 
 
-					System.out.println(localModifier.explosionTime + "    " + localModifier.pickupTime );
 					if (localModifier.explosionTime != 0)
 					{
 						int tickDiff_div = (int) (serverTick-localModifier.explosionTime)/100;
-						if (tickDiff_div < 4) drawObject(powerUpBlowImg[tickDiff_div], localModifier.x, localModifier.y, enemyBlowWidth,enemyBlowHeight);
+						if (tickDiff_div < 4) drawObject(powerUpBlowImg[tickDiff_div], localModifier.x, localModifier.y, powerUpBlowWidth,powerUpBlowHeight);
 					}
 					
 					
