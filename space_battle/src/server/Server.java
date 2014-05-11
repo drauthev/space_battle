@@ -1455,23 +1455,19 @@ public class Server implements AllServerInterfaces
 			// Uploading it to the FTP server
 			ftp = new FTPConnector("drauthev.sch.bme.hu", "space_battle", "");
 			ftp.setFileTypeToBinary();
-//			OutputStream ostream = ftp.getFtp().storeFileStream("newhighscores.txt");
-			OutputStream ostream = ftp.getFtp().storeFileStream("highscores.txt");
+			OutputStream ostream = ftp.getFtp().storeFileStream("newhighscores.txt");
 			ostream.write(byteArrayToUpload);
 			ostream.close();
 			boolean completed = ftp.getFtp().completePendingCommand();
             if (completed) {
                 System.out.println("New highscore table uploaded successfully.");
+                // deleting the old highscore table, then renaming the new one to highscores.txt -- renaming is an atomic operation, but there could be errors during uploading -- this grants that no compromise will happen to the existing highscore table     
+                ftp.getFtp().deleteFile("highscores.txt");
+                ftp.getFtp().rename("newhighscores.txt", "highscores.txt");
             }
-	        // Renaming the uploaded newhighscores.txt to highscores.txt -- renaming is an atomic operation, but there could be errors during uploading -- this grants that no compromise will happen to the existing highscore table
-//	        ftp.getFtp().rename("newhighscores.txt", "highscores.txt");
-//	        completed = ftp.getFtp().completePendingCommand();
-//            if (completed) {
-//                System.out.println("New highscore table updated successfully.");
-//            }
-//            else{
-//            	 System.out.println("Renaming was not successful. HighScore table is not updated.");
-//            }
+            else{
+            	System.out.println("Error during uploading new highscores to server. High score table is not updated.");
+            }
 	        
 	        ftp.disconnect();
 	        client1.changeGameState(GameState.NONE);
