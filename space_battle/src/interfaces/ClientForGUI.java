@@ -1,14 +1,14 @@
 package interfaces;
 
+import java.util.List;
 import java.awt.event.KeyEvent;
 import java.util.EnumMap;
-import java.util.SortedMap;
 
 import client.ObjectBuffer;
 import enums.*;
 
 public interface ClientForGUI {
-	public SortedMap<Integer, String> getHighScores();			// SortedMap-ben score(K)-név(V) párok (#bridge)
+	public List<java.util.Map.Entry<Integer, String>> getHighScores();	// SortedMap-ben score(K)-név(V) párok (#bridge)
 	public int getHighestScore();								// legmagasabb pontszám lekérése (#bridge)
 	public EnumMap<PlayerAction, Integer> getKeyboardSettings();// HashMap-ben action(K)-KeyCode(V) párok
 	public ObjectBuffer getNewObjectBuffer();					// Request a friss object bufferre

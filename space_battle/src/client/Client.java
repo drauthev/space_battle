@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.SortedMap;
 
 import org.json.JSONArray;
@@ -231,7 +232,7 @@ public class Client implements ClientForGUI, ClientForServer {
 	 * Blocking! 
 	 */
 	@Override
-	public SortedMap<Integer, String> getHighScores() {
+	public List<java.util.Map.Entry<Integer, String>> getHighScores() {
 		// Wait for the remote server until it updates high scores.
 		while (gameState == GameState.GAMEOVER_NEW_HIGHSCORE)
 		{
