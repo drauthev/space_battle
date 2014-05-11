@@ -160,6 +160,11 @@ public class Client implements ClientForGUI, ClientForServer {
 				objectBuffer[idx].npc[i].creationTime = curr.getLong("creationTime");
 				objectBuffer[idx].npc[i].explosionTime = curr.getLong("explosionTime");
 				objectBuffer[idx].npc[i].hitTime = curr.getLong("hitTime");
+				
+				try {
+					objectBuffer[idx].npc[i].teleportTime = curr.getLong("teleportTime");
+				}
+				catch (JSONException e) {}
 			}
 			
 			JSONArray player = wrapper.getJSONArray("players");
