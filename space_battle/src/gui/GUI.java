@@ -1,6 +1,7 @@
 package gui;
 
 import java.util.*;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.io.File;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+
 import javax.swing.*;
 import javax.imageio.ImageIO;
 
@@ -357,15 +359,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	private void refreshHighScore() {
 
-		SortedMap<Integer,String> localSortedMap = client.getHighScores();	
+		List<Entry<Integer,String>> localList = client.getHighScores();	
 
-		if (localSortedMap != null)
+		if (localList != null)
 		{
-			Set<Entry<Integer, String>> s=localSortedMap.entrySet();
-
-
-			// Using iterator in SortedMap 
-			Iterator<Entry<Integer, String>> i=s.iterator();
+			Iterator<Entry<Integer, String>> i=localList.iterator();
 			int j= 0;
 
 			while(i.hasNext())
@@ -492,7 +490,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					else if (localNPC.hitTime != 0 && ((serverTick - localNPC.hitTime) < 1500)) 
 					{							
 						int tickDiff_div = (int) (serverTick-localNPC.hitTime)/200;
-						if (tickDiff_div % 2 == 0) drawObject(enemyImg[0], localNPC.x, localNPC.y, enemyWidth,enemyHeight);
+						if (tickDiff_div % 2 == 1) drawObject(enemyImg[0], localNPC.x, localNPC.y, enemyWidth,enemyHeight);
 					}
 					else 
 					{
@@ -561,7 +559,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					boolean isUp;
 
 					CModifier localModifier = localObjectBuffer.mod[i];	
-					//if (localModifier.pickupTime == 0 || (serverTick - localModifier.pickupTime > 1000) || ((serverTick - localModifier.pickupTime)/200) % 2 == 0) ;
 
 					if (localModifier.className.equals("Shield") ||
 							localModifier.className.equals("Boom") || localModifier.className.equals("Fastener") ||
@@ -583,7 +580,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					
 					if (localModifier.explosionTime != 0)
 					{
-						int tickDiff_div = (int) (serverTick-localModifier.explosionTime)/100;
+						System.out.println("Bombed modifier");
+						int tickDiff_div = (int) (serverTick-localModifier.explosionTime)/150;
 						if (tickDiff_div < 4) drawObject(powerUpBlowImg[tickDiff_div], localModifier.x, localModifier.y, powerUpBlowWidth,powerUpBlowHeight);
 					}
 					
@@ -598,6 +596,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						else
 							drawObject(powerDownImg		, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
 					}
+					
 					else
 					{
 						drawPowerTitle(7-modificationNumber,localModifier.className.toUpperCase(),isUp);
@@ -686,7 +685,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 			else if (currentMenuState == MenuState.HIGH_SCORES_MENU)
 			{
-				drawTitle("HIGH SCORE");
+				drawTitle("HIGH SCORES");
 
 				for(int j = 0; j < lastMenuHS-1; j++) 
 					drawOptionsLine(j+1,highScoreString[j],highScoreValues[j]);
@@ -808,13 +807,17 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	{
 		bufferGraphics.setFont(menuFont);
 		bufferGraphics.setColor(menuColor);
+		
 		int CoordinateY = firstLineY + lineNumber * lineHeight;
-
+		if (currentMenuState == MenuState.HIGH_SCORES_MENU)  CoordinateY = firstLineY + lineNumber * 42;
+			
 		int CoordinateX = optionsAX - bufferGraphics.getFontMetrics().stringWidth(content1)/2;
+		if (currentMenuState == MenuState.HIGH_SCORES_MENU) CoordinateX = CoordinateX + 50;
 		bufferGraphics.drawString(content1,CoordinateX, CoordinateY);
 		if (dotLineToDraw == lineNumber) dotX = CoordinateX;
 
 		CoordinateX = optionsBX - bufferGraphics.getFontMetrics().stringWidth(content2)/2;
+		if (currentMenuState == MenuState.HIGH_SCORES_MENU) CoordinateX = CoordinateX + 70;
 		bufferGraphics.drawString(content2,CoordinateX, CoordinateY);
 
 	}	
@@ -904,7 +907,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						client.newGame(GameType.SINGLE);
 				}
 				else if (currentLine == 2) setMenuState(MenuState.MULTI_MENU);
-				else if (currentLine == 3) setMenuState(MenuState.MAIN_MENU);
+				else if (currentLine == 3) 
+				{
+					if (currentGameState == GameState.NONE) setMenuState(MenuState.MAIN_MENU);
+					else setMenuState(MenuState.PAUSED_MENU);
+				}
 			}
 			else if (currentMenuState == MenuState.MULTI_MENU)
 			{
@@ -924,14 +931,19 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 			else if (currentMenuState == MenuState.HIGH_SCORES_MENU)
 			{	
-				if (currentLine == getLastLine()) setMenuState(MenuState.MAIN_MENU);
+					if (currentGameState == GameState.NONE) setMenuState(MenuState.MAIN_MENU);
+					else setMenuState(MenuState.PAUSED_MENU);
 			}
 
 
 			else if (currentMenuState == MenuState.OPTIONS_MENU)
 			{
 				if (currentLine == 3) setMenuState(MenuState.KEYBOARD_SETTINGS_MENU);
-				else if (currentLine == 4) setMenuState(MenuState.MAIN_MENU); 
+				else if (currentLine == 4)
+				{
+					if (currentGameState == GameState.NONE) setMenuState(MenuState.MAIN_MENU);
+					else setMenuState(MenuState.PAUSED_MENU);
+				}
 			}		 
 
 			else if (currentMenuState == MenuState.KEYBOARD_SETTINGS_MENU)
@@ -949,7 +961,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			}
 			else if (currentMenuState == MenuState.JOIN_GAME_MENU)
 			{
-				if (currentLine == getLastLine()) setMenuState(MenuState.MAIN_MENU);
+				if (currentLine == getLastLine())
+				{
+					if (currentGameState == GameState.NONE) setMenuState(MenuState.MAIN_MENU);
+					else setMenuState(MenuState.PAUSED_MENU);
+				}
 				else if (currentLine == 2)
 				{
 					if (isValidIP(textField))
