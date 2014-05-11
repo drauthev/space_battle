@@ -97,6 +97,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private static BufferedImage shieldImg;
 	private static BufferedImage projectileGoingDiagonallyLeftImg;
 	private static BufferedImage projectileGoingDiagonallyRightImg;
+	private static BufferedImage cloudImg;
+	private static BufferedImage teleportImg;
 	
 	// Image widths and heights
 	private int backgroundWidth;
@@ -133,6 +135,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int projectileGoingDiagonallyWidth;
 	private int powerUpBlowHeight;
 	private int powerUpBlowWidth;
+	private int cloudHeight;
+	private int cloudWidth;
+	private int teleportHeight;
+	private int teleportWidth;
 
 	// Used for double buffering
 	Graphics2D bufferGraphics;  
@@ -229,6 +235,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			powerUpBlowImg[3] 	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpBlowImg4.png"));
 			projectileGoingDiagonallyLeftImg	= ImageIO.read(new File(projdir + "/res/sprites/projectileGoingDiagonallyLeftImg.png"));
 			projectileGoingDiagonallyRightImg	= ImageIO.read(new File(projdir + "/res/sprites/projectileGoingDiagonallyRightImg.png"));
+			cloudImg	= ImageIO.read(new File(projdir + "/res/sprites/cloudImg.png"));
+			teleportImg	= ImageIO.read(new File(projdir + "/res/sprites/teleportImg.png"));
 
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
@@ -265,7 +273,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		projectileGoingDiagonallyWidth         = projectileGoingDiagonallyRightImg.getWidth();
 		powerUpBlowHeight  =powerUpBlowImg[0].getHeight();
 		powerUpBlowWidth  =powerUpBlowImg[0].getWidth();
-
+		cloudHeight  = cloudImg.getHeight();
+		cloudWidth  =cloudImg.getWidth();
+		teleportHeight  =teleportImg.getHeight();
+		teleportWidth  =teleportImg.getWidth();
 		// Initializing fonts for writing strings to the monitor
 		scoreFont = new Font("monospscoreFont", Font.BOLD, scoreSize);
 		titleFont = new Font("monospscoreFont", Font.BOLD, titleSize);
@@ -494,6 +505,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					}
 					else 
 					{
+						if (localNPC.className.equals("HostileType3"))
+							if (localNPC.teleportTime != 0)
+								if (serverTick - localNPC.teleportTime < 600)
+									drawObject(teleportImg, localNPC.x, localNPC.y, teleportWidth,teleportHeight);
+		
 						int tickDiff_div = (int) (serverTick-localNPC.creationTime)/1000;
 						drawObject(enemyImg[tickDiff_div % 3], localNPC.x, localNPC.y, enemyWidth,enemyHeight);
 					}
@@ -576,18 +592,24 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						isUp = false;
 					}
 
-
 					
 					if (localModifier.explosionTime != 0)
 					{
-						System.out.println("Bombed modifier");
 						int tickDiff_div = (int) (serverTick-localModifier.explosionTime)/150;
 						if (tickDiff_div < 4) drawObject(powerUpBlowImg[tickDiff_div], localModifier.x, localModifier.y, powerUpBlowWidth,powerUpBlowHeight);
 					}
 					
-					
 					else if (localModifier.pickupTime == 0)
 					{
+						if (localModifier.creationTime != 0)
+						{
+							if (serverTick - localModifier.creationTime < 800)
+							{
+								drawObject(cloudImg, localModifier.x, localModifier.y, cloudWidth,cloudHeight);
+							}
+						}
+
+						
 						if     (localModifier.className.equals("Shield"))	drawObject(powerUpImg[2]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
 						else if(localModifier.className.equals("Boom"))		drawObject(powerUpImg[3]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
 						else if(localModifier.className.equals("Fastener")) drawObject(powerUpImg[0]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
