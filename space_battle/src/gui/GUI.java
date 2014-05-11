@@ -1093,7 +1093,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					else if (dotLine == 5) client.bindKey(PlayerAction.P2RIGHT, keyCode);
 					else if (dotLine == 6) client.bindKey(PlayerAction.P2FIRE, keyCode);
 
-					if (dotLine < 6) actionKeys[dotLine - 1] = KeyEvent.getKeyText(keyCode);
+					if (dotLine < 7) actionKeys[dotLine - 1] = KeyEvent.getKeyText(keyCode);
 
 					keyBoardChangeSelected = 0;
 				}
