@@ -3,19 +3,19 @@ package server.game_elements;
 abstract public class NPC extends ShootingObject {
 	
 	final int scoreIfDestroyed;
-	final int verticalMoveQuantity;
-	final int horizontalMoveQuantity;
+	final double verticalMoveQuantity;
+	final double horizontalMoveQuantity;
 	final int shootingFrequency;
 	
 	private long lastShotTime = 0;
 	private long creationTime;
 	
-	NPC(int x, int y, int scoreIfDestroyed, int verticalMoveQuantity, int horizontalMoveQuantity, int shootingFrequency){
+	NPC(int x, int y, int scoreIfDestroyed, double hostile1verticalmovequantity, double hostile1horizontalmovequantity, int shootingFrequency){
 		super(x,y);
 		creationTime = java.lang.System.currentTimeMillis();
 		this.scoreIfDestroyed = scoreIfDestroyed;
-		this.verticalMoveQuantity = verticalMoveQuantity;
-		this.horizontalMoveQuantity = horizontalMoveQuantity;
+		this.verticalMoveQuantity = hostile1verticalmovequantity;
+		this.horizontalMoveQuantity = hostile1horizontalmovequantity;
 		this.shootingFrequency = shootingFrequency;
 	}
 	
@@ -43,12 +43,12 @@ abstract public class NPC extends ShootingObject {
 	}
 
 
-	public int getVerticalMoveQuantity() {
+	public double getVerticalMoveQuantity() {
 		return verticalMoveQuantity;
 	}
 
 
-	public int getHorizontalMoveQuantity() {
+	public double getHorizontalMoveQuantity() {
 		return horizontalMoveQuantity;
 	}
 

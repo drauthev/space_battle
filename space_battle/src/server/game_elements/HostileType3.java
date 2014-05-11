@@ -33,7 +33,7 @@ public class HostileType3 extends NPC {
 		int x = (int)(Math.random()*(Constants.gameFieldWidth - Constants.hostile3Width));
 		x += Constants.hostile3Width/2;
 		super.setCoordX(x);
-		super.setCoordY(super.getCoordY() + 10);
+		super.setCoordY(super.getCoordY() + 10*verticalMoveQuantity);
 	}
 	
 	public Projectile shoot(){

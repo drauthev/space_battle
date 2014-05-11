@@ -1,22 +1,17 @@
 package server.game_elements;
 
+import server.Constants;
+
 public abstract class PowerDown extends Modifier {
 	
-	private static int verticalMoveQuantity = 1;	// minden negatív mod. esetén gyors
+	private static double verticalMoveQuantity = Constants.modifierSpeedFast;	// all powerdowns move fast
 	
-	PowerDown(int x, int y){
+	PowerDown(double x, double y){
 		super(x, y);
 	}
 	
 	public void autoMove(){
 		super.setCoordY(super.getCoordY() + verticalMoveQuantity);
 	}
-	
-	// Getters, setters
-	public static void setVerticalMoveQuantity(int verticalMoveQuantity) {
-		PowerDown.verticalMoveQuantity = verticalMoveQuantity;
-	}
-
-
 	
 }

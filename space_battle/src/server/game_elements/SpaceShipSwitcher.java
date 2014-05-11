@@ -4,7 +4,7 @@ public class SpaceShipSwitcher extends PowerDown {
 	
 	private static int timeItLasts = 10000; // 10 sec
 	
-	public SpaceShipSwitcher(int x, int y){
+	public SpaceShipSwitcher(double x, double y){
 		super(x, y);
 	}
 

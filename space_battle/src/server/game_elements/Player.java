@@ -136,6 +136,10 @@ public class Player extends ShootingObject {
 		this.isFastened = isFastened;
 	}
 
+	public boolean isFastened() {
+		return isFastened;
+	}
+
 	public int getTimeBetweenShots() {
 		return timeBetweenShots;
 	}

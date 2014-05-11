@@ -29,7 +29,7 @@ public class HostileType2 extends NPC {
 	}
 	
 	public void autoMove(){
-		int x = super.getCoordX();
+		double x = super.getCoordX();
 		super.setCoordY(super.getCoordY() + verticalMoveQuantity);
 		if( x <= axisX ){ // on the left side of axis
 			turntLeft = false;

@@ -9,7 +9,7 @@ public abstract class Modifier extends NonShootingObject{
 	private long pickUpTime = 0;	// to animate what's in it
 	private long creationTime = 0;		// only changes if the modifier was created from another modifier by shooting it.. for animation reasons
 	
-	Modifier(int x, int y){
+	Modifier(double x, double y){
 		super(x, y);
 		super.setHitBox(new HitBox(modifierWidth, modifierHeigth, this));
 		explosionTime = 0;

@@ -1,10 +1,12 @@
 package server.game_elements;
 
+import server.Constants;
+
 public class OneUp extends Modifier {
-	private static int verticalMoveQuantity = 1;
+	private static double verticalMoveQuantity = Constants.modifierSpeedFast;
 	private static int spawnFrequency;
 		
-	public OneUp(int x, int y){
+	public OneUp(double x, double y){
 		super(x,y);
 	}
 	
@@ -20,14 +22,6 @@ public class OneUp extends Modifier {
 
 	public static void setSpawnFrequency(int spawnFrequency) {
 		OneUp.spawnFrequency = spawnFrequency;
-	}
-
-	public static int getVerticalMoveQuantity() {
-		return verticalMoveQuantity;
-	}
-
-	public static void setVerticalMoveQuantity(int verticalMoveQuantity) {
-		OneUp.verticalMoveQuantity = verticalMoveQuantity;
 	}
 
 }

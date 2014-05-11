@@ -4,7 +4,7 @@ public class ProjectileGoingDiagonallyLeft extends Projectile {
 	
 	private static int horizontalMoveQuantity = 1;
 	
-	ProjectileGoingDiagonallyLeft(int x, int y) {
+	ProjectileGoingDiagonallyLeft(double x, double y) {
 		super(x,y);
 	}
 	
@@ -17,13 +17,13 @@ public class ProjectileGoingDiagonallyLeft extends Projectile {
 	@Override
 	public boolean isHit(GameElement object) { //TODO!!
 		// projectile-related
-		int bottom = getCoordY() + super.getProjectileheight()/2;
-		int projX = getCoordX();
+		int bottom = (int) (getCoordY() + super.getProjectileheight()/2);
+		int projX = (int) getCoordX();
 		// object-related
 		int objWidth = object.getHitBox().getWidth();
 		int objHeight = object.getHitBox().getHeigth();
-		int objX = object.getCoordX();
-		int objY = object.getCoordY();
+		int objX = (int) object.getCoordX();
+		int objY = (int) object.getCoordY();
 		
 		if( bottom > objY - objHeight/2 && bottom < objY + objHeight/2){ // match in Y dimension
 			if ( (projX > objX - objWidth/2) && (projX < objX + objWidth/2) )

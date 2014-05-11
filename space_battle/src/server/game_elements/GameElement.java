@@ -2,12 +2,12 @@ package server.game_elements;
 
 public abstract class GameElement {
 	
-	private int coordX;
-	private int coordY; 
+	private double coordX;
+	private double coordY; 
 	private HitBox hitBox;
 	
 	// Constructor
-	public GameElement(int x, int y){
+	public GameElement(double x, double y){
 		coordX = x;
 		coordY = y;
 	}
@@ -16,19 +16,19 @@ public abstract class GameElement {
 	
 	// Getters, Setters
 	// ------------------------------------------------------------------------------------------------------------------
-	public int getCoordX() {
+	public double getCoordX() {
 		return coordX;
 	}
 
-	public void setCoordX(int coordX) {
+	public void setCoordX(double coordX) {
 		this.coordX = coordX;
 	}
 
-	public int getCoordY() {
+	public double getCoordY() {
 		return coordY;
 	}
 
-	public void setCoordY(int coordY) {
+	public void setCoordY(double coordY) {
 		this.coordY = coordY;
 	}
 		

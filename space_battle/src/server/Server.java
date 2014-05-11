@@ -89,6 +89,7 @@ public class Server implements AllServerInterfaces
 	public Server(GameType type, GameSkill difficulty, ClientForServer cl1){
 		this.type = type;
 		this.difficulty = difficulty;
+		System.out.println(difficulty);
 		client1 = cl1;
 		score = 0;
 		isRunning = false;
@@ -105,30 +106,30 @@ public class Server implements AllServerInterfaces
 		listOfNPCs = new ArrayList<NPC>();
 		
 		// Setting game parameters according to difficulty level
-		if( difficulty == GameSkill.EASY){
-			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfEasy);
-			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
-			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
-			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
-			Laser.setVerticalMoveQuantity(Constants.modifierSpeedMediumIfEasy);
-			PowerDown.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
-		}
-		else if( difficulty == GameSkill.NORMAL){
-			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfNormal);
-			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfNormal);
-			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
-			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
-			Laser.setVerticalMoveQuantity(Constants.modifierSpeedMediumIfNormal);
-			PowerDown.setVerticalMoveQuantity(Constants.modifierSpeedFastIfNormal);
-		}
-		else{
-			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfHard);
-			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
-			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
-			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
-			Laser.setVerticalMoveQuantity(Constants.modifierSpeedMediumIfHard);
-			PowerDown.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
-		}
+//		if( difficulty == GameSkill.EASY){
+//			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfEasy);
+//			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
+//			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
+//			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
+//			Laser.setVerticalMoveQuantity(Constants.modifierSpeedMediumIfEasy);
+//			PowerDown.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
+//		}
+//		else if( difficulty == GameSkill.NORMAL){
+//			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfNormal);
+//			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfNormal);
+//			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
+//			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
+//			Laser.setVerticalMoveQuantity(Constants.modifierSpeedMediumIfNormal);
+//			PowerDown.setVerticalMoveQuantity(Constants.modifierSpeedFastIfNormal);
+//		}
+//		else{
+//			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfHard);
+//			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
+//			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
+//			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
+//			Laser.setVerticalMoveQuantity(Constants.modifierSpeedMediumIfHard);
+//			PowerDown.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
+//		}
 		
 		
 		// Spawning player/players
@@ -469,8 +470,8 @@ public class Server implements AllServerInterfaces
 			double whichFrequency = Math.random();
 			double whatToSpawn = Math.random();
 			// Determining coordinates
-			int x;
-			int y = explodedMod.getCoordY() + Modifier.getModifierheigth()/2;
+			double x;
+			double y = explodedMod.getCoordY() + Modifier.getModifierheigth()/2;
 			if(i==0){
 				x = explodedMod.getCoordX() - Modifier.getModifierwidth();
 			}
@@ -532,7 +533,7 @@ public class Server implements AllServerInterfaces
 		}
 	}
 	
-	private void spawnModifier(int x, int y){
+	private void spawnModifier(double x, double y){
 		double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 		if(spawnOrNot >= 0.6){
 			// Choosing what to spawn
@@ -838,10 +839,10 @@ public class Server implements AllServerInterfaces
 		// Projectiles
 		for(int i=0; i<listOfProjectiles.size(); i++){
 			Projectile temp = listOfProjectiles.get(i);
-			int y = temp.getCoordY();
-			int x = temp.getCoordX();
+			double y = temp.getCoordY();
+			double x = temp.getCoordX();
 			int height = Projectile.getProjectileheight();
-			if( y-height/2 > Constants.gameFieldHeigth || y+height/2<0 || x<0 || x>Constants.gameFieldWidth){ //TODO: x koordinatak atgondol atlosra
+			if( y-height/2 > Constants.gameFieldHeigth || y+height/2<0 || x<0 || x>Constants.gameFieldWidth){
 				listOfProjectiles.remove(i);
 			}
 		}
@@ -981,8 +982,8 @@ public class Server implements AllServerInterfaces
 				currentPlayer.put("className", "Player"); // ososztalyban van Andrasnal a className, azert kell csak
 				currentPlayer.put("id", temp.getID());
 				currentPlayer.put("numberOfLives", temp.getLives());
-				currentPlayer.put("x", temp.getCoordX());
-				currentPlayer.put("y", temp.getCoordY());
+				currentPlayer.put("x", (int)(temp.getCoordX()) );
+				currentPlayer.put("y", (int)(temp.getCoordY()) );
 				currentPlayer.put("hitTime", temp.getHitTime());
 				currentPlayer.put("explosionTime", temp.getExplosionTime());
 				currentPlayer.put("isShielded", temp.isShielded());
@@ -991,7 +992,6 @@ public class Server implements AllServerInterfaces
 		playersJSON = new JSONArray( playerList );
 		}
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return playersJSON;
@@ -1016,8 +1016,8 @@ public class Server implements AllServerInterfaces
 					currentNPC.put("className", "HostileType3");
 					currentNPC.put("teleportTime", ((HostileType3) temp).getTeleportTime());
 				}
-				currentNPC.put("x", temp.getCoordX());
-				currentNPC.put("y", temp.getCoordY());
+				currentNPC.put("x", (int)(temp.getCoordX()) );
+				currentNPC.put("y", (int)(temp.getCoordY()) );
 				currentNPC.put("creationTime", temp.getCreationTime());
 				currentNPC.put("hitTime", temp.getHitTime());
 				currentNPC.put("explosionTime", temp.getExplosionTime());
@@ -1055,8 +1055,8 @@ public class Server implements AllServerInterfaces
 				else
 					currentProjectile.put("className", "ProjectileGoingDiagonallyRight");
 				
-				currentProjectile.put("x", temp.getCoordX());
-				currentProjectile.put("y", temp.getCoordY());
+				currentProjectile.put("x", (int)(temp.getCoordX()) );
+				currentProjectile.put("y", (int)(temp.getCoordY()) );
 				// add each Projectile JSONObject to the arraylist<JSONObject>
 				projectileList.add(currentProjectile);
 			}
@@ -1108,8 +1108,8 @@ public class Server implements AllServerInterfaces
 					currentModifier.put("className", "SpaceShipSwitcher");
 				}
 				
-				currentModifier.put("x", temp.getCoordX());
-				currentModifier.put("y", temp.getCoordY());
+				currentModifier.put("x", (int)(temp.getCoordX()) );
+				currentModifier.put("y", (int)(temp.getCoordY()) );
 				currentModifier.put("pickupTime", temp.getPickUpTime());
 				currentModifier.put("creationTime", temp.getSpawnTime());
 				currentModifier.put("explosionTime", temp.getExplosionTime());
@@ -1146,8 +1146,8 @@ public class Server implements AllServerInterfaces
 				if(isRunning){
 				int x;
 				x = (int)(Math.random()*(Constants.gameFieldWidth - Constants.hostile1Width));
-				x += Constants.hostile1Width/2;	// peremertekek �?­gy x=0+hostileType1Width/2 �?‰S x=gameFieldWidth-hostileType1Width/2
-				listOfNPCs.add( new HostileType1(x, Constants.hostile1Height+100, difficulty) );	// TODO: az Å±rhaj�?³k be�?ºsz�?¡sa miatt t�?ºlsk�?¡l�?¡zni
+				x += Constants.hostile1Width/2;
+				listOfNPCs.add( new HostileType1(x, Constants.hostile1Height+100, difficulty) );
 				}
 			}
 		};		
@@ -1161,7 +1161,7 @@ public class Server implements AllServerInterfaces
 						int x;
 						x = (int)(Math.random()*(Constants.gameFieldWidth - Constants.hostile2Width));
 						x += Constants.hostile2Width/2;
-						listOfNPCs.add( new HostileType2(x, Constants.hostile2Height+100, difficulty) );	// TODO: az Å±rhaj�?³k be�?ºsz�?¡sa miatt t�?ºlsk�?¡l�?¡zni
+						listOfNPCs.add( new HostileType2(x, Constants.hostile2Height+100, difficulty) );
 					}
 				}
 			}
@@ -1188,7 +1188,7 @@ public class Server implements AllServerInterfaces
 			public void run() {
 				if(isRunning){
 					// Determine the place of spawning
-					int x = (int)(Math.random()*(Constants.gameFieldWidth - Modifier.getModifierwidth()) );
+					double x = (int)(Math.random()*(Constants.gameFieldWidth - Modifier.getModifierwidth()) );
 					x += Modifier.getModifierwidth()/2;
 					
 					spawnModifier(x, Modifier.getModifierheigth()+100);
@@ -1242,9 +1242,9 @@ public class Server implements AllServerInterfaces
 				client2.changeGameState(GameState.PAUSED);
 			}	
 			if( c == client1 ){ // start requested by client1
-				System.out.println("player1 startReq");
-				System.out.println("player1ready: " + client1Ready);
-				System.out.println("player2ready: " + client2Ready);
+//				System.out.println("player1 startReq");
+//				System.out.println("player1ready: " + client1Ready);
+//				System.out.println("player2ready: " + client2Ready);
 				client1Ready = true;
 				if(client2Ready){ // starting the game
 					isRunning = true;
@@ -1256,16 +1256,11 @@ public class Server implements AllServerInterfaces
 				}
 			}
 			else{ // start requested by client2
-				System.out.println("player2 startReq");
-				System.out.println("player1ready: " + client1Ready);
-				System.out.println("player2ready: " + client2Ready);
+//				System.out.println("player2 startReq");
+//				System.out.println("player1ready: " + client1Ready);
+//				System.out.println("player2ready: " + client2Ready);
 				client2Ready = true;
 				if(client1Ready){ // starting the game
-//					if(initState == true){
-//						initState = false;
-//						client1.updateObjects(allToJSON());
-//						client2.updateObjects(allToJSON());
-//					}
 					isRunning = true;
 					client1.changeGameState(GameState.RUNNING);
 					client2.changeGameState(GameState.RUNNING);
@@ -1430,8 +1425,6 @@ public class Server implements AllServerInterfaces
 
 	@Override
 	public void sendName(String name) {
-		// TODO A végén setGameState(GameState.NONE)
-		System.out.println("SENDNAME CALLED");
 		FTPConnector ftp;
 		List<Map.Entry<Integer, String>> highScores = getHighScores();
 		highScores.remove(highScores.size()-1); // removing the last element - the one with the least score
@@ -1443,7 +1436,6 @@ public class Server implements AllServerInterfaces
 		String value;
 		// taking out the elements from the ArrayList to the String
 		while( highscoreSize > 0 ){
-			System.out.println("highscores: " + highScores);
 			key = highScores.get(highscoreSize-1).getKey(); // iterating from the highest score to the last (the direction doesnt matter too much..)
 			value = highScores.get(highscoreSize-1).getValue();
 			highscoreContent = highscoreContent + key + "," + value + ",";
@@ -1496,10 +1488,8 @@ public class Server implements AllServerInterfaces
 			highscoresFileContent = ftp.downloadFileAndCopyToString("highscores.txt");
 			
 			if(highscoresFileContent != null){
-				//System.out.println("van ilyen file az FTPn ");
 				highscoreEntries = highscoresFileContent.split(","); // each odd member of the String[] will be a score, the next even member will be the playerName attached to it
 				for(int i=0; i<highscoreEntries.length; i+=2){
-					System.out.println("highscorecontent " + i + " : " + highscoreEntries[i]);
 					int key = Integer.parseInt(highscoreEntries[i]);
 					String value = highscoreEntries[i+1];
 					highScores.add(new AbstractMap.SimpleEntry<Integer, String>(key, value));			
@@ -1517,20 +1507,17 @@ public class Server implements AllServerInterfaces
 				  }
 				});
 			}
-			else{ // if there is no highscores.txt on the FTP server, creating an empty one, and returning an empty SortedMap
-				//System.out.println("getHighScore(): nincs ilyen file az FTPn ");
+			else{ // if there is no highscores.txt on the FTP server, creating a dummy, and returning an empty SortedMap
 				OutputStream ostream = ftp.getFtp().storeFileStream("highscores.txt");
 				String dummyHighScoreTable = "10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers";
 				ostream.write(dummyHighScoreTable.getBytes());
 				ostream.close();
-				System.out.println("GethighScores(): ostream csukasa utan");
-				//ftp.getFtp().completePendingCommand();
 				boolean completed = ftp.getFtp().completePendingCommand();
 	            if (completed) {
-	                System.out.println("getHighScore(): Empty highscore table uploaded successfully.");
+	                System.out.println("getHighScore(): Dummy highscore table uploaded successfully.");
 	            }
 	            else{
-	            	 System.out.println("getHighScore(): nem sikerult az ures highscore tabla feltoltese.");
+	            	 System.out.println("getHighScore(): Error during the upload of the dummy highscore table.");
 	            }
 			}		
 			ftp.disconnect();
@@ -1539,7 +1526,6 @@ public class Server implements AllServerInterfaces
 	  } catch (Exception e) {
 		e.printStackTrace();
 	  }
-	  System.out.println(highScores);
 	  return highScores;
 	}
 	
@@ -1548,15 +1534,12 @@ public class Server implements AllServerInterfaces
 		List<Map.Entry<Integer, String>> highScores = new ArrayList<>();
 		highScores = getHighScores();
 		if( highScores.size() == 0){ // no valid highScore table -- broken FTP connection
-			System.out.println("gethighestscore vege, highscores size == 0, broken ftp");
 			return 0;
 		}
 		else{
 			int highestScore = highScores.get(0).getKey(); // the first element in the arrayList is the one with the highest score
-			System.out.println("gethighestscore vege, valid highscore recovered from ftp");
 			return highestScore;
 		}
-//		return 0;
 	}
 
 

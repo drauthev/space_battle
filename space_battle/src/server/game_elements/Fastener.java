@@ -1,12 +1,14 @@
 package server.game_elements;
 
+import server.Constants;
+
 public class Fastener extends Modifier {
 	
-	private static int verticalMoveQuantity = 1;
+	private static double verticalMoveQuantity = Constants.modifierSpeedSlow;
 	private static int spawnFrequency;
 	private static int timeItLasts = 10000; // 10 sec
 		
-	public Fastener(int x, int y){
+	public Fastener(double x, double y){
 		super(x,y);
 	}
 	
@@ -22,14 +24,6 @@ public class Fastener extends Modifier {
 
 	public static void setSpawnFrequency(int spawnFrequency) {
 		Fastener.spawnFrequency = spawnFrequency;
-	}
-
-	public static int getVerticalMoveQuantity() {
-		return verticalMoveQuantity;
-	}
-
-	public static void setVerticalMoveQuantity(int verticalMoveQuantity) {
-		Fastener.verticalMoveQuantity = verticalMoveQuantity;
 	}
 
 	public static int getTimeItLasts() {

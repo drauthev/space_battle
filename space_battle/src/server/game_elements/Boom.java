@@ -1,9 +1,11 @@
 package server.game_elements;
 
+import server.Constants;
+
 public class Boom extends Modifier{
-	private static int verticalMoveQuantity = 1;
+	private static double verticalMoveQuantity = Constants.modifierSpeedFast;
 		
-	public Boom(int x, int y){
+	public Boom(double x, double y){
 		super(x,y);
 	}
 	
@@ -13,12 +15,5 @@ public class Boom extends Modifier{
 	}
 	
 	// Getters, setters
-	public static int getVerticalMoveQuantity() {
-		return verticalMoveQuantity;
-	}
-
-	public static void setVerticalMoveQuantity(int verticalMoveQuantity) {
-		Boom.verticalMoveQuantity = verticalMoveQuantity;
-	}
 
 }

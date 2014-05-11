@@ -2,7 +2,7 @@ package server.game_elements;
 
 public abstract class NonShootingObject extends GameElement {
 	
-	NonShootingObject(int x, int y){
+	NonShootingObject(double x, double y){
 		super(x,y);
 	}
 

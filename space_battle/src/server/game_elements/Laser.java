@@ -1,10 +1,12 @@
 package server.game_elements;
 
+import server.Constants;
+
 public class Laser extends Modifier{
-	private static int verticalMoveQuantity = 1;
+	private static double verticalMoveQuantity = Constants.modifierSpeedMedium;
 	private static int timeItLasts = 6000; // 6 sec
 		
-	public Laser(int x, int y){
+	public Laser(double x, double y){
 		super(x,y);
 	}
 	
@@ -14,14 +16,6 @@ public class Laser extends Modifier{
 	}
 	
 	// Getters, setters
-	public static int getVerticalMoveQuantity() {
-		return verticalMoveQuantity;
-	}
-
-	public static void setVerticalMoveQuantity(int verticalMoveQuantity) {
-		Laser.verticalMoveQuantity = verticalMoveQuantity;
-	}
-
 	public static int getTimeItLasts() {
 		return timeItLasts;
 	}

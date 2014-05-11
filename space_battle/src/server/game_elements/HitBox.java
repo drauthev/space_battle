@@ -14,10 +14,10 @@ public class HitBox{
 		
 	public boolean isCollision(GameElement otherElement){
 		// TODO, hatekonyabb eljaras..
-		int thisX = owner.getCoordX() - width/2;	// normalas a bal felso sarokba, onnan indul majd a ciklus
-		int thisY = owner.getCoordY() + heigth/2;
-		int otherX = otherElement.getCoordX() - width/2;
-		int otherY = otherElement.getCoordY() + heigth/2;
+		int thisX = (int) (owner.getCoordX() - width/2);	// normalas a bal felso sarokba, onnan indul majd a ciklus
+		int thisY = (int) (owner.getCoordY() + heigth/2);
+		int otherX = (int) (otherElement.getCoordX() - width/2);
+		int otherY = (int) (otherElement.getCoordY() + heigth/2);
 
 		for(int i=thisX; i < thisX+width; i++){	// hatarokat meggondolni
 			for(int j=otherX; j<otherX+width; j++){

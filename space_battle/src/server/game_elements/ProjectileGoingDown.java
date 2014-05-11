@@ -3,7 +3,7 @@ package server.game_elements;
 
 public class ProjectileGoingDown extends Projectile {
 
-	ProjectileGoingDown(int x, int y) {
+	ProjectileGoingDown(double x, double y) {
 		super(x,y);
 	}
 	
@@ -15,13 +15,13 @@ public class ProjectileGoingDown extends Projectile {
 	@Override
 	public boolean isHit(GameElement object) { // TODO: oldal, teteje? ha blemaszik a palyer?
 		// projectile-related
-		int bottom = getCoordY() + super.getProjectileheight()/2;
-		int projX = getCoordX();
+		int bottom = (int) (getCoordY() + super.getProjectileheight()/2);
+		int projX = (int) getCoordX();
 		// object-related
 		int objWidth = object.getHitBox().getWidth();
 		int objHeight = object.getHitBox().getHeigth();
-		int objX = object.getCoordX();
-		int objY = object.getCoordY();
+		int objX = (int) object.getCoordX();
+		int objY = (int) object.getCoordY();
 		
 		if( bottom > objY - objHeight/2 && bottom < objY + objHeight/2){ // match in Y dimension
 			if ( (projX > objX - objWidth/2) && (projX < objX + objWidth/2) )

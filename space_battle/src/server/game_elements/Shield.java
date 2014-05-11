@@ -1,10 +1,12 @@
 package server.game_elements;
 
+import server.Constants;
+
 public class Shield extends Modifier{
-	private static int verticalMoveQuantity = 1;
+	private static double verticalMoveQuantity = Constants.modifierSpeedFast;
 	private static int timeItLasts = 20000; // 10 sec
 		
-	public Shield(int x, int y){
+	public Shield(double x, double y){
 		super(x,y);
 	}
 	
@@ -14,14 +16,6 @@ public class Shield extends Modifier{
 	}
 	
 	// Getters, setters
-	public static int getVerticalMoveQuantity() {
-		return verticalMoveQuantity;
-	}
-
-	public static void setVerticalMoveQuantity(int verticalMoveQuantity) {
-		Shield.verticalMoveQuantity = verticalMoveQuantity;
-	}
-
 	public static int getTimeItLasts() {
 		return timeItLasts;
 	}

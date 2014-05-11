@@ -6,7 +6,7 @@ public abstract class Projectile extends NonShootingObject {
 	private final static int projectileWidth = 5; //TODO
 	private final static int projectileHeight = 12;
 	
-	Projectile(int x, int y){
+	Projectile(double x, double y){
 		super(x,y);
 	}
 	

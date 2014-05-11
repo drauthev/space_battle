@@ -4,7 +4,7 @@ public class HostileFrenzy extends PowerDown{
 
 	private static int timeItLasts = 10000; // 10 sec
 	
-	public HostileFrenzy(int x, int y){
+	public HostileFrenzy(double x, double y){
 		super(x, y);
 	}
 
