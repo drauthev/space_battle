@@ -4,8 +4,12 @@ import interfaces.ClientForServer;
 
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -930,12 +934,12 @@ public class Server implements AllServerInterfaces
 	}
 	
 	private boolean isThereNewHighScore(){
-		SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
+		List<Map.Entry<Integer, String>> highScores = new ArrayList<>();
 		highScores = getHighScores();
-		if( highScores.size() == 0){ // no valid highsscore table is available - FTP problems
+		if( highScores.size() == 0){ // no valid highscore table is available - FTP problems
 			return false;
 		}
-		if( score > highScores.firstKey() ){ // new highscore! firstKey return the lowest key, that is the least score
+		if( score > highScores.get(highScores.size()-1).getKey() ){ // new highscore! the last element in the ArrayList is the one with the least score..
 			return true;
 		}
 		else{
@@ -1429,71 +1433,63 @@ public class Server implements AllServerInterfaces
 		// TODO A végén setGameState(GameState.NONE)
 		System.out.println("SENDNAME CALLED");
 		FTPConnector ftp;
-		SortedMap<Integer, String> highScores = getHighScores();
-		highScores.put(score, name);
+		List<Map.Entry<Integer, String>> highScores = getHighScores();
+		highScores.remove(highScores.size()-1); // removing the last element - the one with the least score
+		highScores.add(new AbstractMap.SimpleEntry<Integer, String>(score, name)); // adding the new high score
 		
-		int highscoreSize = highScores.size();
-		System.out.println("highscores: " + highScores);
-		System.out.println("highscoresize: " + highscoreSize);
-//		while( highscoreSize > 10 ){ // trimming the HighScore table to 10 record
-//			highScores.remove(highscoreSize-1);
-//		}
-		// making a String from the highscore table
-		String sortedMapContent = ""; // String to write to highscores.txt
+		int highscoreSize = highScores.size(); // should be 10	
+		String highscoreContent = ""; // String to write to highscores.txt
 		int key;
 		String value;
+		// taking out the elements from the ArrayList to the String
 		while( highscoreSize > 0 ){
 			System.out.println("highscores: " + highScores);
-			key = highScores.lastKey(); // iterating from the highest score to the last (the direction doesnt matter too much..)
-			value = highScores.get(key);
-			sortedMapContent = sortedMapContent + key + value + ",";
-			highScores.remove(key);
+			key = highScores.get(highscoreSize-1).getKey(); // iterating from the highest score to the last (the direction doesnt matter too much..)
+			value = highScores.get(highscoreSize-1).getValue();
+			highscoreContent = highscoreContent + key + "," + value + ",";
+			highScores.remove(--highscoreSize);
 		}
-		// Converting String to a byte[], than uploading the new high score table to the FTP server
-		byte[] byteArrayToUpload = sortedMapContent.getBytes(Charset.forName("US-ASCII"));
+		// Converting String to a byte[], than uploading the new high score table to the FTP server (no sorting, getHighScores() does that)
+		byte[] byteArrayToUpload = highscoreContent.getBytes(Charset.forName("US-ASCII"));
 		try {
 			// Uploading it to the FTP server
 			ftp = new FTPConnector("drauthev.sch.bme.hu", "space_battle", "");
 			ftp.setFileTypeToBinary();
-			OutputStream ostream = ftp.getFtp().storeFileStream("newhighscores.txt");
+//			OutputStream ostream = ftp.getFtp().storeFileStream("newhighscores.txt");
+			OutputStream ostream = ftp.getFtp().storeFileStream("highscores.txt");
 			ostream.write(byteArrayToUpload);
 			ostream.close();
 			boolean completed = ftp.getFtp().completePendingCommand();
-	            if (completed) {
-	                System.out.println("New highscore table uploaded successfully.");
-	            }
-	        // Renaming the uploaded newhighscores.txt to highscores.txt -- renaming is an atomic operation, but there could be errors during uploading -- this grants that no compromise will happen to the existing highscore table
-	        ftp.getFtp().rename("newhighscores.txt", "highscores.txt");
-	        completed = ftp.getFtp().completePendingCommand();
             if (completed) {
-                System.out.println("New highscore table updated successfully.");
+                System.out.println("New highscore table uploaded successfully.");
             }
+	        // Renaming the uploaded newhighscores.txt to highscores.txt -- renaming is an atomic operation, but there could be errors during uploading -- this grants that no compromise will happen to the existing highscore table
+//	        ftp.getFtp().rename("newhighscores.txt", "highscores.txt");
+//	        completed = ftp.getFtp().completePendingCommand();
+//            if (completed) {
+//                System.out.println("New highscore table updated successfully.");
+//            }
+//            else{
+//            	 System.out.println("Renaming was not successful. HighScore table is not updated.");
+//            }
 	        
 	        ftp.disconnect();
+	        client1.changeGameState(GameState.NONE);
+	        if( type == GameType.MULTI_NETWORK) client2.changeGameState(GameState.NONE);
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
-	
-	/* FTP szerveren lesznek tárolva a high score-ok, mondjuk egy highscores.txt
-	 * nevű állományban. Innen kell minden egyes függvényhívásnál leszedni, ha pedig 
-	 * van új high score, akkor azt beleírni egy új fájlba az FTP szerveren (más nevű fájl!),
-	 * majd átnevezni arra, ami a tényleges high score fájl. Azért kell így,
-	 * mert az átnevezés atomi művelet, viszont ha megszakadna a kapcsolat
-	 * a fájl feltöltése közben, akkor baszhatnánk a korábbi eredményeket.
-	 * 
-	 * A szerver adatai:
-	 * URL: ftp://drauthev.sch.bme.hu
-	 * user: space_battle
-	 * pw nincs!
-	 */
-	
-	public static SortedMap<Integer, String> getHighScores()
+		
+	// returns an ArrayList with the ordered highscore table; first element of the list is with the highest score
+	public static List<Map.Entry<Integer, String>> getHighScores()
 	{
-	  SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
+	  // creating a new ListArray for the high score records
+	  List<Map.Entry<Integer, String>> highScores = new ArrayList<>();
+
+
+	 // SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
 	  FTPConnector ftp;
 	  String highscoresFileContent;
 	  String[] highscoreEntries;
@@ -1502,21 +1498,31 @@ public class Server implements AllServerInterfaces
 		ftp = new FTPConnector("drauthev.sch.bme.hu", "space_battle", "");
 		if( ftp.getFtp().isConnected() ){
 			highscoresFileContent = ftp.downloadFileAndCopyToString("highscores.txt");
-			//System.out.println("getHighScore(): ideertem ftp isconnected");
 			
 			if(highscoresFileContent != null){
 				//System.out.println("van ilyen file az FTPn ");
-				System.out.println("highscoreFileContent: " + highscoresFileContent);
 				highscoreEntries = highscoresFileContent.split(","); // each odd member of the String[] will be a score, the next even member will be the playerName attached to it
-				for(int i=0; i<highscoreEntries.length/2; i+=2){
+				for(int i=0; i<highscoreEntries.length; i+=2){
 					System.out.println("highscorecontent " + i + " : " + highscoreEntries[i]);
 					int key = Integer.parseInt(highscoreEntries[i]);
 					String value = highscoreEntries[i+1];
-					highScores.put(key, value);			
+					highScores.add(new AbstractMap.SimpleEntry<Integer, String>(key, value));			
 				}
+			  // Sorting the ArrayList with a custom Comparator - decreasing order
+			  Collections.sort(highScores, new Comparator<Map.Entry<Integer, String>>() {
+				  @Override
+				  public int compare(Map.Entry<Integer, String> record1, Map.Entry<Integer, String> record2) {
+				    if(record1.getKey() == record2.getKey())
+				    	return 0;
+				    else if(record1.getKey() > record2.getKey()) // sorting to decreasing order
+				    	return -1;
+				    else
+				    	return 1;
+				  }
+				});
 			}
 			else{ // if there is no highscores.txt on the FTP server, creating an empty one, and returning an empty SortedMap
-				System.out.println("getHighScore(): nincs ilyen file az FTPn ");
+				//System.out.println("getHighScore(): nincs ilyen file az FTPn ");
 				OutputStream ostream = ftp.getFtp().storeFileStream("highscores.txt");
 				String dummyHighScoreTable = "10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers,10,LameGameMakers";
 				ostream.write(dummyHighScoreTable.getBytes());
@@ -1530,30 +1536,27 @@ public class Server implements AllServerInterfaces
 	            else{
 	            	 System.out.println("getHighScore(): nem sikerult az ures highscore tabla feltoltese.");
 	            }
-			}
-			
+			}		
 			ftp.disconnect();
-			//System.out.println("getHighScore(): vege, ftp disconnected");
 		}
 		// else returning an empty sortedmap	
 	  } catch (Exception e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
-		  System.out.println("getHighScore(): catch block"); // should not get here because of the if isConnected
 	  }
+	  System.out.println(highScores);
 	  return highScores;
 	}
 	
 	public static int getHighestScore()
 	{
-		SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
+		List<Map.Entry<Integer, String>> highScores = new ArrayList<>();
 		highScores = getHighScores();
 		if( highScores.size() == 0){ // no valid highScore table -- broken FTP connection
 			System.out.println("gethighestscore vege, highscores size == 0, broken ftp");
 			return 0;
 		}
 		else{
-			int highestScore = highScores.lastKey(); // returns the highest key
+			int highestScore = highScores.get(0).getKey(); // the first element in the arrayList is the one with the highest score
 			System.out.println("gethighestscore vege, valid highscore recovered from ftp");
 			return highestScore;
 		}
