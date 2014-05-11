@@ -508,7 +508,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						if (localNPC.className.equals("HostileType3"))
 							if (localNPC.teleportTime != 0)
 								if (serverTick - localNPC.teleportTime < 600)
-									drawObject(teleportImg, localNPC.x, localNPC.y, teleportWidth,teleportHeight);
+									;//drawObject(teleportImg, localNPC.x, localNPC.y, teleportWidth,teleportHeight);
 		
 						int tickDiff_div = (int) (serverTick-localNPC.creationTime)/1000;
 						drawObject(enemyImg[tickDiff_div % 3], localNPC.x, localNPC.y, enemyWidth,enemyHeight);
@@ -605,7 +605,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						{
 							if (serverTick - localModifier.creationTime < 800)
 							{
-								drawObject(cloudImg, localModifier.x, localModifier.y, cloudWidth,cloudHeight);
+								;//drawObject(cloudImg, localModifier.x, localModifier.y, cloudWidth,cloudHeight);
 							}
 						}
 
