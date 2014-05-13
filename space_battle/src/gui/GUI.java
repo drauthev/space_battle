@@ -569,7 +569,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		}
 	}
 
-	private void drawObject(GraphicObject img, int x, int y) {
+	private void drawObject(ImageObject img, int x, int y) {
 		bufferGraphics.drawImage(img.getBufferedImg() ,x-img.getWidth()/2 , y-img.getHeight()/2, img.getWidth(), img.getHeight(), null);
 	}
 

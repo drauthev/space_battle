@@ -6,13 +6,13 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-public class GraphicObject { 
+public class ImageObject { 
 	
 	private BufferedImage bufferedImg;
 	private int width;
 	private int height;
 	
-	public GraphicObject(File imgFile) {
+	public ImageObject(File imgFile) {
 		try {
 			bufferedImg = ImageIO.read(imgFile);
 		} catch (IOException e) {
