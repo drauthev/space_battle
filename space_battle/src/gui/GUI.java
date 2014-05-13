@@ -77,67 +77,34 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int keyBoardChangeSelected = 0;
 
 	// Image Buffers
-	private static BufferedImage foregroundImg;
-	private static BufferedImage backgroundImg;
-	private static BufferedImage[] bulletImg = new BufferedImage[3];
-	private static BufferedImage[] enemyBlowImg = new BufferedImage[4];
-	private static BufferedImage[] enemyABlowImg = new BufferedImage[4];
-	private static BufferedImage[] enemyBBlowImg = new BufferedImage[4];
-	private static BufferedImage[] enemyCBlowImg = new BufferedImage[4];
-	private static BufferedImage[] enemyImg = new BufferedImage[3];
-	private static BufferedImage[] enemyAImg = new BufferedImage[3];
-	private static BufferedImage[] enemyBImg = new BufferedImage[3];
-	private static BufferedImage[] enemyCImg = new BufferedImage[3];
-	private static BufferedImage[] spaceShipBombImg = new BufferedImage[5];
-	private static BufferedImage[] spaceShipImg = new BufferedImage[6];
-	private static BufferedImage lifeImg;
-	private static BufferedImage[] powerUpImg= new BufferedImage[5];
-	private static BufferedImage powerDownImg;
-	private static BufferedImage[] powerUpBlowImg = new BufferedImage[4];
-	private static BufferedImage shieldImg;
-	private static BufferedImage projectileGoingDiagonallyLeftImg;
-	private static BufferedImage projectileGoingDiagonallyRightImg;
-	
-	// Image widths and heights
-	private int backgroundWidth;
-	private int backgroundHeight;
-	private int spaceShipHeight;
-	private int spaceShipWidth;
-	private int spaceShipBombHeight;
-	private int spaceShipBombWidth;
-	private int enemyHeight;
-	private int enemyWidth;
-	private int enemyBlowHeight;
-	private int enemyBlowWidth;
-	private int enemyAHeight;
-	private int enemyAWidth;
-	private int enemyBHeight;
-	private int enemyBWidth;
-	private int enemyCHeight;
-	private int enemyCWidth;
-	private int enemyABlowHeight;
-	private int enemyABlowWidth;
-	private int enemyBBlowHeight;
-	private int enemyBBlowWidth;
-	private int enemyCBlowHeight;
-	private int enemyCBlowWidth;
-	private int lifeImgHeight;
-	private int lifeImgWidth;
-	private int powerHeight;
-	private int powerWidth;
-	private int projectTileHeight;
-	private int projectTileWidth;
-	private int shieldHeight;
-	private int shieldWidth;
-	private int projectileGoingDiagonallyHeight;
-	private int projectileGoingDiagonallyWidth;
-	private int powerUpBlowHeight;
-	private int powerUpBlowWidth;
+	private static GraphicObject foregroundImg;
+	private static GraphicObject backgroundImg;
+	private static GraphicObject[] bulletImg = new GraphicObject[3];
+	private static GraphicObject[] enemyBlowImg = new GraphicObject[4];
+	private static GraphicObject[] enemyABlowImg = new GraphicObject[4];
+	private static GraphicObject[] enemyBBlowImg = new GraphicObject[4];
+	private static GraphicObject[] enemyCBlowImg = new GraphicObject[4];
+	private static GraphicObject[] enemyImg = new GraphicObject[3];
+	private static GraphicObject[] enemyAImg = new GraphicObject[3];
+	private static GraphicObject[] enemyBImg = new GraphicObject[3];
+	private static GraphicObject[] enemyCImg = new GraphicObject[3];
+	private static GraphicObject[] spaceShipBombImg = new GraphicObject[5];
+	private static GraphicObject[] spaceShipImg = new GraphicObject[6];
+	private static GraphicObject lifeImg;
+	private static GraphicObject[] powerUpImg= new GraphicObject[5];
+	private static GraphicObject powerDownImg;
+	private static GraphicObject[] powerUpBlowImg = new GraphicObject[4];
+	private static GraphicObject shieldImg;
+	private static GraphicObject projectileGoingDiagonallyLeftImg;
+	private static GraphicObject projectileGoingDiagonallyRightImg;
 
 	// Used for double buffering
 	Graphics2D bufferGraphics;  
 	BufferedImage offscreen;
 
+	// Timer
+	private Timer timer = new Timer(false);
+	
 	// Initialize Timer
 	TimerTask reapaintTimer = new TimerTask() {
 		@Override
@@ -157,9 +124,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private String[] ipAddresses = null;
 	private static final int ipAddresseslength = 4;
 
-	// Timer
-	private Timer timer = new Timer(false);
-
 	//Objectbuffer
 	private ObjectBuffer localObjectBuffer;
 
@@ -176,95 +140,60 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	public GUI(ClientForGUI client_param)
 	{
 
-		try {
 			String projdir = System.getProperty("user.dir");
-			backgroundImg	  	  = ImageIO.read(new File(projdir + "/res/sprites/backgroundImg.png"));
-			foregroundImg	 	  = ImageIO.read(new File(projdir + "/res/sprites/foregroundImg.png"));
-			bulletImg[0] 		  = ImageIO.read(new File(projdir + "/res/sprites/bulletImg1.png"));
-			bulletImg[1] 		  = ImageIO.read(new File(projdir + "/res/sprites/bulletImg2.png"));
-			bulletImg[2] 		  = ImageIO.read(new File(projdir + "/res/sprites/bulletImg3.png"));
-			enemyABlowImg[0]  	  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyBlowImg1.png"));
-			enemyABlowImg[1] 	  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyBlowImg2.png"));
-			enemyABlowImg[2] 	  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyBlowImg3.png"));
-			enemyABlowImg[3] 	  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyBlowImg4.png"));
-			enemyAImg[0] 		  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyImg1.png"));
-			enemyAImg[1] 		  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyImg2.png"));
-			enemyAImg[2] 		  = ImageIO.read(new File(projdir + "/res/sprites/1/enemyImg3.png"));
-			enemyBBlowImg[0] 	  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyBlowImg1.png"));
-			enemyBBlowImg[1] 	  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyBlowImg2.png"));
-			enemyBBlowImg[2] 	  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyBlowImg3.png"));
-			enemyBBlowImg[3] 	  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyBlowImg4.png"));
-			enemyBImg[0] 		  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyImg1.png"));
-			enemyBImg[1] 		  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyImg2.png"));
-			enemyBImg[2] 		  = ImageIO.read(new File(projdir + "/res/sprites/2/enemyImg3.png"));
-			enemyCBlowImg[0] 	  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyBlowImg1.png"));
-			enemyCBlowImg[1] 	  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyBlowImg2.png"));
-			enemyCBlowImg[2] 	  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyBlowImg3.png"));
-			enemyCBlowImg[3] 	  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyBlowImg4.png"));
-			enemyCImg[0] 		  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyImg1.png"));
-			enemyCImg[1] 		  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyImg2.png"));
-			enemyCImg[2] 		  = ImageIO.read(new File(projdir + "/res/sprites/3/enemyImg3.png"));
-			lifeImg			  	  = ImageIO.read(new File(projdir + "/res/sprites/lifeImg.png"));
-			spaceShipBombImg[0]   = ImageIO.read(new File(projdir + "/res/sprites/spaceShipBombImg1.png"));
-			spaceShipBombImg[1]   = ImageIO.read(new File(projdir + "/res/sprites/spaceShipBombImg2.png"));
-			spaceShipBombImg[2]   = ImageIO.read(new File(projdir + "/res/sprites/spaceShipBombImg3.png"));
-			spaceShipBombImg[3]   = ImageIO.read(new File(projdir + "/res/sprites/spaceShipBombImg4.png"));
-			spaceShipBombImg[4]   = ImageIO.read(new File(projdir + "/res/sprites/spaceShipBombImg5.png"));
-			spaceShipImg[0] 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg1.png"));
-			spaceShipImg[1] 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg2.png"));
-			spaceShipImg[2] 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg3.png"));
-			spaceShipImg[3] 	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg4.png"));
-			spaceShipImg[4]	      = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg5.png"));
-			spaceShipImg[5]	   	  = ImageIO.read(new File(projdir + "/res/sprites/spaceShipImg6.png"));
-			powerUpImg[0]	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg1.png"));
-			powerUpImg[1]	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg2.png"));
-			powerUpImg[2]	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg3.png"));
-			powerUpImg[3]	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg4.png"));
-			powerUpImg[4]	      	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpImg5.png"));
-			powerDownImg	  	  = ImageIO.read(new File(projdir + "/res/sprites/powerDownImg.png"));
-			shieldImg	  	      = ImageIO.read(new File(projdir + "/res/sprites/shieldImg.png"));
-			powerUpBlowImg[0]  	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpBlowImg1.png"));
-			powerUpBlowImg[1] 	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpBlowImg2.png"));
-			powerUpBlowImg[2] 	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpBlowImg3.png"));
-			powerUpBlowImg[3] 	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpBlowImg4.png"));
-			projectileGoingDiagonallyLeftImg	= ImageIO.read(new File(projdir + "/res/sprites/projectileGoingDiagonallyLeftImg.png"));
-			projectileGoingDiagonallyRightImg	= ImageIO.read(new File(projdir + "/res/sprites/projectileGoingDiagonallyRightImg.png"));
+			backgroundImg	  	  = new GraphicObject(new File(projdir + "/res/sprites/backgroundImg.png"));
+			foregroundImg	 	  = new GraphicObject(new File(projdir + "/res/sprites/foregroundImg.png"));
+			bulletImg[0] 		  = new GraphicObject(new File(projdir + "/res/sprites/bulletImg1.png"));
+			bulletImg[1] 		  = new GraphicObject(new File(projdir + "/res/sprites/bulletImg2.png"));
+			bulletImg[2] 		  = new GraphicObject(new File(projdir + "/res/sprites/bulletImg3.png"));
+			enemyABlowImg[0]  	  = new GraphicObject(new File(projdir + "/res/sprites/1/enemyBlowImg1.png"));
+			enemyABlowImg[1] 	  = new GraphicObject(new File(projdir + "/res/sprites/1/enemyBlowImg2.png"));
+			enemyABlowImg[2] 	  = new GraphicObject(new File(projdir + "/res/sprites/1/enemyBlowImg3.png"));
+			enemyABlowImg[3] 	  = new GraphicObject(new File(projdir + "/res/sprites/1/enemyBlowImg4.png"));
+			enemyAImg[0] 		  = new GraphicObject(new File(projdir + "/res/sprites/1/enemyImg1.png"));
+			enemyAImg[1] 		  = new GraphicObject(new File(projdir + "/res/sprites/1/enemyImg2.png"));
+			enemyAImg[2] 		  = new GraphicObject(new File(projdir + "/res/sprites/1/enemyImg3.png"));
+			enemyBBlowImg[0] 	  = new GraphicObject(new File(projdir + "/res/sprites/2/enemyBlowImg1.png"));
+			enemyBBlowImg[1] 	  = new GraphicObject(new File(projdir + "/res/sprites/2/enemyBlowImg2.png"));
+			enemyBBlowImg[2] 	  = new GraphicObject(new File(projdir + "/res/sprites/2/enemyBlowImg3.png"));
+			enemyBBlowImg[3] 	  = new GraphicObject(new File(projdir + "/res/sprites/2/enemyBlowImg4.png"));
+			enemyBImg[0] 		  = new GraphicObject(new File(projdir + "/res/sprites/2/enemyImg1.png"));
+			enemyBImg[1] 		  = new GraphicObject(new File(projdir + "/res/sprites/2/enemyImg2.png"));
+			enemyBImg[2] 		  = new GraphicObject(new File(projdir + "/res/sprites/2/enemyImg3.png"));
+			enemyCBlowImg[0] 	  = new GraphicObject(new File(projdir + "/res/sprites/3/enemyBlowImg1.png"));
+			enemyCBlowImg[1] 	  = new GraphicObject(new File(projdir + "/res/sprites/3/enemyBlowImg2.png"));
+			enemyCBlowImg[2] 	  = new GraphicObject(new File(projdir + "/res/sprites/3/enemyBlowImg3.png"));
+			enemyCBlowImg[3] 	  = new GraphicObject(new File(projdir + "/res/sprites/3/enemyBlowImg4.png"));
+			enemyCImg[0] 		  = new GraphicObject(new File(projdir + "/res/sprites/3/enemyImg1.png"));
+			enemyCImg[1] 		  = new GraphicObject(new File(projdir + "/res/sprites/3/enemyImg2.png"));
+			enemyCImg[2] 		  = new GraphicObject(new File(projdir + "/res/sprites/3/enemyImg3.png"));
+			lifeImg			  	  = new GraphicObject(new File(projdir + "/res/sprites/lifeImg.png"));
+			spaceShipBombImg[0]   = new GraphicObject(new File(projdir + "/res/sprites/spaceShipBombImg1.png"));
+			spaceShipBombImg[1]   = new GraphicObject(new File(projdir + "/res/sprites/spaceShipBombImg2.png"));
+			spaceShipBombImg[2]   = new GraphicObject(new File(projdir + "/res/sprites/spaceShipBombImg3.png"));
+			spaceShipBombImg[3]   = new GraphicObject(new File(projdir + "/res/sprites/spaceShipBombImg4.png"));
+			spaceShipBombImg[4]   = new GraphicObject(new File(projdir + "/res/sprites/spaceShipBombImg5.png"));
+			spaceShipImg[0] 	  = new GraphicObject(new File(projdir + "/res/sprites/spaceShipImg1.png"));
+			spaceShipImg[1] 	  = new GraphicObject(new File(projdir + "/res/sprites/spaceShipImg2.png"));
+			spaceShipImg[2] 	  = new GraphicObject(new File(projdir + "/res/sprites/spaceShipImg3.png"));
+			spaceShipImg[3] 	  = new GraphicObject(new File(projdir + "/res/sprites/spaceShipImg4.png"));
+			spaceShipImg[4]	      = new GraphicObject(new File(projdir + "/res/sprites/spaceShipImg5.png"));
+			spaceShipImg[5]	   	  = new GraphicObject(new File(projdir + "/res/sprites/spaceShipImg6.png"));
+			powerUpImg[0]	      = new GraphicObject(new File(projdir + "/res/sprites/powerUpImg1.png"));
+			powerUpImg[1]	      = new GraphicObject(new File(projdir + "/res/sprites/powerUpImg2.png"));
+			powerUpImg[2]	      = new GraphicObject(new File(projdir + "/res/sprites/powerUpImg3.png"));
+			powerUpImg[3]	      = new GraphicObject(new File(projdir + "/res/sprites/powerUpImg4.png"));
+			powerUpImg[4]	      = new GraphicObject(new File(projdir + "/res/sprites/powerUpImg5.png"));
+			powerDownImg	  	  = new GraphicObject(new File(projdir + "/res/sprites/powerDownImg.png"));
+			shieldImg	  	      = new GraphicObject(new File(projdir + "/res/sprites/shieldImg.png"));
+			powerUpBlowImg[0]  	  = new GraphicObject(new File(projdir + "/res/sprites/powerUpBlowImg1.png"));
+			powerUpBlowImg[1] 	  = new GraphicObject(new File(projdir + "/res/sprites/powerUpBlowImg2.png"));
+			powerUpBlowImg[2] 	  = new GraphicObject(new File(projdir + "/res/sprites/powerUpBlowImg3.png"));
+			powerUpBlowImg[3] 	  = new GraphicObject(new File(projdir + "/res/sprites/powerUpBlowImg4.png"));
+			projectileGoingDiagonallyLeftImg	= new GraphicObject(new File(projdir + "/res/sprites/projectileGoingDiagonallyLeftImg.png"));
+			projectileGoingDiagonallyRightImg	= new GraphicObject(new File(projdir + "/res/sprites/projectileGoingDiagonallyRightImg.png"));
 
-		} catch (IOException e1) {
-			System.out.println("One of the Image Files are not found!");
-			e1.printStackTrace();
-		}
-
-		backgroundHeight 	= backgroundImg.getHeight();
-		backgroundWidth  	= backgroundImg.getWidth();
-		spaceShipHeight  	= spaceShipImg[0].getHeight();
-		spaceShipWidth   	= spaceShipImg[0].getWidth();
-		lifeImgWidth     	= lifeImg.getWidth();
-		lifeImgHeight    	= lifeImg.getHeight();
-		enemyAHeight      	= enemyAImg[0].getHeight();
-		enemyAWidth       	= enemyAImg[0].getWidth();
-		enemyBHeight      	= enemyBImg[0].getHeight();
-		enemyBWidth       	= enemyBImg[0].getWidth();
-		enemyCHeight      	= enemyCImg[0].getHeight();
-		enemyCWidth       	= enemyCImg[0].getWidth();
-		powerHeight     	= powerUpImg[0].getHeight();
-		powerWidth      	= powerUpImg[0].getWidth();
-		spaceShipBombHeight = spaceShipBombImg[0].getHeight();
-		spaceShipBombWidth 	= spaceShipBombImg[0].getWidth();
-		enemyABlowHeight	= enemyABlowImg[0].getHeight();
-		enemyABlowWidth 	= enemyABlowImg[0].getWidth();
-		enemyBBlowHeight 	= enemyBBlowImg[0].getHeight();
-		enemyBBlowWidth 	= enemyBBlowImg[0].getWidth();
-		enemyCBlowHeight 	= enemyCBlowImg[0].getHeight();
-		enemyCBlowWidth 	= enemyCBlowImg[0].getWidth();
-		projectTileHeight   = bulletImg[0].getHeight();
-		projectTileWidth    = bulletImg[0].getWidth();
-		shieldHeight        = shieldImg.getHeight();
-		shieldWidth         = shieldImg.getWidth();
-		projectileGoingDiagonallyHeight        = projectileGoingDiagonallyRightImg.getHeight();
-		projectileGoingDiagonallyWidth         = projectileGoingDiagonallyRightImg.getWidth();
-		powerUpBlowHeight  =powerUpBlowImg[0].getHeight();
-		powerUpBlowWidth  =powerUpBlowImg[0].getWidth();
+		
 		// Initializing fonts for writing strings to the monitor
 		scoreFont = new Font("monospscoreFont", Font.BOLD, scoreSize);
 		titleFont = new Font("monospscoreFont", Font.BOLD, titleSize);
@@ -447,10 +376,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						for (int j = 0; j < 3; j++)
 							enemyImg[j] 		= enemyAImg[j];
 
-						enemyHeight 	= enemyAHeight;
-						enemyWidth 		= enemyAWidth;
-						enemyBlowHeight = enemyABlowHeight;
-						enemyBlowWidth 	= enemyABlowWidth;
+						enemyImg 	= enemyAImg;
 					}
 
 					else if (localNPC.className.equals("HostileType2"))
@@ -461,10 +387,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						for (int j = 0; j < 3; j++)
 							enemyImg[j] 		= enemyBImg[j];
 
-						enemyHeight 	= enemyBHeight;
-						enemyWidth 		= enemyBWidth;
-						enemyBlowHeight = enemyBBlowHeight;
-						enemyBlowWidth 	= enemyBBlowWidth;
+						enemyImg 	= enemyBImg;
 					}
 
 					else if (localNPC.className.equals("HostileType3"))
@@ -475,21 +398,18 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						for (int j = 0; j < 3; j++)
 							enemyImg[j] 		= enemyCImg[j];
 
-						enemyHeight 	= enemyCHeight;
-						enemyWidth 		= enemyCWidth;
-						enemyBlowHeight = enemyCBlowHeight;
-						enemyBlowWidth 	= enemyCBlowWidth;
+						enemyImg 	= enemyCImg;
 					}
 
 					if (localNPC.explosionTime != 0) 
 					{
 						int tickDiff_div = (int) (serverTick-localNPC.explosionTime)/130;
-						if (tickDiff_div < 4) drawObject(enemyBlowImg[tickDiff_div], localNPC.x, localNPC.y, enemyBlowWidth,enemyBlowHeight);
+						if (tickDiff_div < 4) drawObject(enemyBlowImg[tickDiff_div], localNPC.x, localNPC.y);
 					}
 					else if (localNPC.hitTime != 0 && ((serverTick - localNPC.hitTime) < 1500)) 
 					{							
 						int tickDiff_div = (int) (serverTick-localNPC.hitTime)/200;
-						if (tickDiff_div % 2 == 1) drawObject(enemyImg[0], localNPC.x, localNPC.y, enemyWidth,enemyHeight);
+						if (tickDiff_div % 2 == 1) drawObject(enemyImg[0], localNPC.x, localNPC.y);
 					}
 					else 
 					{
@@ -499,7 +419,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 									;//drawObject(teleportImg, localNPC.x, localNPC.y, teleportWidth,teleportHeight);
 		
 						int tickDiff_div = (int) (serverTick-localNPC.creationTime)/1000;
-						drawObject(enemyImg[tickDiff_div % 3], localNPC.x, localNPC.y, enemyWidth,enemyHeight);
+						drawObject(enemyImg[tickDiff_div % 3], localNPC.x, localNPC.y);
 					}
 				}
 
@@ -513,7 +433,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					if (localPlayer.explosionTime != 0 )
 					{
 						int tickDiff_div = (int) (serverTick - localPlayer.explosionTime)/200;
-						if      (tickDiff_div < 5) drawObject(spaceShipBombImg[tickDiff_div], localPlayer.x, localPlayer.y, spaceShipBombWidth, spaceShipBombHeight);
+						if      (tickDiff_div < 5) drawObject(spaceShipBombImg[tickDiff_div], localPlayer.x, localPlayer.y);
 					}
 					
 					else if (localPlayer.hitTime != 0 && ((serverTick - localPlayer.hitTime) < 1500)) 
@@ -522,15 +442,15 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						if (tickDiff_div % 2 == 1) 
 						{
 							if (localObjectBuffer.player[i].isShielded)
-								drawObject(shieldImg, localPlayer.x, localPlayer.y, shieldWidth, shieldHeight);
-							drawObject(spaceShipImg[localObjectBuffer.player[i].id], localPlayer.x, localPlayer.y, spaceShipWidth, spaceShipHeight);
+								drawObject(shieldImg, localPlayer.x, localPlayer.y);
+							drawObject(spaceShipImg[localObjectBuffer.player[i].id], localPlayer.x, localPlayer.y);
 						}
 					}
 					else
 					{
 						if (localObjectBuffer.player[i].isShielded)
-							drawObject(shieldImg, localPlayer.x, localPlayer.y, shieldWidth, shieldHeight);
-						drawObject(spaceShipImg[localObjectBuffer.player[i].id], localPlayer.x, localPlayer.y, spaceShipWidth, spaceShipHeight);
+							drawObject(shieldImg, localPlayer.x, localPlayer.y);
+						drawObject(spaceShipImg[localObjectBuffer.player[i].id], localPlayer.x, localPlayer.y);
 					}
 				}
 
@@ -539,20 +459,20 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					CProjectile localProjectile = localObjectBuffer.proj[i];
 					
 					if (localProjectile.className.equals("ProjectileGoingUp"))
-						drawObject(bulletImg[0]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+						drawObject(bulletImg[0]		, localProjectile.x	, localProjectile.y);
 					else if (localProjectile.className.equals("ProjectileGoingDown"))
-						drawObject(bulletImg[1]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+						drawObject(bulletImg[1]		, localProjectile.x	, localProjectile.y);
 					else if (localProjectile.className.equals("ProjectileLaser"))
-						drawObject(bulletImg[2]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+						drawObject(bulletImg[2]		, localProjectile.x	, localProjectile.y);
 					
 					else if (localProjectile.className.equals("ProjectileGoingDiagonallyRight"))
-						drawObject(projectileGoingDiagonallyRightImg, localProjectile.x	, localProjectile.y	, projectileGoingDiagonallyWidth,projectileGoingDiagonallyHeight);
+						drawObject(projectileGoingDiagonallyRightImg, localProjectile.x	, localProjectile.y);
 					else if (localProjectile.className.equals("ProjectileGoingDiagonallyLeft"))
-						drawObject(projectileGoingDiagonallyLeftImg, localProjectile.x	, localProjectile.y	, projectileGoingDiagonallyWidth,projectileGoingDiagonallyHeight);
+						drawObject(projectileGoingDiagonallyLeftImg, localProjectile.x	, localProjectile.y);
 
 					else
 					{
-						drawObject(bulletImg[1]		, localProjectile.x	, localProjectile.y	, projectTileWidth,projectTileHeight);
+						drawObject(bulletImg[1]		, localProjectile.x	, localProjectile.y	);
 						System.out.println("Projectile with unknown name: " + localProjectile.className);
 					}
 				}
@@ -584,7 +504,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					if (localModifier.explosionTime != 0)
 					{
 						int tickDiff_div = (int) (serverTick-localModifier.explosionTime)/150;
-						if (tickDiff_div < 4) drawObject(powerUpBlowImg[tickDiff_div], localModifier.x, localModifier.y, powerUpBlowWidth,powerUpBlowHeight);
+						if (tickDiff_div < 4) drawObject(powerUpBlowImg[tickDiff_div], localModifier.x, localModifier.y);
 					}
 					
 					else if (localModifier.pickupTime == 0)
@@ -598,13 +518,13 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						}
 
 						
-						if     (localModifier.className.equals("Shield"))	drawObject(powerUpImg[2]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
-						else if(localModifier.className.equals("Boom"))		drawObject(powerUpImg[3]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
-						else if(localModifier.className.equals("Fastener")) drawObject(powerUpImg[0]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
-						else if(localModifier.className.equals("Laser"))	drawObject(powerUpImg[4]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
-						else if(localModifier.className.equals("OneUp"))	drawObject(powerUpImg[1]	, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+						if     (localModifier.className.equals("Shield"))	drawObject(powerUpImg[2]	, localModifier.x	, localModifier.y	);
+						else if(localModifier.className.equals("Boom"))		drawObject(powerUpImg[3]	, localModifier.x	, localModifier.y	);
+						else if(localModifier.className.equals("Fastener")) drawObject(powerUpImg[0]	, localModifier.x	, localModifier.y	);
+						else if(localModifier.className.equals("Laser"))	drawObject(powerUpImg[4]	, localModifier.x	, localModifier.y	);
+						else if(localModifier.className.equals("OneUp"))	drawObject(powerUpImg[1]	, localModifier.x	, localModifier.y	);
 						else
-							drawObject(powerDownImg		, localModifier.x	, localModifier.y	, powerWidth,powerHeight);
+							drawObject(powerDownImg		, localModifier.x	, localModifier.y);
 					}
 					
 					else
@@ -747,15 +667,14 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		}
 	}
 
-	private void drawObject(BufferedImage img, int x, int y,
-			int width, int height) {
-		bufferGraphics.drawImage(img ,x-width/2 , y-height/2, width, height, null);
+	private void drawObject(GraphicObject img, int x, int y) {
+		bufferGraphics.drawImage(img.getBufferedImg() ,x-img.getWidth()/2 , y-img.getHeight()/2, img.getWidth(), img.getHeight(), null);
 	}
 
 
 	public void drawForeground(int width, int height)
 	{
-		bufferGraphics.drawImage(foregroundImg, (frameWidth)/2-150, 165, 300, 200, null);
+		bufferGraphics.drawImage(foregroundImg.getBufferedImg(), (frameWidth)/2-150, 165, 300, 200, null);
 	}
 
 	public void drawBackground()
@@ -764,8 +683,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		if (backgroundImgY >= 640) backgroundImgY -= 640;
 
 		if (backgroundImgY != 0)  
-			bufferGraphics.drawImage(backgroundImg	, 0	, -640 + (int)backgroundImgY	, backgroundWidth	,backgroundHeight, null);
-		bufferGraphics.drawImage(backgroundImg	, 0	, (int)backgroundImgY		, backgroundWidth	,backgroundHeight,null);
+			bufferGraphics.drawImage(backgroundImg.getBufferedImg()	, 0	, -640 + (int)backgroundImgY	, backgroundImg.getWidth()	,backgroundImg.getHeight(),null);
+		bufferGraphics.drawImage(backgroundImg.getBufferedImg()	, 0	, (int)backgroundImgY		, backgroundImg.getWidth()	,backgroundImg.getHeight(),null);
 	}
 
 	public void drawTitle(String title)
@@ -836,7 +755,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	{
 		int CoordinateY = firstLineY - 20 + dotLineToDraw * lineHeight;
 		int CoordinateX = dotX - 50;
-		bufferGraphics.drawImage(lifeImg	, CoordinateX	, CoordinateY	, lifeImgWidth	,lifeImgHeight,null);
+		bufferGraphics.drawImage(lifeImg.getBufferedImg()	, CoordinateX	, CoordinateY	, lifeImg.getWidth()	,lifeImg.getHeight(),null);
 
 	}	
 
@@ -852,10 +771,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	public void drawLives(int numberOfLives1, int numberOfLives2)
 	{
 		for (int i = 0; i < numberOfLives1; i++)
-			drawObject(lifeImg	, 40 + 40*i	, 600	, lifeImgWidth	,lifeImgHeight);
+			drawObject(lifeImg	, 40 + 40*i	, 600);
 
 		for (int i = 0; i < numberOfLives2; i++)
-			drawObject(lifeImg	, frameWidth - 45 -  40*i	, 600	, lifeImgWidth	,lifeImgHeight);
+			drawObject(lifeImg	, frameWidth - 45 -  40*i	, 60);
 	}		
 
 	public void drawTopScores(int curr, int high)
