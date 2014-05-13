@@ -97,8 +97,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private static BufferedImage shieldImg;
 	private static BufferedImage projectileGoingDiagonallyLeftImg;
 	private static BufferedImage projectileGoingDiagonallyRightImg;
-	private static BufferedImage cloudImg;
-	private static BufferedImage teleportImg;
 	
 	// Image widths and heights
 	private int backgroundWidth;
@@ -135,10 +133,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int projectileGoingDiagonallyWidth;
 	private int powerUpBlowHeight;
 	private int powerUpBlowWidth;
-	private int cloudHeight;
-	private int cloudWidth;
-	private int teleportHeight;
-	private int teleportWidth;
 
 	// Used for double buffering
 	Graphics2D bufferGraphics;  
@@ -235,11 +229,9 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			powerUpBlowImg[3] 	  = ImageIO.read(new File(projdir + "/res/sprites/powerUpBlowImg4.png"));
 			projectileGoingDiagonallyLeftImg	= ImageIO.read(new File(projdir + "/res/sprites/projectileGoingDiagonallyLeftImg.png"));
 			projectileGoingDiagonallyRightImg	= ImageIO.read(new File(projdir + "/res/sprites/projectileGoingDiagonallyRightImg.png"));
-			cloudImg	= ImageIO.read(new File(projdir + "/res/sprites/cloudImg.png"));
-			teleportImg	= ImageIO.read(new File(projdir + "/res/sprites/teleportImg.png"));
 
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
+			System.out.println("One of the Image Files are not found!");
 			e1.printStackTrace();
 		}
 
@@ -273,10 +265,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		projectileGoingDiagonallyWidth         = projectileGoingDiagonallyRightImg.getWidth();
 		powerUpBlowHeight  =powerUpBlowImg[0].getHeight();
 		powerUpBlowWidth  =powerUpBlowImg[0].getWidth();
-		cloudHeight  = cloudImg.getHeight();
-		cloudWidth  =cloudImg.getWidth();
-		teleportHeight  =teleportImg.getHeight();
-		teleportWidth  =teleportImg.getWidth();
 		// Initializing fonts for writing strings to the monitor
 		scoreFont = new Font("monospscoreFont", Font.BOLD, scoreSize);
 		titleFont = new Font("monospscoreFont", Font.BOLD, titleSize);
@@ -319,7 +307,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		});
 
 		// Get Keyboard settings
-		EnumMap<PlayerAction, Integer> asd = client.getKeyboardSettings().clone(); //TODO kell?		// HashMap-ben action(K)-KeyCode(V) pĂˇrok
+		EnumMap<PlayerAction, Integer> asd = client.getKeyboardSettings();
 
 		actionKeys[0] = KeyEvent.getKeyText(asd.get(PlayerAction.P1LEFT));
 		actionKeys[1] = KeyEvent.getKeyText(asd.get(PlayerAction.P1RIGHT));
@@ -1253,6 +1241,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	}
 
 	public void setRecentIPs(String[] iparr) {
-		ipAddresses = iparr.clone(); //TODO ez }gy jĂł?
+		ipAddresses = iparr.clone();
 	}
 }
