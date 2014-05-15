@@ -431,6 +431,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		// Draw MENU related content
 		else
 		{
+			System.out.println(textField.length());
 			if (currentMenuState == MenuState.JOIN_GAME_MENU) dotLineToDraw = dotLine + 1;
 			else dotLineToDraw = dotLine;
 
@@ -694,12 +695,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			if (ip == null || ip.isEmpty()) {
 				return false;
 			}
-
 			String[] parts = ip.split( "\\." );
 			if ( parts.length != 4 ) {
 				return false;
 			}
-
 			for ( String s : parts ) {
 				int i = Integer.parseInt( s );
 				if ( (i < 0) || (i > 255) ) {
@@ -777,7 +776,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	private void generateRandomShipID() {
 		shipID[0] = (int )(6 * Math.random());
-		shipID[1] = (int )(6 * Math.random());
+		
+		while ((shipID[1] = (int )(6 * Math.random())) == shipID[0]);
 	}
 
 	/************************************** KEY EVENTS ****************************************/
@@ -787,7 +787,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	{
 		if (isTextLine())
 		{
-			if (e.getKeyChar() != '')
+			if (e.getKeyChar() != '' && e.getKeyChar() != '\n')
 			{
 				if (e.getKeyChar() == ',' && e.getKeyCode() != KeyEvent.VK_COMMA) textField = textField + ".";
 				else						   textField = textField + e.getKeyChar();
