@@ -5,157 +5,157 @@ import java.io.File;
 
 public class ImageCollector {
 	
-	private static ImageObject foregroundImg;
-	private static ImageObject backgroundImg;
-	private static ImageObject[] bulletImg = new ImageObject[3];
-	private static ImageObject[] enemyABlowImg = new ImageObject[4];
-	private static ImageObject[] enemyBBlowImg = new ImageObject[4];
-	private static ImageObject[] enemyCBlowImg = new ImageObject[4];
-	private static ImageObject[] enemyAImg = new ImageObject[3];
-	private static ImageObject[] enemyBImg = new ImageObject[3];
-	private static ImageObject[] enemyCImg = new ImageObject[3];
-	private static ImageObject[] spaceShipBombImg = new ImageObject[5];
-	private static ImageObject[] spaceShipImg = new ImageObject[6];
-	private static ImageObject lifeImg;
-	private static ImageObject[] powerUpImg= new ImageObject[5];
-	private static ImageObject powerDownImg;
-	private static ImageObject[] powerUpBlowImg = new ImageObject[4];
-	private static ImageObject shieldImg;
-	private static ImageObject projectileGoingDiagonallyLeftImg;
-	private static ImageObject projectileGoingDiagonallyRightImg;
+	private static ImageObject foregroundImgObj;
+	private static ImageObject backgroundImgObj;
+	private static ImageObject[] bulletImgObj = new ImageObject[3];
+	private static ImageObject[] enemyABlowImgObj = new ImageObject[4];
+	private static ImageObject[] enemyBBlowImgObj = new ImageObject[4];
+	private static ImageObject[] enemyCBlowImgObj = new ImageObject[4];
+	private static ImageObject[] enemyAImgObj = new ImageObject[3];
+	private static ImageObject[] enemyBImgObj = new ImageObject[3];
+	private static ImageObject[] enemyCImgObj = new ImageObject[3];
+	private static ImageObject[] spaceShipBombImgObj = new ImageObject[5];
+	private static ImageObject[] spaceShipImgObj = new ImageObject[6];
+	private static ImageObject lifeImgObj;
+	private static ImageObject[] powerUpImgObj= new ImageObject[5];
+	private static ImageObject powerDownImgObj;
+	private static ImageObject[] powerUpBlowImgObj = new ImageObject[4];
+	private static ImageObject shieldImgObj;
+	private static ImageObject projectileGoingDiagonallyLeftImgObj;
+	private static ImageObject projectileGoingDiagonallyRightImgObj;
 	
-	private ImageObject[] enemyBlowImg = new ImageObject[4];
-	private ImageObject[] enemyImg = new ImageObject[3];
+	private ImageObject[] enemyBlowImgObj = new ImageObject[4];
+	private ImageObject[] enemyImgObj = new ImageObject[3];
 	
 	public ImageCollector() {
 		String projdir = System.getProperty("user.dir");
-		backgroundImg	  	  = new ImageObject(new File(projdir + "/res/sprites/backgroundImg.png"));
-		foregroundImg	 	  = new ImageObject(new File(projdir + "/res/sprites/foregroundImg.png"));
-		bulletImg[0] 		  = new ImageObject(new File(projdir + "/res/sprites/bulletImg1.png"));
-		bulletImg[1] 		  = new ImageObject(new File(projdir + "/res/sprites/bulletImg2.png"));
-		bulletImg[2] 		  = new ImageObject(new File(projdir + "/res/sprites/bulletImg3.png"));
-		enemyABlowImg[0]  	  = new ImageObject(new File(projdir + "/res/sprites/1/enemyBlowImg1.png"));
-		enemyABlowImg[1] 	  = new ImageObject(new File(projdir + "/res/sprites/1/enemyBlowImg2.png"));
-		enemyABlowImg[2] 	  = new ImageObject(new File(projdir + "/res/sprites/1/enemyBlowImg3.png"));
-		enemyABlowImg[3] 	  = new ImageObject(new File(projdir + "/res/sprites/1/enemyBlowImg4.png"));
-		enemyAImg[0] 		  = new ImageObject(new File(projdir + "/res/sprites/1/enemyImg1.png"));
-		enemyAImg[1] 		  = new ImageObject(new File(projdir + "/res/sprites/1/enemyImg2.png"));
-		enemyAImg[2] 		  = new ImageObject(new File(projdir + "/res/sprites/1/enemyImg3.png"));
-		enemyBBlowImg[0] 	  = new ImageObject(new File(projdir + "/res/sprites/2/enemyBlowImg1.png"));
-		enemyBBlowImg[1] 	  = new ImageObject(new File(projdir + "/res/sprites/2/enemyBlowImg2.png"));
-		enemyBBlowImg[2] 	  = new ImageObject(new File(projdir + "/res/sprites/2/enemyBlowImg3.png"));
-		enemyBBlowImg[3] 	  = new ImageObject(new File(projdir + "/res/sprites/2/enemyBlowImg4.png"));
-		enemyBImg[0] 		  = new ImageObject(new File(projdir + "/res/sprites/2/enemyImg1.png"));
-		enemyBImg[1] 		  = new ImageObject(new File(projdir + "/res/sprites/2/enemyImg2.png"));
-		enemyBImg[2] 		  = new ImageObject(new File(projdir + "/res/sprites/2/enemyImg3.png"));
-		enemyCBlowImg[0] 	  = new ImageObject(new File(projdir + "/res/sprites/3/enemyBlowImg1.png"));
-		enemyCBlowImg[1] 	  = new ImageObject(new File(projdir + "/res/sprites/3/enemyBlowImg2.png"));
-		enemyCBlowImg[2] 	  = new ImageObject(new File(projdir + "/res/sprites/3/enemyBlowImg3.png"));
-		enemyCBlowImg[3] 	  = new ImageObject(new File(projdir + "/res/sprites/3/enemyBlowImg4.png"));
-		enemyCImg[0] 		  = new ImageObject(new File(projdir + "/res/sprites/3/enemyImg1.png"));
-		enemyCImg[1] 		  = new ImageObject(new File(projdir + "/res/sprites/3/enemyImg2.png"));
-		enemyCImg[2] 		  = new ImageObject(new File(projdir + "/res/sprites/3/enemyImg3.png"));
-		lifeImg			  	  = new ImageObject(new File(projdir + "/res/sprites/lifeImg.png"));
-		spaceShipBombImg[0]   = new ImageObject(new File(projdir + "/res/sprites/spaceShipBombImg1.png"));
-		spaceShipBombImg[1]   = new ImageObject(new File(projdir + "/res/sprites/spaceShipBombImg2.png"));
-		spaceShipBombImg[2]   = new ImageObject(new File(projdir + "/res/sprites/spaceShipBombImg3.png"));
-		spaceShipBombImg[3]   = new ImageObject(new File(projdir + "/res/sprites/spaceShipBombImg4.png"));
-		spaceShipBombImg[4]   = new ImageObject(new File(projdir + "/res/sprites/spaceShipBombImg5.png"));
-		spaceShipImg[0] 	  = new ImageObject(new File(projdir + "/res/sprites/spaceShipImg1.png"));
-		spaceShipImg[1] 	  = new ImageObject(new File(projdir + "/res/sprites/spaceShipImg2.png"));
-		spaceShipImg[2] 	  = new ImageObject(new File(projdir + "/res/sprites/spaceShipImg3.png"));
-		spaceShipImg[3] 	  = new ImageObject(new File(projdir + "/res/sprites/spaceShipImg4.png"));
-		spaceShipImg[4]	      = new ImageObject(new File(projdir + "/res/sprites/spaceShipImg5.png"));
-		spaceShipImg[5]	   	  = new ImageObject(new File(projdir + "/res/sprites/spaceShipImg6.png"));
-		powerUpImg[0]	      = new ImageObject(new File(projdir + "/res/sprites/powerUpImg1.png"));
-		powerUpImg[1]	      = new ImageObject(new File(projdir + "/res/sprites/powerUpImg2.png"));
-		powerUpImg[2]	      = new ImageObject(new File(projdir + "/res/sprites/powerUpImg3.png"));
-		powerUpImg[3]	      = new ImageObject(new File(projdir + "/res/sprites/powerUpImg4.png"));
-		powerUpImg[4]	      = new ImageObject(new File(projdir + "/res/sprites/powerUpImg5.png"));
-		powerDownImg	  	  = new ImageObject(new File(projdir + "/res/sprites/powerDownImg.png"));
-		shieldImg	  	      = new ImageObject(new File(projdir + "/res/sprites/shieldImg.png"));
-		powerUpBlowImg[0]  	  = new ImageObject(new File(projdir + "/res/sprites/powerUpBlowImg1.png"));
-		powerUpBlowImg[1] 	  = new ImageObject(new File(projdir + "/res/sprites/powerUpBlowImg2.png"));
-		powerUpBlowImg[2] 	  = new ImageObject(new File(projdir + "/res/sprites/powerUpBlowImg3.png"));
-		powerUpBlowImg[3] 	  = new ImageObject(new File(projdir + "/res/sprites/powerUpBlowImg4.png"));
-		projectileGoingDiagonallyLeftImg	= new ImageObject(new File(projdir + "/res/sprites/projectileGoingDiagonallyLeftImg.png"));
-		projectileGoingDiagonallyRightImg	= new ImageObject(new File(projdir + "/res/sprites/projectileGoingDiagonallyRightImg.png"));
+		backgroundImgObj	  	  = new ImageObject(new File(projdir + "/res/sprites/backgroundImg.png"));
+		foregroundImgObj	 	  = new ImageObject(new File(projdir + "/res/sprites/foregroundImg.png"));
+		bulletImgObj[0] 		  = new ImageObject(new File(projdir + "/res/sprites/bulletImg1.png"));
+		bulletImgObj[1] 		  = new ImageObject(new File(projdir + "/res/sprites/bulletImg2.png"));
+		bulletImgObj[2] 		  = new ImageObject(new File(projdir + "/res/sprites/bulletImg3.png"));
+		enemyABlowImgObj[0]  	  = new ImageObject(new File(projdir + "/res/sprites/1/enemyBlowImg1.png"));
+		enemyABlowImgObj[1] 	  = new ImageObject(new File(projdir + "/res/sprites/1/enemyBlowImg2.png"));
+		enemyABlowImgObj[2] 	  = new ImageObject(new File(projdir + "/res/sprites/1/enemyBlowImg3.png"));
+		enemyABlowImgObj[3] 	  = new ImageObject(new File(projdir + "/res/sprites/1/enemyBlowImg4.png"));
+		enemyAImgObj[0] 		  = new ImageObject(new File(projdir + "/res/sprites/1/enemyImg1.png"));
+		enemyAImgObj[1] 		  = new ImageObject(new File(projdir + "/res/sprites/1/enemyImg2.png"));
+		enemyAImgObj[2] 		  = new ImageObject(new File(projdir + "/res/sprites/1/enemyImg3.png"));
+		enemyBBlowImgObj[0] 	  = new ImageObject(new File(projdir + "/res/sprites/2/enemyBlowImg1.png"));
+		enemyBBlowImgObj[1] 	  = new ImageObject(new File(projdir + "/res/sprites/2/enemyBlowImg2.png"));
+		enemyBBlowImgObj[2] 	  = new ImageObject(new File(projdir + "/res/sprites/2/enemyBlowImg3.png"));
+		enemyBBlowImgObj[3] 	  = new ImageObject(new File(projdir + "/res/sprites/2/enemyBlowImg4.png"));
+		enemyBImgObj[0] 		  = new ImageObject(new File(projdir + "/res/sprites/2/enemyImg1.png"));
+		enemyBImgObj[1] 		  = new ImageObject(new File(projdir + "/res/sprites/2/enemyImg2.png"));
+		enemyBImgObj[2] 		  = new ImageObject(new File(projdir + "/res/sprites/2/enemyImg3.png"));
+		enemyCBlowImgObj[0] 	  = new ImageObject(new File(projdir + "/res/sprites/3/enemyBlowImg1.png"));
+		enemyCBlowImgObj[1] 	  = new ImageObject(new File(projdir + "/res/sprites/3/enemyBlowImg2.png"));
+		enemyCBlowImgObj[2] 	  = new ImageObject(new File(projdir + "/res/sprites/3/enemyBlowImg3.png"));
+		enemyCBlowImgObj[3] 	  = new ImageObject(new File(projdir + "/res/sprites/3/enemyBlowImg4.png"));
+		enemyCImgObj[0] 		  = new ImageObject(new File(projdir + "/res/sprites/3/enemyImg1.png"));
+		enemyCImgObj[1] 		  = new ImageObject(new File(projdir + "/res/sprites/3/enemyImg2.png"));
+		enemyCImgObj[2] 		  = new ImageObject(new File(projdir + "/res/sprites/3/enemyImg3.png"));
+		lifeImgObj			  	  = new ImageObject(new File(projdir + "/res/sprites/lifeImg.png"));
+		spaceShipBombImgObj[0]   = new ImageObject(new File(projdir + "/res/sprites/spaceShipBombImg1.png"));
+		spaceShipBombImgObj[1]   = new ImageObject(new File(projdir + "/res/sprites/spaceShipBombImg2.png"));
+		spaceShipBombImgObj[2]   = new ImageObject(new File(projdir + "/res/sprites/spaceShipBombImg3.png"));
+		spaceShipBombImgObj[3]   = new ImageObject(new File(projdir + "/res/sprites/spaceShipBombImg4.png"));
+		spaceShipBombImgObj[4]   = new ImageObject(new File(projdir + "/res/sprites/spaceShipBombImg5.png"));
+		spaceShipImgObj[0] 	  = new ImageObject(new File(projdir + "/res/sprites/spaceShipImg1.png"));
+		spaceShipImgObj[1] 	  = new ImageObject(new File(projdir + "/res/sprites/spaceShipImg2.png"));
+		spaceShipImgObj[2] 	  = new ImageObject(new File(projdir + "/res/sprites/spaceShipImg3.png"));
+		spaceShipImgObj[3] 	  = new ImageObject(new File(projdir + "/res/sprites/spaceShipImg4.png"));
+		spaceShipImgObj[4]	      = new ImageObject(new File(projdir + "/res/sprites/spaceShipImg5.png"));
+		spaceShipImgObj[5]	   	  = new ImageObject(new File(projdir + "/res/sprites/spaceShipImg6.png"));
+		powerUpImgObj[0]	      = new ImageObject(new File(projdir + "/res/sprites/powerUpImg1.png"));
+		powerUpImgObj[1]	      = new ImageObject(new File(projdir + "/res/sprites/powerUpImg2.png"));
+		powerUpImgObj[2]	      = new ImageObject(new File(projdir + "/res/sprites/powerUpImg3.png"));
+		powerUpImgObj[3]	      = new ImageObject(new File(projdir + "/res/sprites/powerUpImg4.png"));
+		powerUpImgObj[4]	      = new ImageObject(new File(projdir + "/res/sprites/powerUpImg5.png"));
+		powerDownImgObj	  	  = new ImageObject(new File(projdir + "/res/sprites/powerDownImg.png"));
+		shieldImgObj	  	      = new ImageObject(new File(projdir + "/res/sprites/shieldImg.png"));
+		powerUpBlowImgObj[0]  	  = new ImageObject(new File(projdir + "/res/sprites/powerUpBlowImg1.png"));
+		powerUpBlowImgObj[1] 	  = new ImageObject(new File(projdir + "/res/sprites/powerUpBlowImg2.png"));
+		powerUpBlowImgObj[2] 	  = new ImageObject(new File(projdir + "/res/sprites/powerUpBlowImg3.png"));
+		powerUpBlowImgObj[3] 	  = new ImageObject(new File(projdir + "/res/sprites/powerUpBlowImg4.png"));
+		projectileGoingDiagonallyLeftImgObj	= new ImageObject(new File(projdir + "/res/sprites/projectileGoingDiagonallyLeftImg.png"));
+		projectileGoingDiagonallyRightImgObj	= new ImageObject(new File(projdir + "/res/sprites/projectileGoingDiagonallyRightImg.png"));
 		
-		enemyImg = enemyAImg;
-		enemyBlowImg = enemyABlowImg;
+		enemyImgObj = enemyAImgObj;
+		enemyBlowImgObj = enemyABlowImgObj;
 	}
 
-	public ImageObject getForegroundImg() {
-		return foregroundImg;
+	public ImageObject getForegroundImgObj() {
+		return foregroundImgObj;
 	}
 
-	public ImageObject getBackgroundImg() {
-		return backgroundImg;
+	public ImageObject getBackgroundImgObj() {
+		return backgroundImgObj;
 	}
 
-	public ImageObject[] getBulletImg() {
-		return bulletImg;
+	public ImageObject getBulletImgObj(int i) {
+		return bulletImgObj[i % 3];
 	}
 
-	public ImageObject[] getEnemyBlowImg() {
-		return enemyBlowImg;
+	public ImageObject getEnemyBlowImgObj(int i) {
+		return enemyBlowImgObj[i % 4];
 	}
 
-	public ImageObject[] getEnemyImg() {
-		return enemyImg;
+	public ImageObject getEnemyImgObj(int i) {
+		return enemyImgObj[i % 3];
 	}
 
-	public ImageObject[] getSpaceShipBombImg() {
-		return spaceShipBombImg;
+	public ImageObject getSpaceShipBombImgObj(int i) {
+		return spaceShipBombImgObj[i % 5];
 	}
 
-	public ImageObject[] getSpaceShipImg() {
-		return spaceShipImg;
+	public ImageObject getSpaceShipImgObj(int i) {
+		return spaceShipImgObj[i % 6];
 	}
 
-	public ImageObject getLifeImg() {
-		return lifeImg;
+	public ImageObject getLifeImgObj() {
+		return lifeImgObj;
 	}
 
-	public ImageObject[] getPowerUpImg() {
-		return powerUpImg;
+	public ImageObject[] getPowerUpImgObj() {
+		return powerUpImgObj;
 	}
 
-	public ImageObject getPowerDownImg() {
-		return powerDownImg;
+	public ImageObject getPowerDownImgObj() {
+		return powerDownImgObj;
 	}
 
-	public ImageObject[] getPowerUpBlowImg() {
-		return powerUpBlowImg;
+	public ImageObject[] getPowerUpBlowImgObj() {
+		return powerUpBlowImgObj;
 	}
 
-	public ImageObject getShieldImg() {
-		return shieldImg;
+	public ImageObject getShieldImgObj() {
+		return shieldImgObj;
 	}
 
-	public ImageObject getProjectileGoingDiagonallyLeftImg() {
-		return projectileGoingDiagonallyLeftImg;
+	public ImageObject getProjectileGoingDiagonallyLeftImgObj() {
+		return projectileGoingDiagonallyLeftImgObj;
 	}
 
-	public ImageObject getProjectileGoingDiagonallyRightImg() {
-		return projectileGoingDiagonallyRightImg;
+	public ImageObject getProjectileGoingDiagonallyRightImgObj() {
+		return projectileGoingDiagonallyRightImgObj;
 	}
 
 	public void setEnemy(int i) {
 		if (i == 1)
 		{
-			enemyImg = enemyAImg;
-			enemyBlowImg = enemyABlowImg;
+			enemyImgObj = enemyAImgObj;
+			enemyBlowImgObj = enemyABlowImgObj;
 		}
 		else if (i == 2)
 		{
-			enemyImg = enemyBImg;
-			enemyBlowImg = enemyBBlowImg;
+			enemyImgObj = enemyBImgObj;
+			enemyBlowImgObj = enemyBBlowImgObj;
 		}
 		else if (i == 3)
 		{
-			enemyImg = enemyCImg;
-			enemyBlowImg = enemyCBlowImg;
+			enemyImgObj = enemyCImgObj;
+			enemyBlowImgObj = enemyCBlowImgObj;
 		}
 	}
 
