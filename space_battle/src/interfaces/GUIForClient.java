@@ -1,6 +1,7 @@
 package interfaces;
 
-import enums.*;
+import enums.GameSkill;
+import enums.GameState;
 
 public interface GUIForClient extends Runnable {
 	// public void run() 						// entry point

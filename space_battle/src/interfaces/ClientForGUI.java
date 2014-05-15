@@ -1,11 +1,13 @@
 package interfaces;
 
-import java.util.List;
 import java.awt.event.KeyEvent;
 import java.util.EnumMap;
+import java.util.List;
 
 import client.ObjectBuffer;
-import enums.*;
+import enums.GameSkill;
+import enums.GameType;
+import enums.PlayerAction;
 
 public interface ClientForGUI {
 	public List<java.util.Map.Entry<Integer, String>> getHighScores();	// SortedMap-ben score(K)-név(V) párok (#bridge)
