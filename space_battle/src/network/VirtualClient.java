@@ -148,6 +148,13 @@ public class VirtualClient implements ClientForServer, Runnable {
 
 	@Override
 	public void terminate() {
+		try {
+			Thread.sleep(1000/cmdRate);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		isShuttingDown = true;
 		timer.cancel();
 		try {

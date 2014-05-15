@@ -170,6 +170,14 @@ public class VirtualServer
 	@Override
 	public void terminate() {
 		disconnect(client);
+		
+		try {
+			Thread.sleep(1000/cmdRate);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		isShuttingDown = true;
 		timer.cancel();
 		
