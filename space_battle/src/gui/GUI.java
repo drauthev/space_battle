@@ -54,7 +54,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private static final int middleX   = frameWidth/2;
 	private static final int firstLineY = 150;
 	private static final int lineHeight = 50;
-	private static final int lineHeight_HS = 44;
+	private static final int lineHeight_HS = 42;
 
 	private int dotX; 
 
@@ -205,7 +205,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		newGameDot = 1;
 
 		if (gs == GameState.PAUSED) setMenuState(MenuState.PAUSED_MENU);
-		else if  (gs == GameState.NONE) setMenuState(MenuState.MAIN_MENU);
+		else if  (gs == GameState.NONE)
+		{
+			if (currentGameState == GameState.GAMEOVER_NEW_HIGHSCORE) setMenuState(MenuState.HIGH_SCORES_MENU);
+			else setMenuState(MenuState.MAIN_MENU);
+		}
 
 		currentGameState = gs;
 		System.out.println("GameState changed to " + currentGameState);
@@ -483,7 +487,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 				for(int j = 0; j < lastMenuHS-1; j++) 
 					drawOptionsLine(j+1,highScoreString[j],highScoreValues[j]);
-
+				
+				System.out.println(lastMenuHS);
 				drawMenuLine   (lastMenuHS,"Back");
 			}
 
@@ -572,6 +577,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		bufferGraphics.setColor(menuFontType.getColor());
 		int CoordinateX = middleX - bufferGraphics.getFontMetrics().stringWidth(content)/2;
 		int CoordinateY = firstLineY + lineNumber * lineHeight;
+		if (currentMenuState == MenuState.HIGH_SCORES_MENU) CoordinateY = firstLineY + lineNumber * lineHeight_HS; 
 		bufferGraphics.drawString(content,CoordinateX, CoordinateY);
 		if (dotLineToDraw == lineNumber) dotX = CoordinateX;
 	}
@@ -634,7 +640,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	public void drawDot()
 	{
 		int CoordinateY = firstLineY - 20 + dotLineToDraw * lineHeight;
-		int CoordinateX = dotX - 50;
+		if (currentMenuState == MenuState.HIGH_SCORES_MENU) CoordinateY = firstLineY - 20 + dotLineToDraw * lineHeight_HS;
+		int CoordinateX = dotX - 30;
 		bufferGraphics.drawImage(imgCollector.getLifeImgObj().getBufferedImg()	, CoordinateX	, CoordinateY	, imgCollector.getLifeImgObj().getWidth()	,imgCollector.getLifeImgObj().getHeight(),null);
 
 	}	
@@ -776,7 +783,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	}
 
 	private void generateRandomShipID() {
-		System.out.println("aaaaaaaaaaaaaaa");
 		shipID[0] = (int )(6 * Math.random());
 		
 		while ((shipID[1] = (int )(6 * Math.random())) == shipID[0]);
