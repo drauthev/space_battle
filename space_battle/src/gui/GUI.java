@@ -518,7 +518,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				drawTitle("SET KEYBOARD");
 
 				for (int i = 0; i < 6; i++)
-					if (((keyBoardChangeSelected == 1) && (localTick/1000 % 2 == 0)) && i == dotLine - 1)
+					if (((keyBoardChangeSelected == 1) && (localTick/1000 % 2 == 0)) && (i == dotLine - 1))
 						drawOptionsLine(i+1,actionKeysNames[i],"");
 					else
 						drawOptionsLine(i+1,actionKeysNames[i],actionKeys[i]);
@@ -839,6 +839,30 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						client.resetGameState();
 						setMenuState(MenuState.MAIN_MENU);
 					}	
+					else if (currentGameState == GameState.RUNNING)
+					{
+						// Escape is not allowed when localBuffer contains only exploided users 
+						if (localObjectBuffer == null)
+						{
+							setMenuState(MenuState.PAUSED_MENU); // Game Paused or Something else..!
+							client.pauseRequest();
+						}
+						else if (localObjectBuffer.playerCount == 0)
+						{
+							setMenuState(MenuState.PAUSED_MENU); // Game Paused or Something else..!
+							client.pauseRequest();
+						}
+						else if (localObjectBuffer.playerCount == 1 && localObjectBuffer.player[0].explosionTime == 0)
+						{
+							setMenuState(MenuState.PAUSED_MENU); // Game Paused or Something else..!
+							client.pauseRequest();
+						}
+						else if (localObjectBuffer.playerCount == 2 && (localObjectBuffer.player[0].explosionTime == 0 || (localObjectBuffer.player[1].explosionTime == 0))) 
+						{
+							setMenuState(MenuState.PAUSED_MENU); // Game Paused or Something else..!
+							client.pauseRequest();
+						}
+					}
 					else
 						{
 							setMenuState(MenuState.PAUSED_MENU); // Game Paused or Something else..!
@@ -1001,6 +1025,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				{
 					currentHighScore = client.getHighestScore();
 					generateRandomShipID();
+					localObjectBuffer = null;
 					client.newGame(GameType.SINGLE);
 				}
 				else if (currentLine == 2) setMenuState(MenuState.MULTI_MENU);
@@ -1017,12 +1042,14 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				{
 					currentHighScore = client.getHighestScore();
 					generateRandomShipID();
+					localObjectBuffer = null;
 					client.newGame(GameType.MULTI_LOCAL);
 				}
 				else if (currentLine == 2)
 				{
 					currentHighScore = client.getHighestScore();
 					generateRandomShipID();
+					localObjectBuffer = null;
 					client.newGame(GameType.MULTI_NETWORK);
 				}
 				else if (currentLine == 3) setMenuState(MenuState.NEW_GAME_MENU);
@@ -1070,6 +1097,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					if (isValidIP(textField))
 					{
 						generateRandomShipID();
+						localObjectBuffer = null;
 						client.joinGame(textField);
 					}
 					else error ("Invalid IP Address");
@@ -1077,6 +1105,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				else
 				{
 					generateRandomShipID();
+					localObjectBuffer = null;
 					client.joinGame(ipAddresses[currentLine-3]);
 				}
 			}
