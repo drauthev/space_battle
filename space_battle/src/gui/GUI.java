@@ -431,7 +431,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		// Draw MENU related content
 		else
 		{
-			System.out.println(textField.length());
 			if (currentMenuState == MenuState.JOIN_GAME_MENU) dotLineToDraw = dotLine + 1;
 			else dotLineToDraw = dotLine;
 
