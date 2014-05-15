@@ -283,17 +283,19 @@ public class Server implements AllServerInterfaces
     	}
     	// Moving hostile spaceships
     	for(int i=0; i < listOfNPCs.size(); i++){
-    		listOfNPCs.get(i).autoMove();
-    		if(hostilesAreFrenzied) listOfNPCs.get(i).autoMove(); // moving 'em to double distance if Frenzied
-    		// Teleporting with HostileType3s
-    		long currentTime = java.lang.System.currentTimeMillis();
-			if(listOfNPCs.get(i) instanceof HostileType3){
-				if( currentTime - ((HostileType3) listOfNPCs.get(i)).getTeleportTime() > Constants.hostile3TeleportFrequency){
-					if( listOfNPCs.get(i).getCoordY() < Constants.gameFieldHeigth-Player.getPlayerheight()-100){ // don't teleport under a perimeter -- avoiding teleportation onto Players
-						((HostileType3) listOfNPCs.get(i)).teleport();
-					}		
-				}
-			}
+    		if( listOfNPCs.get(i).getExplosionTime() == 0){ // moving "alive" NPCs only
+    			listOfNPCs.get(i).autoMove();
+        		if(hostilesAreFrenzied) listOfNPCs.get(i).autoMove(); // moving 'em to double distance if Frenzied
+        		// Teleporting with HostileType3s
+        		long currentTime = java.lang.System.currentTimeMillis();
+    			if(listOfNPCs.get(i) instanceof HostileType3){
+    				if( currentTime - ((HostileType3) listOfNPCs.get(i)).getTeleportTime() > Constants.hostile3TeleportFrequency){
+    					if( listOfNPCs.get(i).getCoordY() < Constants.gameFieldHeigth-Player.getPlayerheight()-100){ // don't teleport under a perimeter -- avoiding teleportation onto Players
+    						((HostileType3) listOfNPCs.get(i)).teleport();
+    					}		
+    				}
+    			}
+    		}		
     	}
 				
     	// Moving Modifiers
@@ -434,9 +436,10 @@ public class Server implements AllServerInterfaces
 					// playing sounds
 					client1.playSound(SoundType.enemyExplosion);
 					if(type == GameType.MULTI_NETWORK)	client2.playSound(SoundType.enemyExplosion);
-					
-					tempPlayer.setLives(tempPlayer.getLives() - 1);
+										
 					// checking Player's lives
+					tempPlayer.setLives(tempPlayer.getLives() - 1);
+					tempPlayer.setShielded(false); // collision removes Shield
 					// if it's 0, explode it; else indicating a hit
 					if(tempPlayer.getLives() == 0){
 						spaceShipsSwitched = false; // giving back the control to the original player if there is only one spaceship left
@@ -1313,14 +1316,33 @@ public class Server implements AllServerInterfaces
 		timer = new Timer(false);
 		
 		// Update game state at a given rate
-        timer.scheduleAtFixedRate(taskTrackChanges, 0, 1000/Constants.framePerSecond);	// 33.3333 millisecundumunk van megcsin�?¡lni, megjelen�?­teni mindent
-		// Spawn enemies at given rates
-        timer.scheduleAtFixedRate(taskSpawnHostileType1, 0, Constants.hostile1spawningFrequency);
-        timer.scheduleAtFixedRate(taskSpawnHostileType2, 1535, Constants.hostile2spawningFrequency);
-        timer.scheduleAtFixedRate(taskSpawnHostileType3, 2768, Constants.hostile3spawningFrequency);
-        // Spawn modifiers at given rates
-        timer.scheduleAtFixedRate(taskSpawnPowerUps, 300, 3000);	
-        timer.scheduleAtFixedRate(taskSpawnPowerDowns, 330, 3000);
+        timer.scheduleAtFixedRate(taskTrackChanges, 0, 1000/Constants.framePerSecond);
+        // Spawn hostiles and modifiers at rates according to game difficulty
+        System.out.println(difficulty);
+        if( difficulty == GameSkill.EASY ){
+        	timer.scheduleAtFixedRate(taskSpawnHostileType1, 0, Constants.hostile1spawningFrequency);
+            timer.scheduleAtFixedRate(taskSpawnHostileType2, 1535, Constants.hostile2spawningFrequency/2);
+            timer.scheduleAtFixedRate(taskSpawnHostileType3, 2768, Constants.hostile3spawningFrequency/2);
+            //
+        	timer.scheduleAtFixedRate(taskSpawnPowerUps, 300, 3000);	
+            timer.scheduleAtFixedRate(taskSpawnPowerDowns, 350, 6000);
+        }
+        else if( difficulty == GameSkill.NORMAL ){
+        	timer.scheduleAtFixedRate(taskSpawnHostileType1, 0, Constants.hostile1spawningFrequency);
+            timer.scheduleAtFixedRate(taskSpawnHostileType2, 1535, Constants.hostile2spawningFrequency);
+            timer.scheduleAtFixedRate(taskSpawnHostileType3, 2768, Constants.hostile3spawningFrequency);
+            //
+        	timer.scheduleAtFixedRate(taskSpawnPowerUps, 300, 3500);	
+            timer.scheduleAtFixedRate(taskSpawnPowerDowns, 350, 3500);
+        }
+        else{
+        	timer.scheduleAtFixedRate(taskSpawnHostileType1, 0, Constants.hostile1spawningFrequency);
+            timer.scheduleAtFixedRate(taskSpawnHostileType2, 1535, Constants.hostile2spawningFrequency);
+            timer.scheduleAtFixedRate(taskSpawnHostileType3, 2768, Constants.hostile3spawningFrequency);
+            //
+        	timer.scheduleAtFixedRate(taskSpawnPowerUps, 300, 7000);	
+            timer.scheduleAtFixedRate(taskSpawnPowerDowns, 350, 2000);
+        }     
 	}
 	
 	@Override
