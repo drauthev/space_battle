@@ -366,7 +366,7 @@ public class Server implements AllServerInterfaces
 		long currentTime;
 		for(int i=0; i<listOfPlayers.size(); i++){
 			temp = listOfPlayers.get(i);
-			if(temp.getID() == 0){
+			if(temp.getID() == 0 && temp.getExplosionTime() == 0){
 				if( (player1MovingLeft && !spaceShipsSwitched) || (player2MovingLeft && spaceShipsSwitched) ){
 					temp.moveLeft();
 				}
@@ -388,7 +388,7 @@ public class Server implements AllServerInterfaces
 				}
 				listOfPlayers.set(i, temp); // Update the player list
 			}
-			else if(temp.getID() == 1){
+			else if(temp.getID() == 1 && temp.getExplosionTime() == 0){
 				if( (player2MovingLeft && !spaceShipsSwitched) || (player1MovingLeft && spaceShipsSwitched) ){
 					temp.moveLeft();
 				}
@@ -448,9 +448,6 @@ public class Server implements AllServerInterfaces
 					else{
 						tempPlayer.setHitTime(java.lang.System.currentTimeMillis());
 					}
-					// changing the list elements to the modified ones
-					listOfPlayers.set(0, tempPlayer);
-					listOfNPCs.set(i, tempNPC);
 				}
 			}
 		}
@@ -647,7 +644,7 @@ public class Server implements AllServerInterfaces
 		}
 	}
 	
-	private void spawnPowerDown(double x, double y){
+	private void spawnPowerDown(double x, double y){	
 		double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 		if(spawnOrNot >= 0.6){
 			double whatToSpawn = Math.random();
