@@ -1,5 +1,9 @@
 package network;
 
+import interfaces.ClientForServer;
+import interfaces.ServerForClient;
+import interfaces.ServerForPlayerController;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -9,15 +13,9 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import sound.SoundType;
-import enums.*;
-import interfaces.ClientForServer;
-import interfaces.ServerForClient;
-import interfaces.ServerForPlayerController;
-import network.Constants;
+import enums.GameState;
 
 public class VirtualServer 
 	implements ServerForClient, ServerForPlayerController, Runnable {

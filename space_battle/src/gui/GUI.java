@@ -1,12 +1,9 @@
 package gui;
 
 // Java packages
-import java.util.EnumMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Timer;
-import java.util.TimerTask;
+import interfaces.ClientForGUI;
+import interfaces.GUIForClient;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -18,6 +15,13 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.util.EnumMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -31,8 +35,6 @@ import enums.GameSkill;
 import enums.GameState;
 import enums.GameType;
 import enums.PlayerAction;
-import interfaces.ClientForGUI;
-import interfaces.GUIForClient;
 
 
 public class GUI extends JFrame implements KeyListener, MouseListener, GUIForClient {
@@ -763,8 +765,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			{
 				Entry<Integer, String> m =i.next();
 
-				highScoreValues[j]    = Integer.toString((Integer)m.getKey());
-				highScoreString[j]    = (String)m.getValue();
+				highScoreValues[j]    = Integer.toString(m.getKey());
+				highScoreString[j]    = m.getValue();
 
 				j++;
 			}

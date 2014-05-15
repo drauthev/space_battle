@@ -1,5 +1,8 @@
 package network;
 
+import interfaces.AllServerInterfaces;
+import interfaces.ClientForServer;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -10,13 +13,9 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import sound.SoundType;
-import enums.*;
-import interfaces.AllServerInterfaces;
-import interfaces.ClientForServer;
+import enums.GameState;
 
 public class VirtualClient implements ClientForServer, Runnable {
 	private ServerSocket ss;

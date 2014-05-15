@@ -1,11 +1,12 @@
 package client;
 
+import interfaces.PlayerController_for_Client;
+import interfaces.ServerForPlayerController;
+
 import java.awt.event.KeyEvent;
 import java.util.TreeMap;
 
 import enums.PlayerAction;
-import interfaces.PlayerController_for_Client;
-import interfaces.ServerForPlayerController;;
 
 public class PlayerController implements PlayerController_for_Client {
 	interface Bridge {

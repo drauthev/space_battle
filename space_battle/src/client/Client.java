@@ -1,5 +1,13 @@
 package client;
 
+import gui.GUI;
+import interfaces.AllServerInterfaces;
+import interfaces.ClientForGUI;
+import interfaces.ClientForServer;
+import interfaces.GUIForClient;
+import interfaces.ServerForClient;
+import interfaces.SoundSystemForClient;
+
 import java.awt.event.KeyEvent;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -8,7 +16,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.SortedMap;
+
+import network.VirtualClient;
+import network.VirtualServer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,16 +27,10 @@ import org.json.JSONObject;
 import server.Server;
 import sound.SoundSystem;
 import sound.SoundType;
-import enums.*;
-import gui.GUI;
-import interfaces.AllServerInterfaces;
-import interfaces.ClientForGUI;
-import interfaces.ClientForServer;
-import interfaces.GUIForClient;
-import interfaces.ServerForClient;
-import interfaces.SoundSystemForClient;
-import network.VirtualServer;
-import network.VirtualClient;
+import enums.GameSkill;
+import enums.GameState;
+import enums.GameType;
+import enums.PlayerAction;
 
 public class Client implements ClientForGUI, ClientForServer {
 	private static final String configFile = "options.ini";
