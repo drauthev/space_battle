@@ -1415,10 +1415,10 @@ public class Server implements AllServerInterfaces
 	public void disconnect(ClientForServer c){
 		isRunning = false;
 		if( c == client1 ){
-			client2.changeGameState(GameState.GAMEOVER);
+			client2.changeGameState(GameState.DISCONNECTED);
 		}
 		else{
-			client1.changeGameState(GameState.GAMEOVER);
+			client1.changeGameState(GameState.DISCONNECTED);
 		}
 	}
 
