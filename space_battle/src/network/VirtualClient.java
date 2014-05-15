@@ -149,6 +149,13 @@ public class VirtualClient implements ClientForServer, Runnable {
 	public void terminate() {
 		isShuttingDown = true;
 		timer.cancel();
+		try {
+			if (ss != null) ss.close();
+			if (s != null) s.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
