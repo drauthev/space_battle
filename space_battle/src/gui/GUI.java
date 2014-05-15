@@ -51,9 +51,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private static final int optionsBX = 3*frameWidth/4-30;
 	private static final int middleX   = frameWidth/2;
 	private static final int firstLineY = 150;
-	private static final int firstLineY_HS = 120;
 	private static final int lineHeight = 50;
-	private static final int lineHeight_HS = 42;
+	private static final int lineHeight_HS = 44;
 
 	private int dotX; 
 
@@ -127,7 +126,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int lastMenuHS = 1;
 	private int currentHighScore;
 	private int shipID[] = new int[2];
-	
+
 	public GUI(ClientForGUI client_param)
 	{
 
@@ -192,7 +191,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		timer.scheduleAtFixedRate(reapaintTimer, 0, 1000/100);
 	}
 
-	
+
 	/******************************* INTERFACE FOR CLIENT ****************************************/
 
 	public void setGameState(GameState gs)	
@@ -296,7 +295,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 					if (localObjectBuffer.player[i].id == 0) numberOfLivesA = localPlayer.numberOfLives;
 					else numberOfLivesB = localPlayer.numberOfLives;
-					
+
 					if (localPlayer.explosionTime != 0 )
 					{
 						int tickDiff_div = (int) (serverTick - localPlayer.explosionTime)/200;
@@ -371,16 +370,16 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 					if (localModifier.explosionTime != 0)
 					{
 						int tickDiff_div = (int) (serverTick-localModifier.explosionTime)/150;
-						if (tickDiff_div < 4) drawObject(imgCollector.getPowerUpBlowImgObj()[tickDiff_div], localModifier.x, localModifier.y);
+						if (tickDiff_div < 4) drawObject(imgCollector.getPowerUpBlowImgObj(tickDiff_div), localModifier.x, localModifier.y);
 					}
 
 					else if (localModifier.pickupTime == 0)
 					{
-						if     (localModifier.className.equals("Shield"))	drawObject(imgCollector.getPowerUpImgObj()[2]	, localModifier.x	, localModifier.y	);
-						else if(localModifier.className.equals("Boom"))		drawObject(imgCollector.getPowerUpImgObj()[3]	, localModifier.x	, localModifier.y	);
-						else if(localModifier.className.equals("Fastener")) drawObject(imgCollector.getPowerUpImgObj()[0]	, localModifier.x	, localModifier.y	);
-						else if(localModifier.className.equals("Laser"))	drawObject(imgCollector.getPowerUpImgObj()[4]	, localModifier.x	, localModifier.y	);
-						else if(localModifier.className.equals("OneUp"))	drawObject(imgCollector.getPowerUpImgObj()[1]	, localModifier.x	, localModifier.y	);
+						if     (localModifier.className.equals("Shield"))	drawObject(imgCollector.getPowerUpImgObj(2)	, localModifier.x	, localModifier.y	);
+						else if(localModifier.className.equals("Boom"))		drawObject(imgCollector.getPowerUpImgObj(3)	, localModifier.x	, localModifier.y	);
+						else if(localModifier.className.equals("Fastener")) drawObject(imgCollector.getPowerUpImgObj(0)	, localModifier.x	, localModifier.y	);
+						else if(localModifier.className.equals("Laser"))	drawObject(imgCollector.getPowerUpImgObj(4)	, localModifier.x	, localModifier.y	);
+						else if(localModifier.className.equals("OneUp"))	drawObject(imgCollector.getPowerUpImgObj(1)	, localModifier.x	, localModifier.y	);
 						else
 							drawObject(imgCollector.getPowerDownImgObj()		, localModifier.x	, localModifier.y);
 					}
@@ -426,7 +425,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				drawState("DISCONNECTED!");
 			}
 		}
-		
+
 		// Draw MENU related content
 		else
 		{
@@ -513,13 +512,13 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			else if (currentMenuState == MenuState.KEYBOARD_SETTINGS_MENU)
 			{
 				drawTitle("SET KEYBOARD");
-				
+
 				for (int i = 0; i < 6; i++)
-					if (((keyBoardChangeSelected == 1) && (localTick/1000 % 2 == 0)))
+					if (((keyBoardChangeSelected == 1) && (localTick/1000 % 2 == 0)) && i == dotLine - 1)
 						drawOptionsLine(i+1,actionKeysNames[i],"");
 					else
 						drawOptionsLine(i+1,actionKeysNames[i],actionKeys[i]);
-				
+
 				drawMenuLine   (7,"Back");
 			}
 
@@ -529,7 +528,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	}
 
 	/******************************** PAINT PART FUNCTIONS ************************************/
-	
+
 	// Function, use to draw Background image to screen
 	public void drawBackground()
 	{
@@ -546,7 +545,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	{
 		bufferGraphics.drawImage(imgCollector.getForegroundImgObj().getBufferedImg(), (frameWidth)/2-150, 165, 300, 200, null);
 	}
-	
+
 	// Function, use to draw ImageObjects to screen
 	private void drawObject(ImageObject img, int x, int y) {
 		bufferGraphics.drawImage(img.getBufferedImg() ,x-img.getWidth()/2 , y-img.getHeight()/2, img.getWidth(), img.getHeight(), null);
@@ -611,9 +610,9 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	{
 		bufferGraphics.setFont(menuFontType.getFont());
 		bufferGraphics.setColor(menuFontType.getColor());
-		
+
 		int CoordinateY;
-		if (currentMenuState == MenuState.HIGH_SCORES_MENU)  CoordinateY = firstLineY_HS + lineNumber * lineHeight_HS;
+		if (currentMenuState == MenuState.HIGH_SCORES_MENU)  CoordinateY = firstLineY + lineNumber * lineHeight_HS;
 		else CoordinateY = firstLineY + lineNumber * lineHeight;
 
 		int CoordinateX = optionsAX - bufferGraphics.getFontMetrics().stringWidth(content1)/2;
@@ -672,7 +671,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	}
 
 	/******************************** FUNCTIONS RELATED TO GRAPHIC PARTS  ************************************/
-	
+
 	// Get the number of the last line
 	int getLastLine()
 	{
@@ -715,6 +714,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		}
 	}
 
+	// Set Menu State
 	void setMenuState(MenuState ms)
 	{
 		if      (currentMenuState == MenuState.MAIN_MENU || currentMenuState == MenuState.PAUSED_MENU)     
@@ -732,7 +732,6 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			else newGameDot = 1;
 		}
 
-
 		if      (ms == MenuState.MAIN_MENU || ms == MenuState.PAUSED_MENU)   
 			dotLine = mainDot; 
 		else if (ms == MenuState.OPTIONS_MENU) 
@@ -749,7 +748,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		System.out.println("MenuState changed to " + currentMenuState);
 
 	}
-	
+
 	private void refreshHighScore() {
 
 		List<Entry<Integer,String>> localList = client.getHighScores();	
@@ -773,14 +772,14 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		else lastMenuHS = 1;
 
 	}
-	
+
 	private void generateRandomShipID() {
 		shipID[0] = (int )(6 * Math.random());
 		shipID[1] = (int )(6 * Math.random());
 	}
-	
+
 	/************************************** KEY EVENTS ****************************************/
-	
+
 	// Handle the key typed event from the text field.
 	public void keyTyped(KeyEvent e) 
 	{
@@ -831,11 +830,16 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						client.resetGameState();
 						setMenuState(MenuState.MAIN_MENU);
 					}
-					else
+					else if (currentGameState == GameState.CONNECTING  || currentGameState == GameState.WAITING)
 					{
-						setMenuState(MenuState.PAUSED_MENU); // Game Paused or Something else..!
 						client.resetGameState();
-					}
+						setMenuState(MenuState.MAIN_MENU);
+					}	
+					else
+						{
+							setMenuState(MenuState.PAUSED_MENU); // Game Paused or Something else..!
+							client.pauseRequest();
+						}
 
 				}
 
@@ -948,9 +952,9 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			client.dispatchKeyEvent(e,false);
 		}
 	}
-	
+
 	/************************************** KEY EVENT RELATED FUNCTIONS  ****************************************/
-	
+
 	private boolean isTextLine() {
 		if (currentGameState == GameState.NONE || currentGameState == GameState.PAUSED)
 		{
@@ -961,7 +965,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			return true;
 		return false;
 	}
-	
+
 
 	void someThingIsEntered(int currentLine, int isKey)
 	{
@@ -1078,7 +1082,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	}
 
 	/************************************** MOUSE EVENTS ****************************************/
-	
+
 	// This method will be called when the mouse has been clicked. 
 	public void mouseClicked (MouseEvent me) {
 

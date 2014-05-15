@@ -19,7 +19,6 @@ public class ImageCollector {
 	private static ImageObject lifeImgObj;
 	private static ImageObject[] powerUpImgObj= new ImageObject[5];
 	private static ImageObject powerDownImgObj;
-	private static ImageObject[] powerUpBlowImgObj = new ImageObject[4];
 	private static ImageObject shieldImgObj;
 	private static ImageObject projectileGoingDiagonallyLeftImgObj;
 	private static ImageObject projectileGoingDiagonallyRightImgObj;
@@ -74,10 +73,6 @@ public class ImageCollector {
 		powerUpImgObj[4]	      = new ImageObject(new File(projdir + "/res/sprites/powerUpImg5.png"));
 		powerDownImgObj	  	  = new ImageObject(new File(projdir + "/res/sprites/powerDownImg.png"));
 		shieldImgObj	  	      = new ImageObject(new File(projdir + "/res/sprites/shieldImg.png"));
-		powerUpBlowImgObj[0]  	  = new ImageObject(new File(projdir + "/res/sprites/powerUpBlowImg1.png"));
-		powerUpBlowImgObj[1] 	  = new ImageObject(new File(projdir + "/res/sprites/powerUpBlowImg2.png"));
-		powerUpBlowImgObj[2] 	  = new ImageObject(new File(projdir + "/res/sprites/powerUpBlowImg3.png"));
-		powerUpBlowImgObj[3] 	  = new ImageObject(new File(projdir + "/res/sprites/powerUpBlowImg4.png"));
 		projectileGoingDiagonallyLeftImgObj	= new ImageObject(new File(projdir + "/res/sprites/projectileGoingDiagonallyLeftImg.png"));
 		projectileGoingDiagonallyRightImgObj	= new ImageObject(new File(projdir + "/res/sprites/projectileGoingDiagonallyRightImg.png"));
 		
@@ -117,16 +112,16 @@ public class ImageCollector {
 		return lifeImgObj;
 	}
 
-	public ImageObject[] getPowerUpImgObj() {
-		return powerUpImgObj;
+	public ImageObject getPowerUpImgObj(int i) {
+		return powerUpImgObj[i % 5];
 	}
 
 	public ImageObject getPowerDownImgObj() {
 		return powerDownImgObj;
 	}
 
-	public ImageObject[] getPowerUpBlowImgObj() {
-		return powerUpBlowImgObj;
+	public ImageObject getPowerUpBlowImgObj(int i) {
+		return enemyABlowImgObj[i % 4];
 	}
 
 	public ImageObject getShieldImgObj() {
