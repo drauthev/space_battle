@@ -84,6 +84,22 @@ public class Server implements AllServerInterfaces
 	//
 	private boolean initState = true; // at the start of the game, has to call client1.updateObjects(), before changing GameState to RUNNING; or else the GUI cannot draw
 	private Timer timer;
+	
+	// TESZT: TODO: TimerTasks to inner classes
+	private class myTimerTaskTest extends TimerTask {
+
+		@Override
+		public void run() {
+			System.out.println("elapse lefutott" + java.lang.System.currentTimeMillis());
+			for(int i=0; i<listOfPlayers.size(); i++){
+				if(listOfPlayers.get(i).getID() == 0){
+					listOfPlayers.get(i).setFastened(false);
+					listOfPlayers.get(i).setTimeBetweenShots(Constants.timeBetweenShots);
+				}
+			}
+		}
+
+	}
 
 	// Constructor
 	public Server(GameType type, GameSkill difficulty, ClientForServer cl1){
@@ -103,35 +119,7 @@ public class Server implements AllServerInterfaces
 		listOfPlayers = new ArrayList<Player>();
 		listOfProjectiles = new ArrayList<Projectile>();
 		listOfModifiers = new ArrayList<Modifier>();
-		listOfNPCs = new ArrayList<NPC>();
-		
-		// Setting game parameters according to difficulty level
-//		if( difficulty == GameSkill.EASY){
-//			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfEasy);
-//			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
-//			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
-//			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
-//			Laser.setVerticalMoveQuantity(Constants.modifierSpeedMediumIfEasy);
-//			PowerDown.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
-//		}
-//		else if( difficulty == GameSkill.NORMAL){
-//			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfNormal);
-//			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfNormal);
-//			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
-//			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfEasy);
-//			Laser.setVerticalMoveQuantity(Constants.modifierSpeedMediumIfNormal);
-//			PowerDown.setVerticalMoveQuantity(Constants.modifierSpeedFastIfNormal);
-//		}
-//		else{
-//			Fastener.setVerticalMoveQuantity(Constants.modifierSpeedSlowIfHard);
-//			OneUp.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
-//			Shield.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
-//			Boom.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
-//			Laser.setVerticalMoveQuantity(Constants.modifierSpeedMediumIfHard);
-//			PowerDown.setVerticalMoveQuantity(Constants.modifierSpeedFastIfHard);
-//		}
-		
-		
+		listOfNPCs = new ArrayList<NPC>();		
 		// Spawning player/players
 		if( type == GameType.SINGLE ){
 			listOfPlayers.add(new Player(Constants.gameFieldWidth/2, (Constants.gameFieldHeigth-Player.getPlayerheight()/2 - 60), 0));	// the only player to the middle..with playerID==1
@@ -534,6 +522,7 @@ public class Server implements AllServerInterfaces
 	}
 	
 	private void spawnModifier(double x, double y){
+		listOfModifiers.add( new Fastener(200, y) );
 		double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 		if(spawnOrNot >= 0.6){
 			// Choosing what to spawn
@@ -597,6 +586,10 @@ public class Server implements AllServerInterfaces
 	}
 	
 	private void detectModifierPickUps(){
+		//TODO: teszt
+		myTimerTaskTest test = new myTimerTaskTest();
+		
+		
 		// TimerTasks for elapsing the modfier-effects
 		TimerTask taskElapseFastenerPlayer1 = new TimerTask() {
 			@Override
@@ -746,14 +739,37 @@ public class Server implements AllServerInterfaces
 						if(tempMod.getPickUpTime() == 0){ // modifier staying in the list for animation purposes, so have to make sure that it takes effect only once
 							tempMod.setPickUpTime(java.lang.System.currentTimeMillis());
 							if(tempMod instanceof Fastener){
-								tempMod.setPickUpTime(java.lang.System.currentTimeMillis()); // removeNonExistentObjects() will delete it from list
-								tempPlayer.setFastened(true);
-								tempPlayer.setTimeBetweenShots(Constants.timeBetweenShotsIfFastened);
+								//tempMod.setPickUpTime(java.lang.System.currentTimeMillis()); // removeNonExistentObjects() will delete it from list
+								//tempPlayer.setFastened(true);
+								//tempPlayer.setTimeBetweenShots(Constants.timeBetweenShotsIfFastened);
 								listOfPlayers.set(i, tempPlayer);
-								if(tempPlayer.getID() == 0)
-									timer.schedule(taskElapseFastenerPlayer1, Fastener.getTimeItLasts());
-								else
-									timer.schedule(taskElapseFastenerPlayer2, Fastener.getTimeItLasts());						
+								if(tempPlayer.getID() == 0){
+									//timer.schedule(taskElapseFastenerPlayer1, Fastener.getTimeItLasts());
+									System.out.println(java.lang.System.currentTimeMillis());
+									if( tempPlayer.isFastened()){
+										boolean asd = test.cancel();
+										if(asd){
+											System.out.println("cancel true");
+											
+										}
+										else{
+											System.out.println("cancel false");
+										}
+										test = new myTimerTaskTest();
+										timer.purge();
+										timer.schedule(test, Fastener.getTimeItLasts());
+									}
+									else{
+										tempPlayer.setFastened(true);
+										tempPlayer.setTimeBetweenShots(Constants.timeBetweenShotsIfFastened);
+										timer.schedule(test, Fastener.getTimeItLasts());
+									}
+									
+								}
+								else{
+									timer.schedule(taskElapseFastenerPlayer2, Fastener.getTimeItLasts());
+									//TODO:
+								}
 							}
 							if(tempMod instanceof OneUp){
 								if(tempPlayer.getLives() < 5)
