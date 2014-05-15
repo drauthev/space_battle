@@ -15,7 +15,7 @@ public class FTPConnector {
 	
 	public FTPConnector(String host, String user, String pwd) throws Exception {
         ftp = new FTPClient();
-        ftp.setConnectTimeout(120); //TODO
+        ftp.setConnectTimeout(120);
         try{
 	        ftp.connect(host);
 			boolean login = ftp.login(user, pwd); 
@@ -57,7 +57,6 @@ public class FTPConnector {
     	String fileContent = null;
     	
 		try {
-			//ftp.setSoTimeout(2000);
 			istream = this.ftp.retrieveFileStream(remoteFilePath);
             
 			fileContent = getStringFromInputStream(istream);

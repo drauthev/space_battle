@@ -41,7 +41,6 @@ import server.game_elements.ProjectileLaser;
 import server.game_elements.Shield;
 import server.game_elements.SpaceShipSwitcher;
 import sound.SoundType;
-import sun.nio.cs.HistoricallyNamedCharset;
 import enums.GameSkill;
 import enums.GameState;
 import enums.GameType;
@@ -61,8 +60,6 @@ public class Server implements AllServerInterfaces
 	private boolean player2MovingLeft;
 	private boolean player2MovingRight;
 	private boolean player2Shooting;
-	private long player1ShootTime = 0;
-	private long player2ShootTime = 0;
 	private boolean player1Dead = false;
 	private boolean player2Dead = false;
 	private boolean gameIsOver = false;
@@ -256,8 +253,7 @@ public class Server implements AllServerInterfaces
 			listOfPlayers.add(new Player(Constants.gameFieldWidth/4*3, (Constants.gameFieldHeigth-Player.getPlayerheight()/2 - 60), 1)); // with playerID==2
 		}
 	};
-	
-	
+		
 	// Timer-driven methods
 	private void trackChanges(){
 		if(!gameIsOver){
@@ -1314,11 +1310,9 @@ public class Server implements AllServerInterfaces
 		
 		// Starting Timer 
 		timer = new Timer(false);
-		
 		// Update game state at a given rate
         timer.scheduleAtFixedRate(taskTrackChanges, 0, 1000/Constants.framePerSecond);
         // Spawn hostiles and modifiers at rates according to game difficulty
-        System.out.println(difficulty);
         if( difficulty == GameSkill.EASY ){
         	timer.scheduleAtFixedRate(taskSpawnHostileType1, 0, Constants.hostile1spawningFrequency);
             timer.scheduleAtFixedRate(taskSpawnHostileType2, 1535, Constants.hostile2spawningFrequency/2);
@@ -1378,9 +1372,6 @@ public class Server implements AllServerInterfaces
 				client2.changeGameState(GameState.PAUSED);
 			}	
 			if( c == client1 ){ // start requested by client1
-//				System.out.println("player1 startReq");
-//				System.out.println("player1ready: " + client1Ready);
-//				System.out.println("player2ready: " + client2Ready);
 				client1Ready = true;
 				if(client2Ready){ // starting the game
 					isRunning = true;
@@ -1392,9 +1383,6 @@ public class Server implements AllServerInterfaces
 				}
 			}
 			else{ // start requested by client2
-//				System.out.println("player2 startReq");
-//				System.out.println("player1ready: " + client1Ready);
-//				System.out.println("player2ready: " + client2Ready);
 				client2Ready = true;
 				if(client1Ready){ // starting the game
 					isRunning = true;
