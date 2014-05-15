@@ -929,8 +929,9 @@ public class Server implements AllServerInterfaces
 		// NPCs
 		for(int i=0; i<listOfNPCs.size(); i++){
 			NPC temp = listOfNPCs.get(i);
-			if( temp.getCoordY()-35 > Constants.gameFieldHeigth ){ //TODO: kicsit hack.. h lehetne szepen NPC "abstract static variable"
-				listOfNPCs.remove(i);
+			if( temp.getCoordY()-35 > Constants.gameFieldHeigth ){
+				score -= listOfNPCs.get(i).getScoreIfDestroyed()/2; // decrease score if the player(s) couldn't destroy the hostile
+				listOfNPCs.remove(i);				
 			}
 		}
 		// Projectiles
@@ -1543,7 +1544,6 @@ public class Server implements AllServerInterfaces
 			player2Shooting = false;
 	}
 	
-
 	@Override
 	public void sendName(String name) {
 		FTPConnector ftp;
@@ -1597,8 +1597,6 @@ public class Server implements AllServerInterfaces
 	  // creating a new ListArray for the high score records
 	  List<Map.Entry<Integer, String>> highScores = new ArrayList<>();
 
-
-	 // SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
 	  FTPConnector ftp;
 	  String highscoresFileContent;
 	  String[] highscoreEntries;
