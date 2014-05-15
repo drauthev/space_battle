@@ -40,6 +40,7 @@ public class VirtualClient implements ClientForServer, Runnable {
 			public void run() {
 				try {
 					s = ss.accept();
+					s.setTcpNoDelay(true);
 					// s.setTcpNoDelay(true);
 					oos = new ObjectOutputStream(s.getOutputStream());
 				} catch (UnknownHostException e) {

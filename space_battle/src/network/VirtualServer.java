@@ -43,6 +43,7 @@ public class VirtualServer
 				
 				try {
 					s = new Socket(ipv4, port);
+					s.setTcpNoDelay(true);
 					// s.setTcpNoDelay(true);
 					oos = new ObjectOutputStream(s.getOutputStream());
 				} catch (UnknownHostException e) {
@@ -171,6 +172,14 @@ public class VirtualServer
 		disconnect(client);
 		isShuttingDown = true;
 		timer.cancel();
+		
+		if (s != null)
+			try {
+				s.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 
 	@Override
