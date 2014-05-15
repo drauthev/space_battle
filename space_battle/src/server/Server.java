@@ -930,7 +930,9 @@ public class Server implements AllServerInterfaces
 		for(int i=0; i<listOfNPCs.size(); i++){
 			NPC temp = listOfNPCs.get(i);
 			if( temp.getCoordY()-35 > Constants.gameFieldHeigth ){
-				score -= listOfNPCs.get(i).getScoreIfDestroyed()/2; // decrease score if the player(s) couldn't destroy the hostile
+				if( difficulty == GameSkill.HARD){ // decrease score if the player(s) couldn't destroy the hostile (only on hard mode)
+					score -= listOfNPCs.get(i).getScoreIfDestroyed()/2;
+				}
 				listOfNPCs.remove(i);				
 			}
 		}
