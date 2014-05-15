@@ -1,7 +1,7 @@
 package interfaces;
 
 import sound.SoundType;
-import enums.*;
+import enums.GameState;
 
 public interface ClientForServer {
 	public void updateObjects(String JSONtext);	// JSONArray-ekben az objektumok GUI és kliens számára fontos
