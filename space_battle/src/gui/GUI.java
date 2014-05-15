@@ -238,6 +238,8 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	public void paint(Graphics g)
 	{
+		
+				
 		// Draw previous screen
 		g.drawImage(offscreen,0,0,this);
 
@@ -290,7 +292,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						drawObject(imgCollector.getEnemyImgObj(tickDiff_div), localNPC.x, localNPC.y);
 					}
 				}
-
+				
 				for (int i = 0; i < localObjectBuffer.playerCount; i++)
 				{
 					CPlayer localPlayer = localObjectBuffer.player[i];
@@ -774,6 +776,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	}
 
 	private void generateRandomShipID() {
+		System.out.println("aaaaaaaaaaaaaaa");
 		shipID[0] = (int )(6 * Math.random());
 		
 		while ((shipID[1] = (int )(6 * Math.random())) == shipID[0]);
@@ -1066,12 +1069,16 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 				{
 					if (isValidIP(textField))
 					{
+						generateRandomShipID();
 						client.joinGame(textField);
 					}
 					else error ("Invalid IP Address");
 				}
 				else
+				{
+					generateRandomShipID();
 					client.joinGame(ipAddresses[currentLine-3]);
+				}
 			}
 		}
 		else if (currentGameState == GameState.GAMEOVER_NEW_HIGHSCORE) 
