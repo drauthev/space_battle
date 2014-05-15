@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 
@@ -425,7 +426,22 @@ public class Client implements ClientForGUI, ClientForServer {
 	@Override
 	public void joinGame(String ipv4) {
 		resetGameState();
-		System.arraycopy(recentlyUsedIP, 0, recentlyUsedIP, 1, 3);
+		
+		if (!Arrays.asList(recentlyUsedIP).contains(ipv4))
+		{
+			System.arraycopy(recentlyUsedIP, 0, recentlyUsedIP, 1, 3);
+		}
+		else
+		{
+			for(int i = 3, j = 3; i > 0; --i, --j)
+			{
+				if (recentlyUsedIP[i].equals(ipv4)  && i == j)
+					--j;
+				
+				recentlyUsedIP[i] = recentlyUsedIP[j]; 
+			}
+		}
+		
 		recentlyUsedIP[0] = ipv4;
 		gui.setRecentIPs(recentlyUsedIP);
 		
