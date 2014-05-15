@@ -16,7 +16,7 @@ public class Player extends ShootingObject {
 	private int lives;
 	//
 	private boolean isFastened = false;
-	private int timeBetweenShots = 1000; // will be less if player is fastened
+	private int timeBetweenShots = Constants.timeBetweenShots; // will be less if player is fastened
 	private long lastShootTime = 0;
 	private boolean isShielded;
 	private boolean hasAmmo = true;

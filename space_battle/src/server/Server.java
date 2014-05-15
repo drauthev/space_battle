@@ -41,6 +41,7 @@ import server.game_elements.ProjectileLaser;
 import server.game_elements.Shield;
 import server.game_elements.SpaceShipSwitcher;
 import sound.SoundType;
+import sun.nio.cs.HistoricallyNamedCharset;
 import enums.GameSkill;
 import enums.GameState;
 import enums.GameType;
@@ -83,12 +84,11 @@ public class Server implements AllServerInterfaces
 	private boolean initState = true; // at the start of the game, has to call client1.updateObjects(), before changing GameState to RUNNING; or else the GUI cannot draw
 	private Timer timer;
 	
-	// TESZT: TODO: TimerTasks to inner classes
-	private class myTimerTaskTest extends TimerTask {
-
+	// Inner class definitions for TimerTasks, and instantiation of timerTasks
+	// FASTENER
+	private class taskElapseFastenerPlayer1 extends TimerTask {
 		@Override
 		public void run() {
-			System.out.println("elapse lefutott" + java.lang.System.currentTimeMillis());
 			for(int i=0; i<listOfPlayers.size(); i++){
 				if(listOfPlayers.get(i).getID() == 0){
 					listOfPlayers.get(i).setFastened(false);
@@ -96,8 +96,137 @@ public class Server implements AllServerInterfaces
 				}
 			}
 		}
-
 	}
+	private class taskElapseFastenerPlayer2 extends TimerTask {
+		@Override
+		public void run() {
+			for(int i=0; i<listOfPlayers.size(); i++){
+				if(listOfPlayers.get(i).getID() == 1){
+					listOfPlayers.get(i).setFastened(false);
+					listOfPlayers.get(i).setTimeBetweenShots(Constants.timeBetweenShots);
+				}
+			}
+		}
+	}
+	taskElapseFastenerPlayer1 elapseFastenerPlayer1;
+	taskElapseFastenerPlayer2 elapseFastenerPlayer2;
+	// SHIELD
+	private class taskElapseShieldPlayer1 extends TimerTask {
+		@Override
+		public void run() {
+			for(int i=0; i<listOfPlayers.size(); i++){
+				if(listOfPlayers.get(i).getID() == 0){
+					listOfPlayers.get(i).setShielded(false);
+				}
+			}
+		}
+	}
+	private class taskElapseShieldPlayer2 extends TimerTask {
+		@Override
+		public void run() {
+			for(int i=0; i<listOfPlayers.size(); i++){
+				if(listOfPlayers.get(i).getID() == 1){
+					listOfPlayers.get(i).setShielded(false);
+				}
+			}
+		}
+	}
+	taskElapseShieldPlayer1 elapseShieldPlayer1;
+	taskElapseShieldPlayer2 elapseShieldPlayer2;
+	// LASER
+	private class taskElapseLaserPlayer1 extends TimerTask {
+		@Override
+		public void run() {
+			for(int i=0; i<listOfPlayers.size(); i++){
+				if(listOfPlayers.get(i).getID() == 0){
+					listOfPlayers.get(i).setHasLaser(false);
+				}
+			}
+		}
+	}
+	private class taskElapseLaserPlayer2 extends TimerTask {
+		@Override
+		public void run() {
+			for(int i=0; i<listOfPlayers.size(); i++){
+				if(listOfPlayers.get(i).getID() == 1){
+					listOfPlayers.get(i).setHasLaser(false);
+				}
+			}
+		}
+	}
+	taskElapseLaserPlayer1 elapseLaserPlayer1;
+	taskElapseLaserPlayer2 elapseLaserPlayer2;
+	// LEFT RIGHT SWITCHER
+	private class taskElapseLeftRightSwitcherPlayer1 extends TimerTask {
+		@Override
+		public void run() {
+			for(int i=0; i<listOfPlayers.size(); i++){
+				if(listOfPlayers.get(i).getID() == 0){
+					listOfPlayers.get(i).setLeftRighSwitched(false);
+				}
+			}
+		}
+	}
+	private class taskElapseLeftRightSwitcherPlayer2 extends TimerTask {
+		@Override
+		public void run() {
+			for(int i=0; i<listOfPlayers.size(); i++){
+				if(listOfPlayers.get(i).getID() == 1){
+					listOfPlayers.get(i).setLeftRighSwitched(false);
+				}
+			}
+		}
+	}
+	taskElapseLeftRightSwitcherPlayer1 elapseLeftRightSwitcherPlayer1;
+	taskElapseLeftRightSwitcherPlayer2 elapseLeftRightSwitcherPlayer2;
+	// POWERDOWN ELAPSER TASK CLASSES
+	private class taskElapseHostileFrenzy extends TimerTask {
+		@Override
+		public void run() {
+				hostilesAreFrenzied = false;
+			}
+	}
+	taskElapseHostileFrenzy elapseHostileFrenzy;
+	// NOAMMO
+	private class taskElapseNoAmmoPlayer1 extends TimerTask {
+		@Override
+		public void run() {
+				for(int i=0; i<listOfPlayers.size(); i++){
+					if(listOfPlayers.get(i).getID() == 0){
+						listOfPlayers.get(i).setHasAmmo(true);
+					}
+				}
+			}
+	}
+	private class taskElapseNoAmmoPlayer2 extends TimerTask {
+		@Override
+		public void run() {
+				for(int i=0; i<listOfPlayers.size(); i++){
+					if(listOfPlayers.get(i).getID() == 1){
+						listOfPlayers.get(i).setHasAmmo(true);
+					}
+				}
+			}
+	}
+	taskElapseNoAmmoPlayer1 elapseNoAmmoPlayer1;
+	taskElapseNoAmmoPlayer2 elapseNoAmmoPlayer2;
+	// HALF SCORES
+	private class taskElapseHalfScores extends TimerTask {
+		@Override
+		public void run() {
+				halfScores = false;
+			}
+	}
+	taskElapseHalfScores elapseHalfScores;
+	// SPACE SHIP SWITCHER
+	private class taskElapseSpaceShipSwitcher extends TimerTask {
+		@Override
+		public void run() {
+				spaceShipsSwitched = false;
+			}
+	}
+	taskElapseSpaceShipSwitcher elapseSpaceShipSwitcher;
+	
 
 	// Constructor
 	public Server(GameType type, GameSkill difficulty, ClientForServer cl1){
@@ -430,7 +559,7 @@ public class Server implements AllServerInterfaces
 			// Detect Modifier-hits
 			for(int j=0; j<listOfModifiers.size(); j++){
 				mod = listOfModifiers.get(j);
-				if( mod.getExplosionTime() == 0 && (java.lang.System.currentTimeMillis() - mod.getCreationTime() > 1000) ){ // doing nothing if the modifier is already exploded, or was just created
+				if( mod.getExplosionTime() == 0 ){ // doing nothing if the modifier is already exploded (but in the list for animation)
 					if( proj instanceof ProjectileGoingUp || proj instanceof ProjectileLaser){ // only investigating for player-shooted powerups
 						if( proj.isHit(mod) ){
 							mod.setExplosionTime(java.lang.System.currentTimeMillis());
@@ -519,63 +648,55 @@ public class Server implements AllServerInterfaces
 		}
 	}
 	
-	private void spawnModifier(double x, double y){
-		listOfModifiers.add( new Fastener(200, y) );
+	private void spawnPowerDown(double x, double y){
+		double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
+		if(spawnOrNot >= 0.6){
+			double whatToSpawn = Math.random();
+			if( listOfPlayers.size() == 2){
+				if(whatToSpawn <= 0.25){
+					listOfModifiers.add( new LeftRightSwitcher(x, y) );
+				}
+				else if(whatToSpawn > 0.25 && whatToSpawn <= 0.5){
+					listOfModifiers.add( new NoAmmo(x, y) );
+				}
+				else if(whatToSpawn > 0.5 && whatToSpawn <= 0.75){
+					listOfModifiers.add( new HalfScores(x, y) );	
+				}
+				else{
+					listOfModifiers.add( new SpaceShipSwitcher(x, y) );	
+				}
+			}
+			else{ // single player or only 1 player alive -> no SpaceShipSwitcher
+				if(whatToSpawn <= 0.3){
+					listOfModifiers.add( new LeftRightSwitcher(x, y) );
+				}
+				else if(whatToSpawn > 0.3 && whatToSpawn <= 0.6){
+					listOfModifiers.add( new NoAmmo(x, y) );
+				}
+				else{
+					listOfModifiers.add( new HalfScores(x, y) );	
+				}
+			}
+		}
+	}
+	
+	private void spawnPowerUp(double x, double y){
 		double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 		if(spawnOrNot >= 0.6){
 			// Choosing what to spawn
 			double whichFrequency = Math.random();
 			double whatToSpawn = Math.random();
-			// spawn a frequent modifier [fastener, hostileFrenzy]
-			if(whichFrequency <= 0.4){
-				if(whatToSpawn >= 0.5)
-					listOfModifiers.add( new Fastener(x, y) );
+			if(whichFrequency <= 0.4){ // frequent modifier(s)
+				listOfModifiers.add( new Fastener(x, y) );
+			}
+			else if(whichFrequency > 0.4 && whichFrequency < 0.8){ // mods /w normal freq
+				if(whatToSpawn < 0.5)
+					listOfModifiers.add( new Shield(x, y) );
 				else
-					listOfModifiers.add( new HostileFrenzy(x, y) );
+					listOfModifiers.add( new Laser(x, y) );
 			}
-			//spawn a mod with medium frequency [Shield, Laser, controlChangerMULTIONLY, LeftRightSwitcher, noAmmo, HalfScores, SpaceShipSwitcher]
-			else if(whichFrequency > 0.4 && whichFrequency < 0.8){
-				if( listOfPlayers.size() == 2){ // SpaceShipSwitcher only available in MULTIPLAYER (and spawn it only if both players are alive)
-					if(whatToSpawn < 0.1667){
-						listOfModifiers.add( new Shield(x, y) );
-					}
-					else if(whatToSpawn >= 0.1667 && whatToSpawn < 0.333){
-						listOfModifiers.add( new Laser(x, y) );
-					}
-					else if(whatToSpawn >= 0.333 && whatToSpawn < 0.5){
-						listOfModifiers.add( new LeftRightSwitcher(x, y) );
-					}
-					else if(whatToSpawn >= 0.5 && whatToSpawn < 0.667){
-						listOfModifiers.add( new NoAmmo(x, y) );
-					}
-					else if(whatToSpawn >= 0.667 && whatToSpawn < 0.8333){
-						listOfModifiers.add( new HalfScores(x, y) );
-					}
-					else{
-						listOfModifiers.add( new SpaceShipSwitcher(x, y) );
-					}
-				}
-				else{
-					if(whatToSpawn < 0.2){
-						listOfModifiers.add( new Shield(x, y) );
-					}
-					else if(whatToSpawn >= 0.2 && whatToSpawn < 0.4){
-						listOfModifiers.add( new Laser(x, y) );
-					}
-					else if(whatToSpawn >= 0.4 && whatToSpawn < 0.6){
-						listOfModifiers.add( new LeftRightSwitcher(x, y) );
-					}
-					else if(whatToSpawn >= 0.6 && whatToSpawn < 0.8){
-						listOfModifiers.add( new NoAmmo(x, y) );
-					}
-					else{
-						listOfModifiers.add( new HalfScores(x, y) );
-					}
-				}
-			}
-			// spawn a rare modifier [OneUp, Boom]
-			else{
-				if(whatToSpawn >= 0.5)
+			else{ // rare mods
+				if(whatToSpawn < 0.5)
 					listOfModifiers.add( new OneUp(x, y) );
 				else
 					listOfModifiers.add( new Boom(x, y) );
@@ -584,140 +705,7 @@ public class Server implements AllServerInterfaces
 	}
 	
 	private void detectModifierPickUps(){
-		//TODO: teszt
-		myTimerTaskTest test = new myTimerTaskTest();
-		
-		
-		// TimerTasks for elapsing the modfier-effects
-		TimerTask taskElapseFastenerPlayer1 = new TimerTask() {
-			@Override
-			public void run() {
-				for(int i=0; i<listOfPlayers.size(); i++){
-					if(listOfPlayers.get(i).getID() == 0){
-						listOfPlayers.get(i).setFastened(false);
-						listOfPlayers.get(i).setTimeBetweenShots(Constants.timeBetweenShots);
-					}
-				}
-			}
-		};
-		TimerTask taskElapseFastenerPlayer2 = new TimerTask() {
-			@Override
-			public void run() {
-				for(int i=0; i<listOfPlayers.size(); i++){
-					if(listOfPlayers.get(i).getID() == 1){
-						listOfPlayers.get(i).setFastened(false);
-						listOfPlayers.get(i).setTimeBetweenShots(Constants.timeBetweenShots);
-					}
-				}
-			}
-		};
-		//
-		TimerTask taskElapseShieldPlayer1 = new TimerTask() {
-			@Override
-			public void run() {
-				for(int i=0; i<listOfPlayers.size(); i++){
-					if(listOfPlayers.get(i).getID() == 0){
-						listOfPlayers.get(i).setShielded(false);
-					}
-				}
-			}
-		};
-		TimerTask taskElapseShieldPlayer2 = new TimerTask() {
-			@Override
-			public void run() {
-				for(int i=0; i<listOfPlayers.size(); i++){
-					if(listOfPlayers.get(i).getID() == 1){
-						listOfPlayers.get(i).setShielded(false);
-					}
-				}
-			}
-		};
-		//
-		TimerTask taskElapseLaserPlayer1 = new TimerTask() {
-			@Override
-			public void run() {
-				for(int i=0; i<listOfPlayers.size(); i++){
-					if(listOfPlayers.get(i).getID() == 0){
-						listOfPlayers.get(i).setHasLaser(false);
-					}
-				}
-			}
-		};
-		TimerTask taskElapseLaserPlayer2 = new TimerTask() {
-			@Override
-			public void run() {
-				for(int i=0; i<listOfPlayers.size(); i++){
-					if(listOfPlayers.get(i).getID() == 1){
-						listOfPlayers.get(i).setHasLaser(false);
-					}
-				}
-			}
-		};
-		//
-		TimerTask taskElapseLeftRightSwitcherPlayer0 = new TimerTask() {
-			@Override
-			public void run() {
-				for(int i=0; i<listOfPlayers.size(); i++){
-					if(listOfPlayers.get(i).getID() == 0){
-						listOfPlayers.get(i).setLeftRighSwitched(false);
-					}
-				}
-			}
-		};
-		TimerTask taskElapseLeftRightSwitcherPlayer1 = new TimerTask() {
-			@Override
-			public void run() {
-				for(int i=0; i<listOfPlayers.size(); i++){
-					if(listOfPlayers.get(i).getID() == 1){
-						listOfPlayers.get(i).setLeftRighSwitched(false);
-					}
-				}
-			}
-		};
-		//
-		TimerTask taskElapseHostileFrenzy = new TimerTask() {
-			@Override
-			public void run() {
-					hostilesAreFrenzied = false;
-				}
-		};
-		//
-		TimerTask taskElapseNoAmmoPlayer0 = new TimerTask() {
-			@Override
-			public void run() {
-					for(int i=0; i<listOfPlayers.size(); i++){
-						if(listOfPlayers.get(i).getID() == 0){
-							listOfPlayers.get(i).setHasAmmo(true);
-						}
-					}
-				}
-		};
-		TimerTask taskElapseNoAmmoPlayer1 = new TimerTask() {
-			@Override
-			public void run() {
-				for(int i=0; i<listOfPlayers.size(); i++){
-					if(listOfPlayers.get(i).getID() == 1){
-						listOfPlayers.get(i).setHasAmmo(true);
-					}
-				}
-				}
-		};
-		//
-		TimerTask taskElapseHalfScores = new TimerTask() {
-			@Override
-			public void run() {
-					halfScores = false;
-				}
-		};
-		//
-		TimerTask taskElapseSpaceShipSwitcher = new TimerTask() {
-			@Override
-			public void run() {
-					spaceShipsSwitched = false;
-				}
-		};
-
-		
+	
 		for(int i=0; i<listOfPlayers.size(); i++){
 			Player tempPlayer = listOfPlayers.get(i);
 			for(int j=0; j<listOfModifiers.size(); j++){
@@ -737,36 +725,33 @@ public class Server implements AllServerInterfaces
 						if(tempMod.getPickUpTime() == 0){ // modifier staying in the list for animation purposes, so have to make sure that it takes effect only once
 							tempMod.setPickUpTime(java.lang.System.currentTimeMillis());
 							if(tempMod instanceof Fastener){
-								//tempMod.setPickUpTime(java.lang.System.currentTimeMillis()); // removeNonExistentObjects() will delete it from list
-								//tempPlayer.setFastened(true);
-								//tempPlayer.setTimeBetweenShots(Constants.timeBetweenShotsIfFastened);
-								listOfPlayers.set(i, tempPlayer);
-								if(tempPlayer.getID() == 0){
-									//timer.schedule(taskElapseFastenerPlayer1, Fastener.getTimeItLasts());
-									System.out.println(java.lang.System.currentTimeMillis());
-									if( tempPlayer.isFastened()){
-										boolean asd = test.cancel();
-										if(asd){
-											System.out.println("cancel true");
-											
-										}
-										else{
-											System.out.println("cancel false");
-										}
-										test = new myTimerTaskTest();
+								if( tempPlayer.isFastened() ){ // already fastened - cancel TimerTask which elapses the Fastener effect, then reschedule it (renew the time it lasts)
+									if( tempPlayer.getID() == 0){ // player1
+										elapseFastenerPlayer1.cancel();
+										elapseFastenerPlayer1 = new taskElapseFastenerPlayer1();
 										timer.purge();
-										timer.schedule(test, Fastener.getTimeItLasts());
+										timer.schedule(elapseFastenerPlayer1, Fastener.getTimeItLasts());
 									}
-									else{
+									else{ // player2
+										elapseFastenerPlayer2.cancel();
+										elapseFastenerPlayer2 = new taskElapseFastenerPlayer2();
+										timer.purge();
+										timer.schedule(elapseFastenerPlayer2, Fastener.getTimeItLasts());
+									}					
+								}
+								else{ // not fastened yet
+									if( tempPlayer.getID() == 0){ //player1
 										tempPlayer.setFastened(true);
 										tempPlayer.setTimeBetweenShots(Constants.timeBetweenShotsIfFastened);
-										timer.schedule(test, Fastener.getTimeItLasts());
+										elapseFastenerPlayer1 = new taskElapseFastenerPlayer1();
+										timer.schedule(elapseFastenerPlayer1, Fastener.getTimeItLasts());
 									}
-									
-								}
-								else{
-									timer.schedule(taskElapseFastenerPlayer2, Fastener.getTimeItLasts());
-									//TODO:
+									else{ //player2
+										tempPlayer.setFastened(true);
+										tempPlayer.setTimeBetweenShots(Constants.timeBetweenShotsIfFastened);
+										elapseFastenerPlayer2 = new taskElapseFastenerPlayer2();
+										timer.schedule(elapseFastenerPlayer2, Fastener.getTimeItLasts());
+									}				
 								}
 							}
 							if(tempMod instanceof OneUp){
@@ -774,11 +759,32 @@ public class Server implements AllServerInterfaces
 									listOfPlayers.get(i).setLives(tempPlayer.getLives()+1);
 							}
 							if(tempMod instanceof Shield){
-								listOfPlayers.get(i).setShielded(true);
-								if(tempPlayer.getID() == 0)
-									timer.schedule(taskElapseShieldPlayer1, Shield.getTimeItLasts());
-								else
-									timer.schedule(taskElapseShieldPlayer2, Shield.getTimeItLasts());
+								if( tempPlayer.isShielded() ){
+									if( tempPlayer.getID() == 0){ // player1
+										elapseShieldPlayer1.cancel();
+										elapseShieldPlayer1 = new taskElapseShieldPlayer1();
+										timer.purge();
+										timer.schedule(elapseShieldPlayer1, Shield.getTimeItLasts());
+									}
+									else{ // player2
+										elapseShieldPlayer2.cancel();
+										elapseShieldPlayer2 = new taskElapseShieldPlayer2();
+										timer.purge();
+										timer.schedule(elapseShieldPlayer2, Shield.getTimeItLasts());
+									}
+								}
+								else{
+									tempPlayer.setShielded(true);
+									if(tempPlayer.getID() == 0){
+										elapseShieldPlayer1 = new taskElapseShieldPlayer1();
+										timer.schedule(elapseShieldPlayer1, Shield.getTimeItLasts());
+									}
+										
+									else{
+										elapseShieldPlayer2 = new taskElapseShieldPlayer2();
+										timer.schedule(elapseShieldPlayer2, Shield.getTimeItLasts());
+									}									
+								}
 							}
 							if(tempMod instanceof Boom){
 								for(int i1=0; i1<listOfNPCs.size(); i1++){
@@ -791,44 +797,125 @@ public class Server implements AllServerInterfaces
 								}
 							}
 							if(tempMod instanceof Laser){
-								tempPlayer.setHasLaser(true);
-								if(tempPlayer.getID() == 0){
-									timer.schedule(taskElapseLaserPlayer1, Laser.getTimeItLasts());
+								if( tempPlayer.isHasLaser() ){ // already has laser
+									if( tempPlayer.getID() == 0){ // player1
+										elapseLaserPlayer1.cancel();
+										elapseLaserPlayer1 = new taskElapseLaserPlayer1();
+										timer.purge();
+										timer.schedule(elapseLaserPlayer1, Laser.getTimeItLasts());
+									}
+									else{ // player2
+										elapseLaserPlayer2.cancel();
+										elapseLaserPlayer2 = new taskElapseLaserPlayer2();
+										timer.purge();
+										timer.schedule(elapseLaserPlayer2, Laser.getTimeItLasts());
+									}
 								}
-								else{
-									timer.schedule(taskElapseLaserPlayer2, Laser.getTimeItLasts());
-								}							
+								else{ // has not got laser yet
+									tempPlayer.setHasLaser(true);
+									if(tempPlayer.getID() == 0){
+										elapseLaserPlayer1 = new taskElapseLaserPlayer1();
+										timer.schedule(elapseLaserPlayer1, Laser.getTimeItLasts());
+									}
+									else{
+										elapseLaserPlayer2 = new taskElapseLaserPlayer2();
+										timer.schedule(elapseLaserPlayer2, Laser.getTimeItLasts());
+									}									
+								}						
 							}
 							if(tempMod instanceof LeftRightSwitcher){
-								tempPlayer.setLeftRighSwitched(true);
-								if(tempPlayer.getID() == 0){
-									timer.schedule(taskElapseLeftRightSwitcherPlayer0, LeftRightSwitcher.getTimeItLasts());
-								}	
+								if( tempPlayer.isLeftRighSwitched() ){ // left-right already switched
+									if( tempPlayer.getID() == 0){ // player1
+										elapseLeftRightSwitcherPlayer1.cancel();
+										elapseLeftRightSwitcherPlayer1 = new taskElapseLeftRightSwitcherPlayer1();
+										timer.purge();
+										timer.schedule(elapseLeftRightSwitcherPlayer1, LeftRightSwitcher.getTimeItLasts());
+									}
+									else{ // player2
+										elapseLeftRightSwitcherPlayer2.cancel();
+										elapseLeftRightSwitcherPlayer2 = new taskElapseLeftRightSwitcherPlayer2();
+										timer.purge();
+										timer.schedule(elapseLeftRightSwitcherPlayer2, LeftRightSwitcher.getTimeItLasts());
+									}
+								}
 								else{
-									timer.schedule(taskElapseLeftRightSwitcherPlayer1, LeftRightSwitcher.getTimeItLasts());
+									tempPlayer.setLeftRighSwitched(true);
+									if(tempPlayer.getID() == 0){
+										elapseLeftRightSwitcherPlayer1 = new taskElapseLeftRightSwitcherPlayer1();
+										timer.schedule(elapseLeftRightSwitcherPlayer1, LeftRightSwitcher.getTimeItLasts());
+									}	
+									else{
+										elapseLeftRightSwitcherPlayer2 = new taskElapseLeftRightSwitcherPlayer2();
+										timer.schedule(elapseLeftRightSwitcherPlayer2, LeftRightSwitcher.getTimeItLasts());
+									}
 								}
 							}
 							if(tempMod instanceof HostileFrenzy){
-								hostilesAreFrenzied = true;
-								timer.schedule(taskElapseHostileFrenzy, HostileFrenzy.getTimeItLasts());		
+								if( hostilesAreFrenzied ){ // hostiles are already frenzy
+									elapseHostileFrenzy.cancel();
+									elapseHostileFrenzy = new taskElapseHostileFrenzy();
+									timer.purge();
+									timer.schedule(elapseHostileFrenzy, HostileFrenzy.getTimeItLasts());
+								}
+								else{
+									hostilesAreFrenzied = true;
+									elapseHostileFrenzy = new taskElapseHostileFrenzy();
+									timer.schedule(elapseHostileFrenzy, HostileFrenzy.getTimeItLasts());	
+								}			
 							}
 							if(tempMod instanceof NoAmmo){
-								tempPlayer.setHasAmmo(false);
-								if(tempPlayer.getID() == 0){
-									timer.schedule(taskElapseNoAmmoPlayer0, NoAmmo.getTimeItLasts());
-								}	
+								if( !tempPlayer.isHasAmmo() ){ // player is already "out of ammo"
+									if( tempPlayer.getID() == 0){ // player1
+										elapseNoAmmoPlayer1.cancel();
+										elapseNoAmmoPlayer1 = new taskElapseNoAmmoPlayer1();
+										timer.purge();
+										timer.schedule(elapseNoAmmoPlayer1, NoAmmo.getTimeItLasts());
+									}
+									else{ // player2
+										elapseNoAmmoPlayer2.cancel();
+										elapseNoAmmoPlayer2 = new taskElapseNoAmmoPlayer2();
+										timer.purge();
+										timer.schedule(elapseNoAmmoPlayer2, NoAmmo.getTimeItLasts());
+									}
+								}
 								else{
-									timer.schedule(taskElapseNoAmmoPlayer1, NoAmmo.getTimeItLasts());
-								}	
+									tempPlayer.setHasAmmo(false);
+									if(tempPlayer.getID() == 0){
+										elapseNoAmmoPlayer1 = new taskElapseNoAmmoPlayer1();
+										timer.schedule(elapseNoAmmoPlayer1, NoAmmo.getTimeItLasts());
+									}	
+									else{
+										elapseNoAmmoPlayer2 = new taskElapseNoAmmoPlayer2();
+										timer.schedule(elapseNoAmmoPlayer2, NoAmmo.getTimeItLasts());
+									}	
+								}				
 							}
 							if(tempMod instanceof HalfScores){
-								halfScores = true;
-								timer.schedule(taskElapseHalfScores, HalfScores.getTimeItLasts());
+								if(halfScores){
+									elapseHalfScores.cancel();
+									elapseHalfScores = new taskElapseHalfScores();
+									timer.purge();
+									timer.schedule(elapseHalfScores, HalfScores.getTimeItLasts());
+								}
+								else{
+									halfScores = true;
+									elapseHalfScores = new taskElapseHalfScores();
+									timer.schedule(elapseHalfScores, HalfScores.getTimeItLasts());
+								}						
 							}
 							if(tempMod instanceof SpaceShipSwitcher){
 								if( listOfPlayers.size() == 2){ // there could be a remainder switcher, which MUST NOT take effect, as the player would lose control over the only spaceship
-									spaceShipsSwitched = true; // picking up a switcher during the effect of a previously picked up won't revert its effect, only lengthen it;
-									timer.schedule(taskElapseSpaceShipSwitcher, SpaceShipSwitcher.getTimeItLasts());
+									if( spaceShipsSwitched ){ // already switched
+										elapseSpaceShipSwitcher.cancel();
+										elapseSpaceShipSwitcher = new taskElapseSpaceShipSwitcher();
+										timer.purge();
+										timer.schedule(elapseSpaceShipSwitcher, SpaceShipSwitcher.getTimeItLasts());
+									}
+									else{
+										spaceShipsSwitched = true; // picking up a switcher during the effect of a previously picked up won't revert its effect, only lengthen it;
+										elapseSpaceShipSwitcher = new taskElapseSpaceShipSwitcher();
+										timer.schedule(elapseSpaceShipSwitcher, SpaceShipSwitcher.getTimeItLasts());
+									}								
 								}
 							}
 						}
@@ -1197,7 +1284,7 @@ public class Server implements AllServerInterfaces
 		};
 			
 			// Modifier-spawner task
-		TimerTask taskSpawnModifiers = new TimerTask() {
+		TimerTask taskSpawnPowerUps = new TimerTask() {
 			@Override
 			public void run() {
 				if(isRunning){
@@ -1205,7 +1292,19 @@ public class Server implements AllServerInterfaces
 					double x = (int)(Math.random()*(Constants.gameFieldWidth - Modifier.getModifierwidth()) );
 					x += Modifier.getModifierwidth()/2;
 					
-					spawnModifier(x, Modifier.getModifierheigth()+100);
+					spawnPowerUp(x, Modifier.getModifierheigth()+100);
+					}
+				}
+		};
+		TimerTask taskSpawnPowerDowns = new TimerTask() {
+			@Override
+			public void run() {
+				if(isRunning){
+					// Determine the place of spawning
+					double x = (int)(Math.random()*(Constants.gameFieldWidth - Modifier.getModifierwidth()) );
+					x += Modifier.getModifierwidth()/2;
+					
+					spawnPowerDown(x, Modifier.getModifierheigth()+100);
 					}
 				}
 		};
@@ -1220,7 +1319,8 @@ public class Server implements AllServerInterfaces
         timer.scheduleAtFixedRate(taskSpawnHostileType2, 1535, Constants.hostile2spawningFrequency);
         timer.scheduleAtFixedRate(taskSpawnHostileType3, 2768, Constants.hostile3spawningFrequency);
         // Spawn modifiers at given rates
-        timer.scheduleAtFixedRate(taskSpawnModifiers, 300, 3000);		
+        timer.scheduleAtFixedRate(taskSpawnPowerUps, 300, 3000);	
+        timer.scheduleAtFixedRate(taskSpawnPowerDowns, 330, 3000);
 	}
 	
 	@Override
