@@ -217,7 +217,7 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		System.out.println("GameState changed to " + currentGameState);
 	}
 
-	public void error(String text) {
+	public static void error(String text) {
 		JOptionPane.showMessageDialog(null, text, "Error", JOptionPane.INFORMATION_MESSAGE);
 	}
 
