@@ -366,7 +366,7 @@ public class Server implements AllServerInterfaces
 		long currentTime;
 		for(int i=0; i<listOfPlayers.size(); i++){
 			temp = listOfPlayers.get(i);
-			if(temp.getID() == 0){
+			if(temp.getID() == 0 && temp.getExplosionTime() == 0){
 				if( (player1MovingLeft && !spaceShipsSwitched) || (player2MovingLeft && spaceShipsSwitched) ){
 					temp.moveLeft();
 				}
@@ -388,7 +388,7 @@ public class Server implements AllServerInterfaces
 				}
 				listOfPlayers.set(i, temp); // Update the player list
 			}
-			else if(temp.getID() == 1){
+			else if(temp.getID() == 1 && temp.getExplosionTime() == 0){
 				if( (player2MovingLeft && !spaceShipsSwitched) || (player1MovingLeft && spaceShipsSwitched) ){
 					temp.moveLeft();
 				}
@@ -448,9 +448,6 @@ public class Server implements AllServerInterfaces
 					else{
 						tempPlayer.setHitTime(java.lang.System.currentTimeMillis());
 					}
-					// changing the list elements to the modified ones
-					listOfPlayers.set(0, tempPlayer);
-					listOfNPCs.set(i, tempNPC);
 				}
 			}
 		}
@@ -647,7 +644,7 @@ public class Server implements AllServerInterfaces
 		}
 	}
 	
-	private void spawnPowerDown(double x, double y){
+	private void spawnPowerDown(double x, double y){	
 		double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 		if(spawnOrNot >= 0.6){
 			double whatToSpawn = Math.random();
@@ -932,8 +929,11 @@ public class Server implements AllServerInterfaces
 		// NPCs
 		for(int i=0; i<listOfNPCs.size(); i++){
 			NPC temp = listOfNPCs.get(i);
-			if( temp.getCoordY()-35 > Constants.gameFieldHeigth ){ //TODO: kicsit hack.. h lehetne szepen NPC "abstract static variable"
-				listOfNPCs.remove(i);
+			if( temp.getCoordY()-35 > Constants.gameFieldHeigth ){
+				if( difficulty == GameSkill.HARD){ // decrease score if the player(s) couldn't destroy the hostile (only on hard mode)
+					score -= listOfNPCs.get(i).getScoreIfDestroyed()/2;
+				}
+				listOfNPCs.remove(i);				
 			}
 		}
 		// Projectiles
@@ -1415,10 +1415,10 @@ public class Server implements AllServerInterfaces
 	public void disconnect(ClientForServer c){
 		isRunning = false;
 		if( c == client1 ){
-			client2.changeGameState(GameState.GAMEOVER);
+			client2.changeGameState(GameState.DISCONNECTED);
 		}
 		else{
-			client1.changeGameState(GameState.GAMEOVER);
+			client1.changeGameState(GameState.DISCONNECTED);
 		}
 	}
 
@@ -1546,7 +1546,6 @@ public class Server implements AllServerInterfaces
 			player2Shooting = false;
 	}
 	
-
 	@Override
 	public void sendName(String name) {
 		FTPConnector ftp;
@@ -1600,8 +1599,6 @@ public class Server implements AllServerInterfaces
 	  // creating a new ListArray for the high score records
 	  List<Map.Entry<Integer, String>> highScores = new ArrayList<>();
 
-
-	 // SortedMap<Integer, String> highScores = new TreeMap<Integer, String>();
 	  FTPConnector ftp;
 	  String highscoresFileContent;
 	  String[] highscoreEntries;
