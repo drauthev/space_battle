@@ -1,5 +1,6 @@
 package space_battle.sound;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -11,6 +12,7 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+import space_battle.gui.GUI;
 import space_battle.interfaces.SoundSystemForClient;
 
 public class SoundSystem implements SoundSystemForClient {
@@ -69,21 +71,18 @@ public class SoundSystem implements SoundSystemForClient {
 		
 	private Clip generateClip(String string) {
 		
-		InputStream is= getClass().getResourceAsStream("/space_battle/res/sounds/" + string);
+		InputStream is= new BufferedInputStream(getClass().getResourceAsStream("/space_battle/res/sounds/" + string));
 		AudioInputStream localStream = null;
 		
 		try {
 			localStream = AudioSystem.getAudioInputStream(is);
 		} catch (UnsupportedAudioFileException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			GUI.error(e1.getMessage());
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			GUI.error(e1.getMessage());
 		}
-		
-		if (localStream == null)
-			return null;
 				
 		Clip localClip = null;
 		
@@ -105,7 +104,8 @@ public class SoundSystem implements SoundSystemForClient {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}	
+		}
+		
 		return localClip;
 	}
 	
