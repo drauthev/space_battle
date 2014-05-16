@@ -2,8 +2,8 @@ package space_battle.client;
 
 public class ObjectBuffer {
 	public static int maxNPC = 20;
-	public static int maxProjectile = 20;
-	public static int maxModifier = 10;
+	public static int maxProjectile = 40;
+	public static int maxModifier = 20;
 	
 	public CNPC[] npc = new CNPC[maxNPC];
 	public CPlayer[] player = new CPlayer[2];
