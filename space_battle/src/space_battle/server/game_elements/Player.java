@@ -2,9 +2,14 @@ package space_battle.server.game_elements;
 
 import space_battle.server.Constants;
 
+/**
+ * Class representing the spaceships controlled by the players.
+ * @author daniel.szeifert
+ * @version 1.0
+ * @since 2014-05-17
+ */
 public class Player extends ShootingObject {
 	
-	// constants
 	private final static int playerWidth = 34;
 	private final static int playerHeight = 42;
 	// static variables changing according to game difficulty/modifiers
@@ -12,16 +17,26 @@ public class Player extends ShootingObject {
 	private static int horizontalMoveQuantityIfFastened = 10;
 	private static int playerLivesAtStart = 3;
 	//
-	private int ID;	// for player identification in case of Multi-player mode
+	/**
+	 * ID for player identification in case of Multi-player mode. 0 for Player1, 1 for Player2.
+	 */
+	private int ID;
 	private int lives;
 	//
-	private boolean isFastened = false;
-	private int timeBetweenShots = Constants.timeBetweenShots; // will be less if player is fastened
+	
+	/**
+	 * This is checked by the game logic and prevents the too frequent shooting. Decreased if player is fastened.
+	 */
+	private int timeBetweenShots = Constants.timeBetweenShots;
 	private long lastShootTime = 0;
+	/**
+	 * Flags indicating a certain modifier's effect towards the Server (game logic).
+	 */
+	private boolean isFastened = false;
 	private boolean isShielded;
 	private boolean hasAmmo = true;
 	private boolean leftRighSwitched = false;
-	private boolean hasLaser; //TODO: ki lehet cselezni, ha sokszor losz; SOLUTION lehet: timeBetweenShots-ot magasabbra állítani ezido alatt, mint a LAser lastingja
+	private boolean hasLaser;
 	
 	public Player(int x, int y, int ID){
 		super(x,y);
@@ -30,6 +45,12 @@ public class Player extends ShootingObject {
 		lives = playerLivesAtStart;
 	}
 	
+	/**
+	 * Moving the player left with the amount according to the current state (normal or Fastened).
+	 * Or moving right if the LeftRightSwitcher modifier is active on the player.
+	 * @param None
+	 * @returns None
+	 */
 	public void moveLeft(){
 		if(leftRighSwitched){ // moving right..
 			if(isFastened){
@@ -53,6 +74,9 @@ public class Player extends ShootingObject {
 		}
 	}
 	
+	/**
+	 * @see {@link #moveLeft() - this does the opposite}
+	 */
 	public void moveRight(){
 		if(leftRighSwitched){ // moving left..
 			if(isFastened){
@@ -75,7 +99,10 @@ public class Player extends ShootingObject {
 			}	
 		}
 	}
-	
+	/**
+	 * @param None
+	 * @return An instance of {@link space_battle.server.game_elements.ProjectileGoingUp} with the coordinates of the top of the player. 
+	 */
 	public Projectile shoot(){
 		if(hasLaser){
 			ProjectileLaser shot = new ProjectileLaser(this.getCoordX(), this.getCoordY() - Player.playerHeight/2 - Projectile.getProjectileheight()/2, this);
@@ -87,8 +114,11 @@ public class Player extends ShootingObject {
 		}
 	}
 	
-	//
-	public void autoMove(){}	// empty on purpose
+	/**
+	 * {@inheritDoc GameElement.autoMove()}
+	 * This method is empty on purpose, as the {@link space_battle.server.game_elements.Player} class is controlled by the player.
+	 */
+	public void autoMove(){}
 	
 	// Getters, setters
 	// ------------------------------------------------------------------------------------------------------------------

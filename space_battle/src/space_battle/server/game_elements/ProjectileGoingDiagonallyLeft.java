@@ -1,19 +1,32 @@
 package space_battle.server.game_elements;
-
+/**
+ * Class of projectiles shot by {@link HostileType2}.
+ * @author daniel.szeifert
+ * @version 1.0
+ * @since 2014-05-17
+ */
 public class ProjectileGoingDiagonallyLeft extends Projectile {
 	
 	private static int horizontalMoveQuantity = 1;
 	
+	/**
+	 * @param x Coordinate X of spawning.
+	 * @param y Coordinate Y of spawning.
+	 */
 	ProjectileGoingDiagonallyLeft(double x, double y) {
 		super(x,y);
 	}
-	
+	/**
+	 * {inheritDoc}
+	 */
 	@Override
 	public void autoMove(){
 		super.setCoordX(super.getCoordX() - horizontalMoveQuantity);
 		super.setCoordY(super.getCoordY() + super.getVerticalMoveQuantity()); // (x,y)=(0,0) is the top-left corner of gamespace
 	}
-
+	/**
+	 * {inheritDoc}
+	 */
 	@Override
 	public boolean isHit(GameElement object) { //TODO!!
 		// projectile-related
@@ -30,7 +43,6 @@ public class ProjectileGoingDiagonallyLeft extends Projectile {
 				return true;
 			else return false; // match in Y dim, but no match in X dimension
 		}
-		else return false; 
-		
+		else return false; 	
 	}
 }

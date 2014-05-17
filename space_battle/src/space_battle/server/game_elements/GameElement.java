@@ -1,5 +1,12 @@
 package space_battle.server.game_elements;
 
+/**
+ * Ancestor abstract class of all the elements in the game.
+ * @author daniel.szeifert
+ * @version 1.0
+ * @since 2014-05-17
+ *
+ */
 public abstract class GameElement {
 	
 	private double coordX;
@@ -12,7 +19,10 @@ public abstract class GameElement {
 		coordY = y;
 	}
 	
-	public abstract void autoMove();	//mozgató fv, playernél üres, ott manuális az irányítás
+	/**
+	 * Moving function of the game elements, called periodically by the Server class.
+	 */
+	public abstract void autoMove();
 	
 	// Getters, Setters
 	// ------------------------------------------------------------------------------------------------------------------

@@ -1,19 +1,35 @@
 package space_battle.server.game_elements;
 
+/**
+ * Hitbox of {@link NPC} classes and the {@link Player} class. 
+ * @author daniel.szeifert
+ * @version 1.0
+ * @since 2014-05-17
+ */
 public class HitBox{
 	
 	private int width, heigth;
 	GameElement owner;
 	
-	
+	/**
+	 * Constructor
+	 * @param width Latitude on the X-axis
+	 * @param heigth Latitude on the Y-axis
+	 * @param owner Reference to the class owning the hitbox.
+	 */
 	HitBox(int width, int heigth, GameElement owner){
 		this.setWidth(width);
 		this.setHeigth(heigth);
 		this.owner = owner;
 	}
-		
+	
+	/**
+	 * Checks if there is an overlay between two game element's coordinates.
+	 * @param otherElement reference to the other game element, with which the collision is checked.
+	 * @return true, if there is an overlay of the two objects. false otherwise
+	 */
 	public boolean isCollision(GameElement otherElement){
-		// TODO, hatekonyabb eljaras..
+		// TODO: hatekonyabb eljaras..
 		int thisX = (int) (owner.getCoordX() - width/2);	// normalas a bal felso sarokba, onnan indul majd a ciklus
 		int thisY = (int) (owner.getCoordY() + heigth/2);
 		int otherX = (int) (otherElement.getCoordX() - width/2);

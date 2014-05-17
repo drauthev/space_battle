@@ -2,16 +2,39 @@ package space_battle.server.game_elements;
 
 import space_battle.enums.GameSkill;
 import space_battle.server.Constants;
-
+/**
+ * Hostile which goes in a zig-zag movement towards the bottom of the screen.
+ * Shoots three projectiles at a time: a {@link ProjectileGoingDown}, a {@link ProjectileGoingDiagonallyLeft} and a {@link ProjectileGoingDiagonallyRight}.
+ * @author daniel.szeifert
+ * @version 1.0
+ * @since 2014-05-17
+ */
 public class HostileType2 extends NPC {
-	
-	// this hostileType is going down in zig-zag around this axis
-	private final static int diffFromAxis = 30; // max diff from axis before turning around
+	/**
+	 * Axis of the zig-zag movement. The spawning X coordinate is stored in this field.
+	 */
 	private int axisX;
-	// booleans for indicating whether the Hostile has switched moving direction yet or not
+	/**
+	 * Maximum diff from {@link #axisX} before turning around.
+	 */
+	private final static int diffFromAxis = 30;
+	/**
+	 * Boolean for indicating whether the hostile has switched from moving left to right.
+	 * Used by {@link #autoMove()}
+	 */
 	private boolean turntRight = false;
+	/**
+	 * Boolean for indicating whether the hostile has switched from moving right to left.
+	 * Used by {@link #autoMove()}
+	 */
 	private boolean turntLeft = false;
-		
+	
+	/**
+	 * 
+	 * @param x Coordinate X of spawning.
+	 * @param y Coordinate Y of spawning.
+	 * @param difficulty Number of lives of the hostile according to difficulty stored in {@link Server}.
+	 */
 	public HostileType2(int x, int y, GameSkill difficulty){
 		super(x,y, Constants.hostile2scoreIfDestroyed, Constants.hostile2verticalMoveQuantity, Constants.hostile2horizontalMoveQuantity,Constants.hostile2shootingFrequency);
 		super.setHitBox(new HitBox(Constants.hostile2Width, Constants.hostile2Height, this));
@@ -27,10 +50,15 @@ public class HostileType2 extends NPC {
 		}
 		axisX = x; // axis will be the X coordinate at the spawning event
 	}
-	
+	/**
+	 * {inheritDoc}
+	 * {@link HostileType2} moves down from the spawning coordinates with the following horizontal motion:
+	 * it starts moving left to an amplitude of {@value #diffFromAxis}, then turns right, goes till it reaches {@link #axisX} + {@link #diffFromAxis}, turn left again, etc.
+	 */
 	public void autoMove(){
 		double x = super.getCoordX();
-		super.setCoordY(super.getCoordY() + verticalMoveQuantity);
+		double horizontalMoveQuantity = super.getHorizontalMoveQuantity();
+		super.setCoordY(super.getCoordY() + super.getVerticalMoveQuantity());
 		if( x <= axisX ){ // on the left side of axis
 			turntLeft = false;
 			// moving left IF: the axis let it, the gameField let it, and Hostile hasn't turnt right yet
@@ -54,17 +82,25 @@ public class HostileType2 extends NPC {
 			}
 		}
 	}
-	
+	/**
+	 * {inheritDoc}
+	 */
 	public Projectile shoot(){
 		ProjectileGoingDown dummy = new ProjectileGoingDown(this.getCoordX(), this.getCoordY() + Constants.hostile2Height/2 + Projectile.getProjectileheight()/2);
 		return dummy;
 	}
-	
+	/**
+	 * Is called periodically by {@link space_battle.server.Server} (game logic)
+	 * @return An instance of {@link ProjectileGoingDiagonallyLeft} with coordinates of the bottom of the hostile instance.
+	 */
 	public Projectile shootDiagonallyLeft(){
 		ProjectileGoingDiagonallyLeft shot = new ProjectileGoingDiagonallyLeft(this.getCoordX(), this.getCoordY() + Constants.hostile2Height/2 + Projectile.getProjectileheight()/2);
 		return shot;
 	}
-	
+	/**
+	 * Is called periodically by {@link space_battle.server.Server} (game logic)
+	 * @return An instance of {@link ProjectileGoingDiagonallyRight} with coordinates of the bottom of the hostile instance.
+	 */
 	public Projectile shootDiagonallyRight(){
 		ProjectileGoingDiagonallyRight shot = new ProjectileGoingDiagonallyRight(this.getCoordX(), this.getCoordY() + Constants.hostile2Height/2 + Projectile.getProjectileheight()/2);
 		return shot;

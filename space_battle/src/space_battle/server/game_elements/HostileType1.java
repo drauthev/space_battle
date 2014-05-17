@@ -2,9 +2,19 @@ package space_battle.server.game_elements;
 
 import space_battle.enums.GameSkill;
 import space_battle.server.Constants;
-
+/**
+ * Hostile type which goes straight down from the top of the screen.
+ * Shoots one {@link ProjectileGoingDown} at a time with a period of {@link NPC#shootingFrequency}
+ * @author daniel.szeifert
+ * @version 1.0
+ * @since 2014-05-17
+ */
 public class HostileType1 extends NPC {
-		
+	/**
+	 * @param x Coordinate X of spawning.
+	 * @param y Coordinate Y of spawning.
+	 * @param difficulty Number of lives of the hostile according to difficulty stored in {@link Server}.
+	 */
 	public HostileType1(int x, int y, GameSkill difficulty){
 		super(x,y, Constants.hostile1scoreIfDestroyed, Constants.hostile1verticalMoveQuantity, Constants.hostile1horizontalMoveQuantity,Constants.hostile1shootingFrequency);
 		super.setHitBox(new HitBox(Constants.hostile1Width, Constants.hostile1Height, this));
@@ -19,11 +29,15 @@ public class HostileType1 extends NPC {
 			super.setLives(Constants.hostileType1livesIfHard);
 		}
 	}
-	
+	/**
+	 * {inheritDoc}
+	 */
 	public void autoMove(){
-		super.setCoordY(super.getCoordY() + verticalMoveQuantity);
+		super.setCoordY(super.getCoordY() + super.getVerticalMoveQuantity());
 	}
-	
+	/**
+	 * {inheritDoc}
+	 */
 	public Projectile shoot(){
 		ProjectileGoingDown shot = new ProjectileGoingDown(this.getCoordX(), this.getCoordY() + Constants.hostile1Height/2 + Projectile.getProjectileheight()/2);
 		return shot;
