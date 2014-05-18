@@ -9,10 +9,23 @@ import java.net.SocketTimeoutException;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
-
+/**
+ * A wrapper class for the Apache common's FTPClient class.
+ * When instantiated, it creates an FTPClient object and connects it to the FTP server described in the constructor.
+ * 
+ * @author daniel.szeifert
+ * @version 1.0
+ * @since 2014-05-17
+ */
 public class FTPConnector {
 	FTPClient ftp;
-	
+	/**
+	 * 
+	 * @param host Host name of the FTP server.
+	 * @param user Username for login to the FTP server.
+	 * @param pwd Password for the login.
+	 * @throws Exception SocketTimeoutException if the connection with the FTP server could not have been established. Typically when the server is down.
+	 */
 	public FTPConnector(String host, String user, String pwd) throws Exception {
         ftp = new FTPClient();
         ftp.setConnectTimeout(120);
@@ -28,13 +41,14 @@ public class FTPConnector {
 			ftp.setDefaultTimeout(120);
 	        ftp.setDataTimeout(5000);
 	        ftp.setFileType(FTP.ASCII_FILE_TYPE);
-	        //ftp.enterLocalPassiveMode();
         }
         catch(SocketTimeoutException e){
         	System.out.println("FTPConnector catch block - ftp connection could not be established in the first place - new high score will not be handled");
         }
     }
-	
+	/**
+	 * Sets the file transfer between the client and the server to binary. (needed before sending a file to the server via an output stream.)
+	 */
 	public void setFileTypeToBinary(){
 		try {
 			ftp.setFileType(FTP.BINARY_FILE_TYPE);
@@ -42,7 +56,9 @@ public class FTPConnector {
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * Sets the file transfer between the client and the server to ASCII.
+	 */
 	public void setFileTypeToAscii(){
 		try {
 			ftp.setFileType(FTP.ASCII_FILE_TYPE);
@@ -50,20 +66,22 @@ public class FTPConnector {
 			e.printStackTrace();
 		}
 	}
- 
+	/**
+	 * Download a file from the FTP server and converts it content to a String.
+	 * @param remoteFilePath Path of the file to download on the server.
+	 * @return A String with the content of the file downloaded.
+	 */
     public String downloadFileAndCopyToString(String remoteFilePath) {
     	
     	InputStream istream;
     	String fileContent = null;
     	
 		try {
-			istream = this.ftp.retrieveFileStream(remoteFilePath);
-            
+			istream = this.ftp.retrieveFileStream(remoteFilePath);         
 			fileContent = getStringFromInputStream(istream);
 			ftp.completePendingCommand();
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("downloadFileAndCopyToString(): catch block");
 		}
 		int reply = ftp.getReplyCode();
 		if (!FTPReply.isPositiveCompletion(reply)) {
@@ -79,19 +97,25 @@ public class FTPConnector {
          }
 		return fileContent;
     }
-     
+    /**
+     * Disconnects the FTPClient object from the server.
+     */
     public void disconnect() {
         if (this.ftp.isConnected()) {
             try {
                 this.ftp.logout();
                 this.ftp.disconnect();
-            } catch (IOException f) {
-                // do nothing as file is already downloaded from FTP server
+            } catch (IOException e) {
+            	e.printStackTrace();
             }
         }
     }
     
-    // convert InputStream to String
+    /**
+     * Converts an InputStream to String. Used by {@link #downloadFileAndCopyToString(String)}.
+     * @param is The input stream from which this method gets the content.
+     * @return The content of the input stream.
+     */
  	private static String getStringFromInputStream(InputStream is) {
   
  		BufferedReader br = null;
@@ -120,7 +144,10 @@ public class FTPConnector {
  		return sb.toString();
   
  	}
-
+ 	/**
+ 	 * Getter of the FTPClient object itself. (Creating/writing to the file is simpler using the class' native methods than writing wrapper methods.)
+ 	 * @return The FTPClient object of this class. ({@link #ftp})
+ 	 */
 	public FTPClient getFtp() {
 		return ftp;
 	}

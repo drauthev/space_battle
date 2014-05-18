@@ -1,9 +1,15 @@
 package space_battle.server;
-
+/**
+ * Class containing global constants.
+ * Most of these constants are parameters changing the game experience.
+ * @author daniel.szeifert
+ * @version 1.0
+ * @since 2014-05-17
+ */
 public class Constants {
-	public static int framePerSecond = 30;
-    public static int gameFieldWidth = 480;
-    public static int gameFieldHeigth = 640;
+	public final static int framePerSecond = 30;
+    public final static int gameFieldWidth = 480;
+    public final static int gameFieldHeigth = 640;
     
     public final static int timeBetweenShots = 400;
     public final static int timeBetweenShotsIfFastened = 300;

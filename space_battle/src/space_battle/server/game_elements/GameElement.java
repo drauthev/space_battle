@@ -1,7 +1,7 @@
 package space_battle.server.game_elements;
 
 /**
- * Ancestor abstract class of all the elements in the game.
+ * <h1>Ancestor abstract class of all the elements.</h1>
  * @author daniel.szeifert
  * @version 1.0
  * @since 2014-05-17

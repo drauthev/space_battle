@@ -14,13 +14,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
+import com.sun.org.apache.xpath.internal.operations.Mod;
+import com.sun.security.ntlm.Client;
+
+import space_battle.client.PlayerController;
 import space_battle.enums.GameSkill;
 import space_battle.enums.GameState;
 import space_battle.enums.GameType;
+import space_battle.gui.GUI;
 import space_battle.interfaces.AllServerInterfaces;
 import space_battle.interfaces.ClientForServer;
 import space_battle.server.game_elements.Boom;
 import space_battle.server.game_elements.Fastener;
+import space_battle.server.game_elements.GameElement;
 import space_battle.server.game_elements.HalfScores;
 import space_battle.server.game_elements.HostileFrenzy;
 import space_battle.server.game_elements.HostileType1;
@@ -43,7 +50,15 @@ import space_battle.server.game_elements.ProjectileLaser;
 import space_battle.server.game_elements.Shield;
 import space_battle.server.game_elements.SpaceShipSwitcher;
 import space_battle.sound.SoundType;
-
+/**
+ * <h1>The class responsible for implementing the game logic.</h1>
+ * This class communicates with the {@link Client} and {@link PlayerController} classes through {@link AllServerInterfaces}. 
+ * In case of network multiplayer, an instance of this class is instantiated on the host side only - all game logic runs on the host machine.
+ * 
+ * @author daniel.szeifert
+ * @version 1.0
+ * @since 2014-05-17
+ */
 public class Server implements AllServerInterfaces
 {
 	// Game Options
@@ -51,6 +66,9 @@ public class Server implements AllServerInterfaces
 	private GameSkill difficulty;
 	//
 	private int score;
+	/**
+	 * The timer is not stopped when someone request a pause, however each timed task runs only if this flag is true. (pause requests change it to false)
+	 */
 	private boolean isRunning;	
 	// Booleans, variables for player controlling
 	private boolean player1MovingLeft;
@@ -59,8 +77,18 @@ public class Server implements AllServerInterfaces
 	private boolean player2MovingLeft;
 	private boolean player2MovingRight;
 	private boolean player2Shooting;
+	/**
+	 * The {@link #isGameOver()} method checks this flag and sets {@link #gameIsOver} accordingly.
+	 */
 	private boolean player1Dead = false;
+	/**
+	 * The {@link #isGameOver()} method checks this flag and sets {@link #gameIsOver} accordingly.
+	 */
 	private boolean player2Dead = false;
+	/**
+	 * At gameOver, the gameStates are not changed immediately, because the GUI has to animate the final explosion of the player's spaceship.
+	 * Although this flags gets true immediately, signalling to the game logic that no change it should make anymore.
+	 */
 	private boolean gameIsOver = false;
 	// Declaring lists of GameElements
 	private List<Player> listOfPlayers;
@@ -74,14 +102,32 @@ public class Server implements AllServerInterfaces
 	// Client interfaces
 	private ClientForServer client1;
 	private ClientForServer client2;
+	/**
+	 * Used during network multi player for the Pause/Start request handling.
+	 */
 	private boolean client1Ready;
+	/**
+	 * Used during network multi player for the Pause/Start request handling.
+	 */
 	private boolean client2Ready;
-	//
-	private boolean initState = true; // at the start of the game, has to call client1.updateObjects(), before changing GameState to RUNNING; or else the GUI cannot draw
+	/**
+	 * At the start of the game, {@link Server} has to call {@link space_battle.interfaces.ClientForServer#updateObjects(String)} on the clients before changing their game state to {@link GameState#RUNNING}.
+	 * Otherwise the {@link GUI} cannot draw to the screen.
+	 */
+	private boolean initState = true;
+	/**
+	 * The one timer instance ued for all timed tasks.
+	 */
 	private Timer timer;
 	
 	// Inner class definitions for TimerTasks, and instantiation of timerTasks
 	// FASTENER
+	/**
+	 * TimerTask for terminating a modifier-effect. Scheduled by {@link Server#detectModifierPickUps()} for the time got by {@link Modifier#getTimeItLasts()}.
+	 * Same pertains to the classes extending TimerTask in {@link #Server()}'s field.
+	 * @author daniel.szeifert
+	 *
+	 */
 	private class taskElapseFastenerPlayer1 extends TimerTask {
 		@Override
 		public void run() {
@@ -104,6 +150,10 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
+	/**
+	 * Instance of the modifier-effect terminating TimerTask class.
+	 * Has to be defined here because {@link Server#detectModifierPickUps()} has to cancel and reschedule it for the proper time, if the same kind of modifier is picked up.
+	 */
 	taskElapseFastenerPlayer1 elapseFastenerPlayer1;
 	taskElapseFastenerPlayer2 elapseFastenerPlayer2;
 	// SHIELD
@@ -224,7 +274,12 @@ public class Server implements AllServerInterfaces
 	taskElapseSpaceShipSwitcher elapseSpaceShipSwitcher;
 	
 
-	// Constructor
+	/**
+	 * Constructor. Sets {@link #difficulty} and {@link #type}, creates the empty lists for each GameElement, initializes flags and creates 1/2 {@link Player} object according to {@link #difficulty}
+	 * @param type {@link GameType#SINGLE} or {@link GameType#MULTI_LOCAL} or {@link GameType#MULTI_NETWORK}.
+	 * @param difficulty {@link GameSkill#EASY} or {@link GameSkill#NORMAL} or {@link GameSkill#HARD}.
+	 * @param cl1 Reference to the {@link ClientForServer} interface of the host side.
+	 */
 	public Server(GameType type, GameSkill difficulty, ClientForServer cl1){
 		this.type = type;
 		this.difficulty = difficulty;
@@ -254,6 +309,10 @@ public class Server implements AllServerInterfaces
 	};
 		
 	// Timer-driven methods
+	/**
+	 * Calls all methods which are responsible for the game dynamic.
+	 * Scheduled by {@link #run()}.
+	 */
 	private void trackChanges(){
 		if(!gameIsOver){
 			moveNPCs();
@@ -270,7 +329,10 @@ public class Server implements AllServerInterfaces
 		client1.updateObjects(allToJSON());
 		if(type == GameType.MULTI_NETWORK)	client2.updateObjects(allToJSON());		
 	}
-		
+	/**
+	 * Update the coordinates of {@link NPC}s, {@link Projectile}s and {@link Modifier}s.
+	 * <p>Called by {@link #trackChanges()}.
+	 */
 	private void moveNPCs(){
 		// Moving Projectiles
 		for(int i=0; i < listOfProjectiles.size(); i++){
@@ -300,7 +362,10 @@ public class Server implements AllServerInterfaces
     		}
     	}
 	}
-	
+	/**
+	 * Auxilary method for the {@link HostileType3}s "shooting periods". Calls {@link HostileType3#setShootingIsEnabled(boolean)} and {@link HostileType3#setShootingWasEnabled(long)}.
+	 * <p>Called by {@link #trackChanges()}.
+	 */
 	private void hostile3ShootingEnablerDisabler(){
 		NPC tempNPC;
 		HostileType3 tempHostile;
@@ -322,7 +387,10 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
-	
+	/**
+	 * Calls {@link NPC#shoot()} on hostiles in {@link #listOfNPCs} and add the returned {@link Projectile} to {@link #listOfProjectiles}.
+	 * <p>Called by {@link #trackChanges()}.
+	 */
 	private void shootWithNPCs(){
 		NPC temp;
 		Projectile shot;
@@ -359,7 +427,10 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
-	
+	/**
+	 * Update {@link Player}s' coordinates and calls their {@link Player#shoot()} method according to the flags set by {@link #moveLeft(int)}, {@link #releaseLeft(int)}, {@link #moveRight(int)}, {@link #releaseRight(int)} and {@link #fire(int)}, {@link #releaseFire(int)}. 
+	 * <p>Called by {@link #trackChanges()}.
+	 */
 	private void controlPlayers(){
 		Player temp;
 		long currentTime;
@@ -410,7 +481,11 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
-	
+	/**
+	 * Checks if {@link Player}s overlap with {@link NPC}s in {@link #listOfNPCs}.
+	 * Make the {@link NPC} explode and decrease {@link Player}'s lives by one if there is an overlap.
+	 * <p>Called by {@link #trackChanges()}.
+	 */
 	private void detectCollision(){
 		NPC tempNPC;
 		Player tempPlayer;
@@ -451,7 +526,11 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
-	
+	/**
+	 * Checks if elements of {@link #listOfProjectiles} overlap with {@link Player}s/ {@link NPC}s.
+	 * Decrease lives/explode objects if needed.
+	 * <p> Called by {@link #trackChanges()}. 
+	 */
 	private void detectHits(){
 		Projectile proj;
 		NPC npc;
@@ -545,7 +624,11 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
-	
+	/** Checks if an element in {@link #listOfProjectiles} hits an element in {@link #listOfModifiers}.
+	 * If a {@link Modifier} is hit, it explodes and two new {@link Modifier} spawn under the explosion.
+	 * <p> Called by {@link #trackChanges()}.
+	 * <p> Calls {@link #createModifiersFromAnExplodedOne(Modifier)}
+	 */
 	private void detectModifierHits(){ // Separate function for mod hit detect; this way there are no problems with list indexing
 		Projectile proj;
 		Modifier mod;
@@ -572,7 +655,12 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
-	
+	/**
+	 * Function responsible for the spawning of the two new {@link Modifier}s from an exploded one.
+	 * If the exploded one was a {@link PowerDown}, the two new ones will be one, too and vice versa.
+	 * <p> Called by {@link #detectModifierHits()}
+	 * @param explodedMod Reference to the exploded {@link Modifier} to get the coordinates.
+	 */
 	private void createModifiersFromAnExplodedOne(Modifier explodedMod){
 		// Adding the 2 new modifiers to the list
 		for(int i=0; i<2; i++){
@@ -642,7 +730,12 @@ public class Server implements AllServerInterfaces
 			listOfModifiers.get(listOfModifiers.size()-1).setCreationTime(java.lang.System.currentTimeMillis());
 		}
 	}
-	
+	/**
+	 * A function called by a periodic TimerTask scheduled in {@link #run()}.
+	 * <p> There is a 40% chance this method spawns a random {@link PowerDown} with the given coordinates.
+	 * @param x Coordinate X of the spawning.
+	 * @param y Coordinate Y of the spawning.
+	 */
 	private void spawnPowerDown(double x, double y){	
 		double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 		if(spawnOrNot >= 0.6){
@@ -674,7 +767,13 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
-	
+	/**
+	 * A function called by a periodic TimerTask scheduled in {@link #run()}.
+	 * <p> There is a 40% chance this method spawns a power up with the given coordinates.
+	 * <p> There is a spawning frequency related to the power ups - frequent/normal/rare - which this method considers.
+	 * @param x Coordinate X of the spawning.
+	 * @param y Coordinate Y of the spawning.
+	 */
 	private void spawnPowerUp(double x, double y){
 		double spawnOrNot = Math.random(); // some randomness.. spawn smthng or not at all
 		if(spawnOrNot >= 0.6){
@@ -698,7 +797,12 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
-	
+	/**
+	 * Detects if there is an overlap between elements of {@link #listOfModifiers} and {@link #listOfPlayers}, that is a player picked up a modifier.
+	 * <p> If there is a pickup, the method sets the proper flags in the field of {@link Server} or sets the flags in the field of the {@link Player} object.
+	 * <p> Also schedules modifier-effect terminating TimerTasks if the modifier takes effect for a period of time (most of the cases).
+	 * <p> Called by {@link #trackChanges()}. 
+	 */
 	private void detectModifierPickUps(){
 	
 		for(int i=0; i<listOfPlayers.size(); i++){
@@ -919,8 +1023,12 @@ public class Server implements AllServerInterfaces
 			}
 		}		
 	}
-	
-	private void removeNonExistentObjects(){ // removes objects after a certain time, for animation purposes
+	/**
+	 * Removes {@link NPC}s, {@link Projectile}s and {@link Modifier}s which moved "under the game field".
+	 * <p> Also removes exploded {@link NPC}s, {@link Player}s, {@link Modifier}s, and picked up {@link Modifier}s after the time needed by the {@link GUI}, too.
+	 * These remained in the list for animation purposes only.
+	 */
+	private void removeNonExistentObjects(){
 		long currentTime = java.lang.System.currentTimeMillis();
 		long explosionTime;
 		
@@ -990,7 +1098,14 @@ public class Server implements AllServerInterfaces
 			}
 		}	
 	}
-	
+	/**
+	 * Method checking if the conditions of GameOver were true, i.e. the player(s) are dead.
+	 * <p> If they are dead, sets {@link #gameIsOver} true, and schedules a TimerTask which will 
+	 * change the client(s) game state(s) to {@link GameState#GAMEOVER} or 
+	 * {@link GameState#GAMEOVER_NEW_HIGHSCORE} after 2 seconds, which is needed by the {@link GUI} for animating the player's explosion.
+	 * <p> Calls {@link #isThereNewHighScore()} for deciding which game state to switch to.
+	 * <p> Called by {@link #trackChanges()}.
+	 */
 	private void isGameOver(){
 		// GameOver delaying task
 		// this Task provides the delay in changing gamestate to GameOver
@@ -1032,7 +1147,10 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
-	
+	/**
+	 * Calls {@link #getHighScores()} to determine if there is a new high score at the and of the game or not.
+	 * @return true, if there is new high score, false otherwise.
+	 */
 	private boolean isThereNewHighScore(){
 		List<Map.Entry<Integer, String>> highScores = new ArrayList<>();
 		highScores = getHighScores();
@@ -1049,6 +1167,10 @@ public class Server implements AllServerInterfaces
 	}
 	
 	// JSON converters
+	/**
+	 * Calls the JSON converter functions - {@link #playersToJSON(List)}, {@link #npcsToJSON(List)}, {@link #projectilesToJSON(List)}, {@link #modifiersToJSON(List)} -  of the several {@link GameElement} types and concatenate their result to one JSON string.
+	 * @return A String which is a JSON string, containing all the data with the current state of the game, needed by the {@link GUI} to draw.
+	 */
 	private String allToJSON(){
 		JSONObject all = new JSONObject();
 		
@@ -1068,7 +1190,12 @@ public class Server implements AllServerInterfaces
 		//System.out.println(all.toString()); // PRINTING
 		return all.toString();
 	}
-	
+	/**
+	 * Converts information needed by the {@link GUI} of the {@link Player}s to a JSONArray.
+	 * <p> Called by {@link #allToJSON()}.
+	 * @param list ArrayList of the {@link Player} objects ({@link #listOfPlayers})
+	 * @return A JSONArray containing the needed attributes of the {@link Player}s.
+	 */
 	private JSONArray playersToJSON(List<Player> list){
 		JSONObject currentPlayer;
 		ArrayList<JSONObject> playerList = new ArrayList<>();
@@ -1095,7 +1222,12 @@ public class Server implements AllServerInterfaces
 		}
 		return playersJSON;
 	}
-	
+	/**
+	 * Converts information needed by the {@link GUI} of all {@link NPC}s to a JSONArray.
+	 * <p> Called by {@link #allToJSON()}.
+	 * @param list ArrayList of the {@link NPC} objects ({@link #listOfNPCs})
+	 * @return A JSONArray containing the needed attributes of the {@link NPC}s.
+	 */
 	private JSONArray npcsToJSON(List<NPC> list){
 		JSONObject currentNPC;
 		ArrayList<JSONObject> npcList = new ArrayList<>();
@@ -1131,7 +1263,12 @@ public class Server implements AllServerInterfaces
 			}
 		return npcsJSON;
 	}
-	
+	/**
+	 * Converts information needed by the {@link GUI} of all {@link Projectile}s to a JSONArray.
+	 * <p> Called by {@link #allToJSON()}.
+	 * @param list ArrayList of the {@link Projectile} objects ({@link #listOfProjectiles})
+	 * @return A JSONArray containing the needed attributes of the {@link Projectile}s.
+	 */
 	private JSONArray projectilesToJSON(List<Projectile> list){
 		JSONObject currentProjectile;
 		ArrayList<JSONObject> projectileList = new ArrayList<>();
@@ -1168,7 +1305,12 @@ public class Server implements AllServerInterfaces
 		return projectilesJSON;
 		
 	}
-	
+	/**
+	 * Converts information needed by the {@link GUI} of all {@link Modifier}s to a JSONArray.
+	 * <p> Called by {@link #allToJSON()}.
+	 * @param list ArrayList of the {@link Modifier} objects ({@link #listOfModifiers})
+	 * @return A JSONArray containing the needed attributes of the {@link Modifier}s.
+	 */
 	private JSONArray modifiersToJSON(List<Modifier> list){
 		JSONObject currentModifier;
 		ArrayList<JSONObject> modifierList = new ArrayList<>();
@@ -1225,6 +1367,10 @@ public class Server implements AllServerInterfaces
 	}
 	// Implementing ServerForClient Interface
 	// ------------------------------------------------------------------------------------------------------------------
+	/**
+	 * Run method of the {@link Server} class.
+	 * <p> Starts the timer and schedules the periodic tasks according to {@link #difficulty}.
+	 */
 	@Override
 	public void run(){
 		
@@ -1337,7 +1483,10 @@ public class Server implements AllServerInterfaces
             timer.scheduleAtFixedRate(taskSpawnPowerDowns, 350, 2000);
         }     
 	}
-	
+	/**
+	 * Cancels the timer.
+	 * <p> In case of network multiplayer, it changes the {@link Client}s' game states properly.
+	 */
 	@Override
 	public void terminate(){
 		// deleting timer thread
@@ -1348,7 +1497,11 @@ public class Server implements AllServerInterfaces
 			client2.changeGameState(GameState.DISCONNECTED);
 		}
 	}
-	
+	/**
+	 * When called, the game is started (or continued after a pause) in case of {@link GameType#SINGLE} or {@link GameType#MULTI_LOCAL}.
+	 * <p> In case of {@link GameType#MULTI_NETWORK} it's a bit complicated, as it checks whether both players showed they are ready.
+	 * @param Reference to the {@link ClientForServer} requested the start.
+	 */
 	@Override
 	public void startRequest(ClientForServer c){
 		if(type == GameType.SINGLE || type == GameType.MULTI_LOCAL){
@@ -1394,7 +1547,11 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
-	
+	/**
+	 * Pauses the game in case of {@link GameType#SINGLE} or {@link GameType#MULTI_LOCAL}.
+	 * In case of {@link GameType#MULTI_NETWORK} it pauses the game and sets {@link #client1Ready}, {@link #client2Ready} to false.
+	 * @param c Reference to the {@link ClientForServer} requested the pause.
+	 */
 	@Override
 	public void pauseRequest(ClientForServer c){
 		isRunning = false;
@@ -1423,6 +1580,11 @@ public class Server implements AllServerInterfaces
 
 	// Implementing ServerForPlayerController Interface
 	// ------------------------------------------------------------------------------------------------------------------
+	/**
+	 * Sets {@link #player1MovingLeft} or {@link #player2MovingLeft} to true.
+	 * <p> {@link #controlPlayers()} does the moving itself.
+	 * @param  playerID 0/1, according to which player (1/2) is requested to move.
+	 */
 	@Override
 	public void moveLeft(int playerID){
 		if(playerID == 0){
@@ -1432,7 +1594,10 @@ public class Server implements AllServerInterfaces
 			player2MovingLeft = true;
 		}
 	}
-	
+	/**
+	 * Sets {@link #player1MovingLeft} or {@link #player2MovingLeft} to false.
+	 * @param  playerID 0/1, according to which player (1/2) is requested the stop of the movement.
+	 */
 	@Override
 	public void releaseLeft(int playerID){
 		if(playerID == 0){
@@ -1442,7 +1607,11 @@ public class Server implements AllServerInterfaces
 			player2MovingLeft = false;
 		}
 	}
-	
+	/**
+	 * Sets {@link #player1MovingRight} or {@link #player2MovingRight} to true.
+	 * <p> {@link #controlPlayers()} does the moving itself.
+	 * @param  playerID 0/1, according to which player (1/2) is requested to move.
+	 */
 	@Override
 	public void moveRight(int playerID){
 		if(playerID == 0)
@@ -1450,7 +1619,10 @@ public class Server implements AllServerInterfaces
 		else if(playerID == 1)
 			player2MovingRight = true;
 	}
-	
+	/**
+	 * Sets {@link #player1MovingRight} or {@link #player2MovingRight} to false.
+	 * @param  playerID 0/1, according to which player (1/2) is requested the stop of the movement.
+	 */
 	@Override
 	public void releaseRight(int playerID){
 		if(playerID == 0)
@@ -1458,7 +1630,13 @@ public class Server implements AllServerInterfaces
 		else if(playerID == 1)
 			player2MovingRight = false;
 	}
-	
+	/**
+	 * Sets {@link #player1Shooting} or {@link #player2Shooting} to true.
+	 * <p> The continuous shooting is done by {@link #controlPlayers()} if the former flag is true.
+	 * <p> This method also calls the {@link Player}'s {@link Player#shoot()} method once and adds the returned {@link Projectile} to {@link #listOfProjectiles}.
+	 * This is done to guarantee one shoot in the case if the player presses the fire button for a very short amount of time and it gets released before the network controller would have sent the {@link #fire(int)} call.
+	 * @param  playerID 0/1, according to which player (1/2) is requested to shoot.
+	 */
 	@Override
 	public void fire(int playerID){
 		if(playerID == 0){

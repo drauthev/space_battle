@@ -48,8 +48,6 @@ public class Player extends ShootingObject {
 	/**
 	 * Moving the player left with the amount according to the current state (normal or Fastened).
 	 * Or moving right if the LeftRightSwitcher modifier is active on the player.
-	 * @param None
-	 * @returns None
 	 */
 	public void moveLeft(){
 		if(leftRighSwitched){ // moving right..
@@ -75,7 +73,8 @@ public class Player extends ShootingObject {
 	}
 	
 	/**
-	 * @see {@link #moveLeft() - this does the opposite}
+	 * @see #moveLeft()
+	 * This does the opposite.
 	 */
 	public void moveRight(){
 		if(leftRighSwitched){ // moving left..
@@ -100,7 +99,6 @@ public class Player extends ShootingObject {
 		}
 	}
 	/**
-	 * @param None
 	 * @return An instance of {@link space_battle.server.game_elements.ProjectileGoingUp} with the coordinates of the top of the player. 
 	 */
 	public Projectile shoot(){

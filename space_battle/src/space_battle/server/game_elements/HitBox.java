@@ -1,7 +1,7 @@
 package space_battle.server.game_elements;
 
 /**
- * Hitbox of {@link NPC} classes and the {@link Player} class. 
+ * Hitbox of {@link GameElement} classes and the {@link Player} class. 
  * @author daniel.szeifert
  * @version 1.0
  * @since 2014-05-17

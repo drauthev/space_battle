@@ -13,7 +13,7 @@ public class HostileType1 extends NPC {
 	/**
 	 * @param x Coordinate X of spawning.
 	 * @param y Coordinate Y of spawning.
-	 * @param difficulty Number of lives of the hostile according to difficulty stored in {@link Server}.
+	 * @param difficulty Number of lives of the hostile according to difficulty stored in {@link space_battle.server.Server}.
 	 */
 	public HostileType1(int x, int y, GameSkill difficulty){
 		super(x,y, Constants.hostile1scoreIfDestroyed, Constants.hostile1verticalMoveQuantity, Constants.hostile1horizontalMoveQuantity,Constants.hostile1shootingFrequency);
