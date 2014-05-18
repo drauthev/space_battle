@@ -15,6 +15,12 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import space_battle.gui.GUI;
 import space_battle.interfaces.SoundSystemForClient;
 
+/**
+ * SoundSystem class can play different sounds.
+ * After call the constructor, you can easily play any sound by calling
+ * the {@link #playSound(SoundType)} function with the chosen SoundType.
+ * @author fimi
+ */
 public class SoundSystem implements SoundSystemForClient {
 
 	private int shootNumber = 5;
@@ -34,7 +40,10 @@ public class SoundSystem implements SoundSystemForClient {
 	private Clip[] beepAClip = new Clip[beepANumber]; 			
 	private Clip[] beepBClip = new Clip[beepANumber]; 			
 	
-	// Constructor
+	/**
+	 * Constructor for SoundSystem class
+	 * @author fimi
+	 */
 	public SoundSystem()
 	{
 		shootClip[0] = generateClip("shootWavA.wav");
@@ -69,6 +78,12 @@ public class SoundSystem implements SoundSystemForClient {
 		}
 	}
 		
+	/**
+	 * Generates the necessary variables, which have to exist to play a sound.
+	 * Called from Constructor.
+	 * @param string name of sound file
+	 * @return Clip variable, which can be added to {@link #playSound(SoundType)} as a parameter
+	 */
 	private Clip generateClip(String string) {
 		
 		InputStream is= new BufferedInputStream(getClass().getResourceAsStream("/space_battle/res/sounds/" + string));
@@ -109,6 +124,11 @@ public class SoundSystem implements SoundSystemForClient {
 		return localClip;
 	}
 	
+	/**
+	 * You can play any available sound by call this function
+	 * @param soundType SoundType enum value, which describe the chosen sound
+	 * @author fimi
+	 */
 	public void playSound(SoundType soundType)
 	{
 		Clip localClip[] = new Clip[5]; 
@@ -140,17 +160,5 @@ public class SoundSystem implements SoundSystemForClient {
 		localClip[(random + cntr) % localNumber].stop();
 		localClip[(random + cntr) % localNumber].setFramePosition(0);
 		localClip[(random + cntr) % localNumber].start();
-	}
-
-
-	public void playSound(String soundType)
-	{
-		if      (soundType == "shoot") playSound(SoundType.shoot);
-		else if (soundType == "powerUp") playSound(SoundType.powerUp);
-		else if (soundType == "powerDown") playSound(SoundType.powerDown);
-		else if (soundType == "enemyExplosion") playSound(SoundType.enemyExplosion);
-		else if (soundType == "spaceShipExplosion") playSound(SoundType.spaceShipExplosion);
-		else if (soundType == "beepA") playSound(SoundType.beepA);
-		else if (soundType == "beepB") playSound(SoundType.beepB);
 	}
 }

@@ -23,9 +23,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 //Game packages
-
-
-
 import space_battle.client.CModifier;
 import space_battle.client.CNPC;
 import space_battle.client.CPlayer;
@@ -38,7 +35,11 @@ import space_battle.enums.PlayerAction;
 import space_battle.interfaces.ClientForGUI;
 import space_battle.interfaces.GUIForClient;
 
-
+/**
+ * GUI class handles the periodic repaint of the screen, and process the
+ * commands from the keyboard and the mouse
+ * @author fimi
+ */
 public class GUI extends JFrame implements KeyListener, MouseListener, GUIForClient {
 
 	// GUI Window
@@ -131,6 +132,12 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 	private int currentHighScore;
 	private int shipID[] = new int[2];
 
+	/**
+	 * Constructor for GUI class. <br>
+	 * Handles the initialization of parameters and the timer, used to draw the screen. <br>
+	 * No further initialization is necessary for the class to work.
+	 * @param client_param The client, the GUI was called from
+	 */
 	public GUI(ClientForGUI client_param)
 	{
 
@@ -191,13 +198,23 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	}
 
+	/**
+	 * run() functions for Timer
+	 * @author fimi
+	 */
 	public void run() {
 		timer.scheduleAtFixedRate(reapaintTimer, 0, 1000/100);
 	}
 
 
-	/******************************* INTERFACE FOR CLIENT ****************************************/
-
+	/* ****************************** INTERFACE FOR CLIENT *************************************** */
+    
+	/**
+	 * Change the current GameState to the one, given as the parameter
+	 * Besides setting the currentGameState field, it sets the proper MenuState,
+	 * and the resets the variables which are used to store the positions of the dot in menu 
+	 * @param gs the GameState which will be set by the function
+	 */
 	public void setGameState(GameState gs)	
 	{
 		textField = "";
@@ -217,31 +234,64 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		System.out.println("GameState changed to " + currentGameState);
 	}
 
+	/**
+	 * Pop up an Error window with a text
+	 * @param text The displayed text
+	 * @author fimi
+	 */
 	public static void error(String text) {
 		JOptionPane.showMessageDialog(null, text, "Error", JOptionPane.INFORMATION_MESSAGE);
 	}
 
+	/**
+	 * It is called by the client, when the game is exited
+	 * It cancels the timer, set visibility to false and make the frame disappear
+	 * @author fimi
+	 */
 	public void terminate() {
 		timer.cancel();
 		setVisible(false);
 		dispose();	
 	}
-
+	
+	/**
+	 * Client can set if the sound effects are enabled
+	 * It changes the value of isEffectOn field
+	 * @author fimi
+	 * @param val true when the sound effects are enabled
+	 */
 	public void setSound(Boolean val) {
 		isEffectOn = val;
 	}
 
+	/**
+	 * Client can set the difficulty of the game, which is determined by the value of the GameSkill enum
+	 * It changes the value of currentGameSkill field
+	 * @param gs Chosen GameSkill
+	 * @author fimi
+	 */
 	public void setDifficulty(GameSkill gs) {
 		currentGameSkill = gs;
 	}
 
+	/**
+	 * Client can set the String[], containing the IP addresses, previously used
+	 * It clones the values of the String[] to local ipAddresses field
+	 * @param iparr String[], containing the IP addresses, previously used
+	 * @author fimi
+	 */
 	public void setRecentIPs(String[] iparr) {
 		ipAddresses = iparr.clone();
 	}
 
 
-	/******************************** PAINT PROCEDURE ************************************/
-
+	/* ******************************* PAINT PROCEDURE ************************************/
+	/**
+	 * Repaints the whole screen
+	 * Used in the run() function of the Timer
+	 * @param g Graphic variable
+	 * @author fimi
+	 */
 	public void paint(Graphics g)
 	{
 		
@@ -538,9 +588,15 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		}
 	}
 
-	/******************************** PAINT PART FUNCTIONS ************************************/
+	/* ******************************* PAINT PART FUNCTIONS ************************************/
 
-	// Function, use to draw Background image to screen
+	/**
+	 * Draw the background image to the screen
+	 * It increments backgroundImgY field, which is used
+	 * to make the screen moving.
+	 * Called by {@link #paint(Graphics)} every time
+	 * @author fimi
+	 */
 	public void drawBackground()
 	{
 		backgroundImgY += backgroundSpeed;
@@ -551,18 +607,38 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		bufferGraphics.drawImage(imgCollector.getBackgroundImgObj().getBufferedImg()	, 0	, (int)backgroundImgY		, imgCollector.getBackgroundImgObj().getWidth()	,imgCollector.getBackgroundImgObj().getHeight(),null);
 	}
 
-	// Function, use to draw Foreground image to screen
+
+	/**
+	 * Draw the so called foreground image to the screen.
+	 * The image is positioned to the middle of the sreen horizontally.
+	 * Called by {@link #paint(Graphics)} in specific GameStates.
+	 * @param width Width of the foreground image
+	 * @param height Width of the foreground image 
+	 * @author fimi
+	 */
 	public void drawForeground(int width, int height)
 	{
 		bufferGraphics.drawImage(imgCollector.getForegroundImgObj().getBufferedImg(), (frameWidth)/2-150, 165, 300, 200, null);
 	}
 
-	// Function, use to draw ImageObjects to screen
+	/**
+	 * Draw the specified image object to the screen.
+	 * Called by {@link #paint(Graphics)} in specific GameStates.
+	 * @param img BufferedImage variable, containing the specified image
+	 * @param x The X coordinate, where the middle of the image will be placed
+	 * @param y The Y coordinate, where the middle of the image will be placed
+	 * @author fimi
+	 */
 	private void drawObject(ImageObject img, int x, int y) {
 		bufferGraphics.drawImage(img.getBufferedImg() ,x-img.getWidth()/2 , y-img.getHeight()/2, img.getWidth(), img.getHeight(), null);
 	}
 
-	// Function, use to draw title to screen
+	/**
+	 * Draw the menu title to the screen.
+	 * Called by {@link #paint(Graphics)} when GameState is NONE or PAUSED.
+	 * @param title The text of the title 
+	 * @author fimi
+	 */
 	public void drawTitle(String title)
 	{
 		bufferGraphics.setFont(titleFontType.getFont());
@@ -572,7 +648,13 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		bufferGraphics.drawString(title,CoordinateX, CoordinateY);
 	}
 
-	// Function, use to draw a menu line to screen
+	/**
+	 * Draw a menu line to the screen.
+	 * Called by {@link #paint(Graphics)} when GameState is NONE or PAUSED.
+	 * @param lineNumber the ordinal number of the line, where the text is drawn
+	 * @param content the text, which will be drawn 
+	 * @author fimi
+	 */
 	public void drawMenuLine(int lineNumber, String content)
 	{
 		bufferGraphics.setFont(menuFontType.getFont());
@@ -584,7 +666,13 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		if (dotLineToDraw == lineNumber) dotX = CoordinateX;
 	}
 
-	// Function, use to draw a powerUp/Down name to screen
+	/**
+	 * Draw a powerUp/Down name to screen.
+	 * Called by {@link #paint(Graphics)} in specific GameStates
+	 * @param lineNumber the ordinal number of the line, where the text is drawn
+	 * @param content the text which will be drawn
+	 * @author fimi
+	 */
 	public void drawPowerTitle(int lineNumber, String content, boolean isPowerUp)
 	{	
 		if(isPowerUp)
@@ -603,7 +691,15 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		bufferGraphics.drawString(content,CoordinateX, CoordinateY);
 	}
 
-	// Function, use to draw a writing line to screen (same as menu line, but there is an underline at the end of the string, flashing
+
+	/**
+	 * Draw a writing line to screen (same as menu line, but 
+	 * there is an underline at the end of the string, flashing)
+	 * Called by {@link #paint(Graphics)} in specific occasions
+	 * @param lineNumber the ordinal number of the line, where the text is drawn
+	 * @param content the text which will be drawn
+	 * @author fimi
+	 */
 	public void drawWritingLine(int lineNumber, String content)
 	{
 		bufferGraphics.setFont(menuFontType.getFont());
@@ -617,7 +713,16 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		if (dotLineToDraw == lineNumber) dotX = CoordinateX;
 	}
 
-	// Function, use to draw a line with two rows
+	
+	/**
+	 * Draw a line with two rows.  
+	 * Called by {@link #paint(Graphics)} in specific occasions to draw menu point in
+	 * Options, Keyboard Settings and High Score menus
+	 * @param lineNumber the ordinal number of the line, where the text is drawn
+	 * @param content1 the text which will be drawn in the first row
+	 * @param content2 the text which will be drawn in the second row
+	 * @author fimi
+	 */
 	public void drawOptionsLine(int lineNumber, String content1, String content2)
 	{
 		bufferGraphics.setFont(menuFontType.getFont());
@@ -638,7 +743,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	}	
 
-	// Function, use to draw the dot before a menu line
+	/**
+	 * Draw a small spaceShip before the actual Menu line  
+	 * Called by {@link #paint(Graphics)} when the GameState is NONE or PAUSED.
+	 * Use dotLineToDraw field to determine the positions of the image. 
+	 */
 	public void drawDot()
 	{
 		int CoordinateY = firstLineY - 20 + dotLineToDraw * lineHeight;
@@ -648,8 +757,10 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	}	
 
-
-	// Function, use to draw the state in different Game States
+	/**
+	 * Draw the current state in different Game States
+	 * @param content String value, drawed to the screen
+	 */
 	public void drawState(String content)
 	{
 		bufferGraphics.setFont(stateFontType.getFont());
@@ -658,7 +769,13 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		bufferGraphics.drawString(content,CoordinateX, 230);
 	}
 
-	// Draw LIFE images into the bottom if the screen
+	/**
+	 * Draw LIFE images into the bottom if the screen  
+	 * Called by {@link #paint(Graphics)} in specific GameStates
+	 * @param numberOfLives1 the number of images, which are drawn the left of the screen
+	 * @param numberOfLives2 the number of images, which are drawn the right of the screen 
+	 * @author fimi
+	 */
 	public void drawLives(int numberOfLives1, int numberOfLives2)
 	{
 		for (int i = 0; i < numberOfLives1; i++)
@@ -668,7 +785,12 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 			drawObject(imgCollector.getLifeImgObj()	, frameWidth - 45 -  40*i	, 600);
 	}		
 
-	// Draw Scores and Titles to the top of the page
+	/**
+	 * Draw Scores and Titles to the top of the page
+	 * @param curr Current Score
+	 * @param high Highest Score, ever received
+	 * @author fimi
+	 */
 	public void drawTopScores(int curr, int high)
 	{
 		bufferGraphics.setFont(score1FontType.getFont());
@@ -685,7 +807,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	/******************************** FUNCTIONS RELATED TO GRAPHIC PARTS  ************************************/
 
-	// Get the number of the last line
+	/**
+	 * Returns the ordinal number of the last line
+	 * @return ordinal number of the last line
+	 * @author fimi
+	 */
 	int getLastLine()
 	{
 		if      (currentMenuState == MenuState.MAIN_MENU) return 5;
@@ -699,7 +825,12 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		else return 1;
 	}
 
-	// Check if the IP is valid
+	/**
+	 * Check if the given String contains a valid IP address
+	 * @param ip the String which is checked
+	 * @return true, when the String contains a valid IP address
+	 * @author fimi
+	 */
 	private boolean isValidIP(String ip) {
 		try {
 			if (ip == null || ip.isEmpty()) {
@@ -725,7 +856,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		}
 	}
 
-	// Set Menu State
+	/**
+	 * Change the Menu State
+	 * @param ms Chosen MenuState
+	 * @author fimi
+	 */
 	void setMenuState(MenuState ms)
 	{
 		if      (currentMenuState == MenuState.MAIN_MENU || currentMenuState == MenuState.PAUSED_MENU)     
@@ -760,6 +895,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	}
 
+	/**
+	 * Refresh High Score table with {@link space_battle.client.Client #getHighScores()} function <br>
+	 * High Score table is stored in field variables highScoreValues[] and highScoreString[]
+	 * @author fimi
+	 */
 	private void refreshHighScore() {
 
 		List<Entry<Integer,String>> localList = client.getHighScores();	
@@ -784,15 +924,26 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	}
 
+	/**
+	 * Generate different random numbers between 0 and 5 for shipID[0] and shipID[1] variables. <br>
+	 * Have to be called before {@link space_battle.client.Client #newGame(GameType)} and {@link space_battle.client.Client #joinGame(String)} functions are called
+	 * @author fimi
+	 */
 	private void generateRandomShipID() {
 		shipID[0] = (int )(6 * Math.random());
 		
 		while ((shipID[1] = (int )(6 * Math.random())) == shipID[0]);
 	}
 
-	/************************************** KEY EVENTS ****************************************/
+	/* ************************************* KEY EVENTS ****************************************/
 
-	// Handle the key typed event from the text field.
+
+	/**
+	 * Handle the key typed event from the text field. <br>
+	 * Controlling textField field variable when {@link #isTextLine()} returns true
+	 * @author fimi
+	 * @param e KeyEvent value
+	 */
 	public void keyTyped(KeyEvent e) 
 	{
 		if (isTextLine())
@@ -805,7 +956,14 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		}
 	}
 
-	// Handle the key-pressed event from the text field.
+
+	/**
+	 * Handle the key-pressed event from the text field. <br>
+	 * Dispatch KeyEvents to client if the correct GameState is set and the Key is not Escape or Backspace
+	 * Otherwise handling the control from keyboard 
+	 * @author fimi
+	 * @param e KeyEvent value
+	 */
 	public void keyPressed(KeyEvent e) {
 
 		if ((currentGameState != GameState.NONE && currentGameState != GameState.PAUSED && currentGameState != GameState.GAMEOVER_NEW_HIGHSCORE ) && e.getKeyCode() != KeyEvent.VK_ESCAPE && e.getKeyCode() != KeyEvent.VK_BACK_SPACE)
@@ -981,7 +1139,12 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		}
 	}
 
-	// Handle the key-released event from the text field.
+	/**
+	 * Handle the key-released event from the text field. <br>
+	 * Dispatch KeyEvents to client if the correct GameState is set and the Key is not Escape or Backspace
+	 * @author fimi
+	 * @param e KeyEvent value
+	 */
 	public void keyReleased(KeyEvent e) {
 		if ((currentGameState != GameState.NONE && currentGameState != GameState.PAUSED && currentGameState != GameState.GAMEOVER_NEW_HIGHSCORE ) && e.getKeyCode() != KeyEvent.VK_ESCAPE && e.getKeyCode() != KeyEvent.VK_BACK_SPACE)
 		{
@@ -989,8 +1152,16 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		}
 	}
 
-	/************************************** KEY EVENT RELATED FUNCTIONS  ****************************************/
+	/* ************************************* KEY EVENT RELATED FUNCTIONS  ****************************************/
 
+	/**
+	 * Checks if the current line is a text line <br>
+	 * There are two cases when the current line is a text line: <br>
+	 * - Writing an IP Address in Join Game Menu <br>
+	 * - Writing new Highscore at the end of the game
+	 * @author fimi
+	 * @return boolean - true when the current line is Text Line
+	 */
 	private boolean isTextLine() {
 		if (currentGameState == GameState.NONE || currentGameState == GameState.PAUSED)
 		{
@@ -1002,7 +1173,11 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 		return false;
 	}
 
-
+	/**
+	 * Called when Enter is pressed in {@link #keyPressed(KeyEvent)} or when a valid menu point was clicked in {@link #mouseClicked(MouseEvent)}
+	 * @param currentLine the ordinal number of the currently selected line
+	 * @param isKey true when the function is called from {@link #keyPressed(KeyEvent)}
+	 */
 	void someThingIsEntered(int currentLine, int isKey)
 	{
 		if (currentGameState == GameState.NONE || currentGameState == GameState.PAUSED)
@@ -1126,10 +1301,16 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 
 	}
 
-	/************************************** MOUSE EVENTS ****************************************/
+	/* ************************************* MOUSE EVENTS ****************************************/
 
-	// This method will be called when the mouse has been clicked. 
+	/**
+	 * Executed when the Mouse has been clicked <br>
+	 * Call {@link space_battle.gui.GUI#someThingIsEntered(int, int)} function in case you click on a valid menu point
+	 * @author fimi
+	 * @param me MouseEvent
+	 */ 
 	public void mouseClicked (MouseEvent me) {
+
 
 		// Save the coordinates of the click
 		int xpos = me.getX(); 
@@ -1142,16 +1323,38 @@ public class GUI extends JFrame implements KeyListener, MouseListener, GUIForCli
 						someThingIsEntered(i, 0);
 	}
 
-	// This is called when the mouse has been pressed 
+
+	/**
+	 * Executed when the Mouse has been pressed <br>
+	 * No legal function at this time!
+	 * @author fimi
+	 * @param me MouseEvent
+	 */ 
 	public void mousePressed (MouseEvent me) {}
 
-	// When it has been released 
+	/**
+	 * Executed when the Mouse has been released <br>
+	 * No legal function at this time!
+	 * @author fimi
+	 * @param me MouseEvent
+	 */ 
 	public void mouseReleased (MouseEvent me) {} 
 
-	// This is executed when the mouse enters the window
+	/**
+	 * Executed when the Mouse enters the window <br>
+	 * No legal function at this time!
+	 * @author fimi
+	 * @param me MouseEvent
+	 */
 	public void mouseEntered (MouseEvent me) {}
 
-	// When the Mouse leaves the window
+
+	/**
+	 * Executed when the Mouse leaves the window <br>
+	 * No legal function at this time!
+	 * @author fimi
+	 * @param me MouseEvent
+	 */
 	public void mouseExited (MouseEvent me) {} 
 
 }
