@@ -16,9 +16,7 @@ public class Shield extends Modifier{
 		super(x,y);
 		super.setTimeItLasts(20000);
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
 	@Override
 	public void autoMove(){
 		super.setCoordY(super.getCoordY() + verticalMoveQuantity);

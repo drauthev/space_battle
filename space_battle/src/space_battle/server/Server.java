@@ -14,10 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
-import com.sun.org.apache.xpath.internal.operations.Mod;
-import com.sun.security.ntlm.Client;
-
+import space_battle.client.Client;
 import space_battle.client.PlayerController;
 import space_battle.enums.GameSkill;
 import space_battle.enums.GameState;
@@ -1500,7 +1497,7 @@ public class Server implements AllServerInterfaces
 	/**
 	 * When called, the game is started (or continued after a pause) in case of {@link GameType#SINGLE} or {@link GameType#MULTI_LOCAL}.
 	 * <p> In case of {@link GameType#MULTI_NETWORK} it's a bit complicated, as it checks whether both players showed they are ready.
-	 * @param Reference to the {@link ClientForServer} requested the start.
+	 * @param c Reference to the {@link ClientForServer} requested the start.
 	 */
 	@Override
 	public void startRequest(ClientForServer c){
@@ -1566,7 +1563,9 @@ public class Server implements AllServerInterfaces
 			client2.changeGameState(GameState.PAUSED);
 		}	
 	}
-	
+	/**
+	 * Gets called when some of the clients quit during game.  Make the DISCONNECTED window pop up at the other player's screen by changing game states to {@link GameState#DISCONNECTED}.
+	 */
 	@Override
 	public void disconnect(ClientForServer c){
 		isRunning = false;
@@ -1714,7 +1713,10 @@ public class Server implements AllServerInterfaces
 			}
 		}
 	}
-	
+	/**
+	 * Sets player1Shooting or player2Shooting to false, according to the parameter.
+	 * @param playerID 0/1 according to player1/2
+	 */
 	@Override
 	public void releaseFire(int playerID){
 		if(playerID == 0)
@@ -1722,7 +1724,11 @@ public class Server implements AllServerInterfaces
 		else if(playerID == 1)
 			player2Shooting = false;
 	}
-	
+	/**
+	 * Being called after a player typed a name for the high score board.
+	 * <p> Downloads the high score table from the FTP server, removes the last record, appends the new record and uploads the new table to the server.
+	 * @param name Player/team name entered by the player to be on the high score board.
+	 */
 	@Override
 	public void sendName(String name) {
 		FTPConnector ftp;
@@ -1769,8 +1775,10 @@ public class Server implements AllServerInterfaces
 			e.printStackTrace();
 		}
 	}
-		
-	// returns an ArrayList with the ordered highscore table; first element of the list is with the highest score
+	/**
+	 * Downloads the high score table from the FTP server and parse its content, than return an ordered list - first element is with the highest score.
+	 * @return An ArrayList of Map.Entry<Integer, String> elements, which contain the ten record on the high score table.
+	 */
 	public static List<Map.Entry<Integer, String>> getHighScores()
 	{
 	  // creating a new ListArray for the high score records
@@ -1826,7 +1834,10 @@ public class Server implements AllServerInterfaces
 	  }
 	  return highScores;
 	}
-	
+	/**
+	 * Downloads the high score table from the FTP server and return the highest score on it to display on the top of the screen during the game.
+	 * @return An integer with the highest score reached yet.
+	 */
 	public static int getHighestScore()
 	{
 		List<Map.Entry<Integer, String>> highScores = new ArrayList<>();
@@ -1839,8 +1850,9 @@ public class Server implements AllServerInterfaces
 			return highestScore;
 		}
 	}
-
-
+	/**
+	 * Sets the reference to the second client. During the constructor call, client2 is not ready yet.
+	 */
 	@Override
 	public void setClient2(ClientForServer c2) {
 		client2 = c2;	

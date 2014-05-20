@@ -14,16 +14,12 @@ public class ProjectileGoingDown extends Projectile {
 	ProjectileGoingDown(double x, double y) {
 		super(x,y);
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
 	@Override
 	public void autoMove(){
 		super.setCoordY(super.getCoordY() + super.getVerticalMoveQuantity()); // (x,y)=(0,0) is the top-left corner of gamespace
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
 	@Override
 	public boolean isHit(GameElement object) { // TODO: oldal, teteje? ha blemaszik a palyer?
 		// projectile-related

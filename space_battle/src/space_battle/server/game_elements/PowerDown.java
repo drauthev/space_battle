@@ -19,9 +19,7 @@ public abstract class PowerDown extends Modifier {
 	PowerDown(double x, double y){
 		super(x, y);
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
 	public void autoMove(){
 		super.setCoordY(super.getCoordY() + verticalMoveQuantity);
 	}

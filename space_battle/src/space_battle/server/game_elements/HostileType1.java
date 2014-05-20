@@ -29,15 +29,15 @@ public class HostileType1 extends NPC {
 			super.setLives(Constants.hostileType1livesIfHard);
 		}
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
+	@Override
 	public void autoMove(){
 		super.setCoordY(super.getCoordY() + super.getVerticalMoveQuantity());
 	}
 	/**
-	 * {inheritDoc}
+	 * @see ShootingObject#shoot()
 	 */
+	@Override
 	public Projectile shoot(){
 		ProjectileGoingDown shot = new ProjectileGoingDown(this.getCoordX(), this.getCoordY() + Constants.hostile1Height/2 + Projectile.getProjectileheight()/2);
 		return shot;

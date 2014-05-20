@@ -99,8 +99,10 @@ public class Player extends ShootingObject {
 		}
 	}
 	/**
+	 * 
 	 * @return An instance of {@link space_battle.server.game_elements.ProjectileGoingUp} with the coordinates of the top of the player. 
 	 */
+	@Override
 	public Projectile shoot(){
 		if(hasLaser){
 			ProjectileLaser shot = new ProjectileLaser(this.getCoordX(), this.getCoordY() - Player.playerHeight/2 - Projectile.getProjectileheight()/2, this);

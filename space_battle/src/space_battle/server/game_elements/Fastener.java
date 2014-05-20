@@ -16,9 +16,7 @@ public class Fastener extends Modifier {
 		super(x,y);
 		super.setTimeItLasts(10000);
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
 	@Override
 	public void autoMove(){
 		super.setCoordY(super.getCoordY() + verticalMoveQuantity);

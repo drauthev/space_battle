@@ -51,10 +51,13 @@ public class HostileType2 extends NPC {
 		axisX = x; // axis will be the X coordinate at the spawning event
 	}
 	/**
-	 * {inheritDoc}
-	 * {@link HostileType2} moves down from the spawning coordinates with the following horizontal motion:
-	 * it starts moving left to an amplitude of {@value #diffFromAxis}, then turns right, goes till it reaches {@link #axisX} + {@link #diffFromAxis}, turn left again, etc.
+	 * 
+	 * {@inheritDoc}
+	 * 
+	 * <p> {@link HostileType2} moves down from the spawning coordinates with the following horizontal motion:
+	 * it starts moving left to an amplitude of {@link #diffFromAxis}, then turns right, goes till it reaches {@link #axisX} + {@link #diffFromAxis}, turn left again, etc.
 	 */
+	@Override
 	public void autoMove(){
 		double x = super.getCoordX();
 		double horizontalMoveQuantity = super.getHorizontalMoveQuantity();
@@ -82,9 +85,8 @@ public class HostileType2 extends NPC {
 			}
 		}
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
+	@Override
 	public Projectile shoot(){
 		ProjectileGoingDown dummy = new ProjectileGoingDown(this.getCoordX(), this.getCoordY() + Constants.hostile2Height/2 + Projectile.getProjectileheight()/2);
 		return dummy;

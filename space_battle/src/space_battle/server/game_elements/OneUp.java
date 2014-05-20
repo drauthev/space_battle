@@ -14,9 +14,7 @@ public class OneUp extends Modifier {
 	public OneUp(double x, double y){
 		super(x,y);
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
 	@Override
 	public void autoMove(){
 		super.setCoordY(super.getCoordY() + verticalMoveQuantity);

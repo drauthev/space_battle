@@ -14,16 +14,12 @@ public class ProjectileGoingUp extends Projectile {
 	ProjectileGoingUp(double x, double y) {
 		super(x,y);
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
 	@Override
 	public void autoMove(){
 		super.setCoordY(super.getCoordY() - super.getVerticalMoveQuantity()); // minus, because (x,y)=(0,0) is the top-left corner of gamespace
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
 	@Override
 	public boolean isHit(GameElement object){
 		// projectile-related

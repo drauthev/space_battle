@@ -2,6 +2,7 @@ package space_battle.server.game_elements;
 
 import space_battle.enums.GameSkill;
 import space_battle.server.Constants;
+import space_battle.server.Server;
 /**
  * Hostile type which goes straight down in the screen and periodically teleports to a spot with a random X coordinate.
  * It shoots three {@link ProjectileGoingDown} fast in a row, and then doesn't shoot for a period of time.
@@ -43,9 +44,8 @@ public class HostileType3 extends NPC {
 			super.setLives(Constants.hostileType3livesIfHard);
 		}
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
+	@Override
 	public void autoMove(){
 		super.setCoordY(super.getCoordY() + super.getVerticalMoveQuantity());
 	}
@@ -61,9 +61,10 @@ public class HostileType3 extends NPC {
 		super.setCoordY(super.getCoordY() + 10*super.getVerticalMoveQuantity());
 	}
 	/**
-	 * {inheritDoc}
+	 * 
 	 * Returns null if the hostile is not in a "shooting period", that is {@link #shootingIsEnabled} is false.
 	 */
+	@Override
 	public Projectile shoot(){
 		if(shootingIsEnabled){
 			ProjectileGoingDown shot = new ProjectileGoingDown(this.getCoordX(), this.getCoordY() + Constants.hostile3Height/2 + Projectile.getProjectileheight()/2);

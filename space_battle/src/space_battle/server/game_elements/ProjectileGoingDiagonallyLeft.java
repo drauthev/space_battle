@@ -16,19 +16,15 @@ public class ProjectileGoingDiagonallyLeft extends Projectile {
 	ProjectileGoingDiagonallyLeft(double x, double y) {
 		super(x,y);
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
 	@Override
 	public void autoMove(){
 		super.setCoordX(super.getCoordX() - horizontalMoveQuantity);
 		super.setCoordY(super.getCoordY() + super.getVerticalMoveQuantity()); // (x,y)=(0,0) is the top-left corner of gamespace
 	}
-	/**
-	 * {inheritDoc}
-	 */
+
 	@Override
-	public boolean isHit(GameElement object) { //TODO!!
+	public boolean isHit(GameElement object) { //TODO
 		// projectile-related
 		int bottom = (int) (getCoordY() + super.getProjectileheight()/2);
 		int projX = (int) getCoordX();
