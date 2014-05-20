@@ -27,19 +27,70 @@ import space_battle.server.Server;
 import space_battle.sound.SoundSystem;
 import space_battle.sound.SoundType;
 
+/**
+ * This class functions as a bridge between the actual {@link Server} and the {@link GUI}.
+ * The application's entry point is defined here and this is where GUI gets instantiated.
+ * This class configures and sets up network controllers if necessary, as well as player
+ * controller(s), and the appropriate server.   
+ * 
+ * @author András
+ *
+ */
 public class Client implements ClientForGUI, ClientForServer {
+	/**
+	 * To store preferences (eg. keyboard settings)
+	 */
 	private final Preferences prefs = Preferences.userRoot().node("space_battle");
 	
+	/**
+	 * Actual game state
+	 */
 	private GameState gameState = GameState.NONE;
+	
+	/**
+	 * Actual game skill
+	 */
 	private GameSkill gameSkill = GameSkill.NORMAL;
+	
+	/**
+	 * Whether sound effects are enabled or not
+	 */
 	private Boolean sounds = true;
 	
+	/**
+	 * GUI instance
+	 */
 	private GUIForClient gui;
+	
+	/**
+	 * SoundSystem instance
+	 */
 	private SoundSystemForClient soundSys;
+	
+	/**
+	 * Server instance
+	 */
 	private ServerForClient server;
-	private VirtualClient vc;	// Call terminate(), when server gets terminated after a network game.
+	
+	/**
+	 * Reference to the virtual client, if exists. It must be terminated
+	 * after the server gets terminated. 
+	 */
+	private VirtualClient vc;
+	
+	/**
+	 * PlayerController(s)
+	 */
 	private PlayerController[] playercontrollers;
+	
+	/**
+	 * ObjectBuffers to hold client side equivalents of server objects
+	 */
 	private ObjectBuffer[] objectBuffer = new ObjectBuffer[3];
+	
+	/**
+	 * States for all the object buffers
+	 */
 	private ObjectBufferState[] obStates = 
 		{ObjectBufferState.INVALID, ObjectBufferState.INVALID, ObjectBufferState.INVALID};
 	private Object objectBufferSyncObject = new Object();
@@ -47,16 +98,30 @@ public class Client implements ClientForGUI, ClientForServer {
 	private EnumMap<PlayerAction, Integer> keyboardSettings =
 			new EnumMap<PlayerAction, Integer>(PlayerAction.class);
 
+	/**
+	 * Possible object buffer states
+	 */
 	private enum ObjectBufferState
 	{
 		USED, VALID, INVALID
 	}
 	
+	/**
+	 * Application's entry point.
+	 * 
+	 * @param args unused
+	 */
 	public static void main(String[] args) {
 		new Client();
 	}
 
 
+	/**
+	 * Constructor.
+	 * 
+	 * Loads previous run configuration, instantiates and configures GUI
+	 * and starts it's thread. Initializes object buffers. 
+	 */
 	public Client() {
 		loadConfig();
 		
@@ -88,6 +153,9 @@ public class Client implements ClientForGUI, ClientForServer {
 		t.run();
 	}
 
+	/**
+	 * Initiate shutdown process from {@link GUI}.
+	 */
 	public void terminate() {
 		if (gui != null)
 			gui.terminate();
@@ -98,6 +166,9 @@ public class Client implements ClientForGUI, ClientForServer {
 		saveConfig();
 	}
 
+	/**
+	 * Loads previous run configuration from registry.
+	 */
 	private void loadConfig() {
 		keyboardSettings.put(PlayerAction.P1LEFT, prefs.getInt("p1left", KeyEvent.VK_J));
 		keyboardSettings.put(PlayerAction.P1RIGHT, prefs.getInt("p1right", KeyEvent.VK_L));
@@ -121,6 +192,14 @@ public class Client implements ClientForGUI, ClientForServer {
 		sounds = prefs.getBoolean("sounds", true);
 	}
 
+	/**
+	 * Called periodically by the actual {@link Server} instance. It receives and parses a 
+	 * <a href="http://en.wikipedia.org/wiki/JSON">JSON string</a>, which
+	 * contains all the information from the server objects which is necessary for the {@link GUI} to draw
+	 * and animate the objects.
+	 * 
+	 * @param JSONtext the <a href="http://en.wikipedia.org/wiki/JSON">JSON string</a> to be parsed
+	 */
 	@Override
 	public void updateObjects(String JSONtext) {
 		int idx = -1;	// ObjectBuffer to work with.
@@ -218,6 +297,11 @@ public class Client implements ClientForGUI, ClientForServer {
 	}
 
 
+	/**
+	 * Forwards the servers request to the {@link SoundSystem} to play the given type of sound.
+	 * 
+	 * @param soundType type of the sound, defined in {@link SoundType} enum
+	 */
 	@Override
 	public void playSound(SoundType soundType) {
 		if (sounds)
@@ -226,7 +310,9 @@ public class Client implements ClientForGUI, ClientForServer {
 
 
 	/**
-	 * Blocking! 
+	 * Request the high score table from global high-score FTP server.
+	 * 
+	 * @return a List of Map Entries, which contain name-high score pairs.
 	 */
 	@Override
 	public List<java.util.Map.Entry<Integer, String>> getHighScores() {
@@ -245,7 +331,9 @@ public class Client implements ClientForGUI, ClientForServer {
 	}
 	
 	/**
-	 * Blocking!  
+	 * Requests the highest score from gloval high-score FTP server.
+	 * 
+	 * @return the highest score
 	 */
 	@Override
 	public int getHighestScore()
@@ -254,6 +342,12 @@ public class Client implements ClientForGUI, ClientForServer {
 	}
 
 
+	/**
+	 * Returns the current keyboard bindings. Called by the GUI.
+	 * 
+	 * @return {@link PlayerAction}-<a href="http://docs.oracle.com/javase/7/docs/api/java/awt/event/KeyEvent.html">KeyCode</a>
+	 * pairs in an EnumMap
+	 */
 	@Override
 	public EnumMap<PlayerAction, Integer> getKeyboardSettings() {
 		if (keyboardSettings == null)
@@ -262,6 +356,11 @@ public class Client implements ClientForGUI, ClientForServer {
 		return keyboardSettings;
 	}
 
+	/**
+	 * Returns the newest available {@link ObjectBuffer}. Called by the GUI.
+	 * 
+	 * @return the newest ObjectBuffer
+	 */
 	@Override
 	public ObjectBuffer getNewObjectBuffer() {
 		synchronized (objectBufferSyncObject)
@@ -298,6 +397,12 @@ public class Client implements ClientForGUI, ClientForServer {
 	}
 
 
+	/**
+	 * Dispatches a {@link KeyEvent} to the {@link PlayerController}(s). Called by the GUI.
+	 * 
+	 * @param e the {@link KeyEvent} to be dispatched
+	 * @param pressed whether the key is being pressed or being released
+	 */
 	@Override
 	public void dispatchKeyEvent(KeyEvent e, boolean pressed) {
 		if (gameState == GameState.RUNNING)
@@ -306,12 +411,22 @@ public class Client implements ClientForGUI, ClientForServer {
 	}
 
 
+	/**
+	 * Set current game state by the server.
+	 * 
+	 * @param gs new game state
+	 * 
+	 * @see GameState
+	 */
 	public void changeGameState(GameState gs)
 	{	
 		gameState = gs;
 		gui.setGameState(gameState);
 	}
 
+	/**
+	 * Save current configuration at exit to the registry.
+	 */
 	private void saveConfig() {
 		prefs.putInt("p1left", keyboardSettings.get(PlayerAction.P1LEFT));
 		prefs.putInt("p1right", keyboardSettings.get(PlayerAction.P1RIGHT));
@@ -337,6 +452,9 @@ public class Client implements ClientForGUI, ClientForServer {
 		prefs.putBoolean("sounds", sounds);
 	}
 	
+	/**
+	 * Dispatch a request from GUI to the Server to pause the game. 
+	 */
 	@Override
 	public void pauseRequest() {
 		switch (gameState)
@@ -349,6 +467,9 @@ public class Client implements ClientForGUI, ClientForServer {
 	}
 
 
+	/**
+	 * Dispatch a request from GUI to the Server to start the game. 
+	 */
 	@Override
 	public void startRequest() {
 		switch (gameState)
@@ -359,6 +480,9 @@ public class Client implements ClientForGUI, ClientForServer {
 		}
 	}
 	
+	/**
+	 * Immediately terminates the current game and cleans up. Called by the GUI.
+	 */
 	@Override
 	public void resetGameState() {
 		changeGameState(GameState.NONE);
@@ -377,6 +501,15 @@ public class Client implements ClientForGUI, ClientForServer {
 	}
 
 
+	/**
+	 * Starts a new server of the appropriate game type. This function initializes the {@link VirtualClient} and starts
+	 * its thread for player 2 if necessary, and configures the {@link PlayerControllers}(s) as well.
+	 * Called by the GUI.
+	 * 
+	 * @param gt game type
+	 * 
+	 * @see GameType
+	 */
 	@Override
 	public void newGame(GameType gt) {
 		resetGameState();
@@ -418,6 +551,12 @@ public class Client implements ClientForGUI, ClientForServer {
 	}
 
 
+	/**
+	 * Join to an existing network game. Called by the GUI. Sets up the {@link VirtualServer} and starts its
+	 * thread. Configures {@link PlayerController}.
+	 * 
+	 * @param ipv4 IPv4 address to connect to
+	 */
 	@Override
 	public void joinGame(String ipv4) {
 		resetGameState();
@@ -455,24 +594,47 @@ public class Client implements ClientForGUI, ClientForServer {
 	}
 
 
+	/**
+	 * Bind an action to a key. Called by the GUI.
+	 * 
+	 * @param action {@link PlayerAction} to bind
+	 * @param key KeyCode to bind to
+	 * 
+	 * @see KeyEvent
+	 */
 	@Override
 	public void bindKey(PlayerAction action, Integer key) {
 		keyboardSettings.put(action, key);
 	}
 
 
+	/**
+	 * Sets game skill. This won't affect the current game. Called by the GUI.
+	 * 
+	 * @param gs {@link GameSkill} to change to
+	 */
 	@Override
 	public void setDifficulty(GameSkill gs) {
 		gameSkill = gs;
 	}
 
 
+	/**
+	 * Enable or disable sound effects. Called by the GUI.
+	 * 
+	 * @param val sound effects are enabled if true
+	 */
 	@Override
 	public void setSound(Boolean val) {
 		sounds = val;
 	}
 
 
+	/**
+	 * Send a name to the global high-score FTP server, when a new high score is achieved. Called by the GUI.
+	 * 
+	 * @param name Player's name
+	 */
 	@Override
 	public void sendName(String name) {
 		server.sendName(name);

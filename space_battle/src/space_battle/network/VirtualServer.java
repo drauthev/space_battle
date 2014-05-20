@@ -97,9 +97,9 @@ public class VirtualServer
 							case "changeGameState":
 								client.changeGameState((GameState)temp.getValue());
 								break;
-							case "terminate":
-								client.terminate();
-								break;
+							//case "terminate":
+							//	client.terminate();
+							//	break;
 						}
 					}
 				} catch (IOException | ClassNotFoundException e) {

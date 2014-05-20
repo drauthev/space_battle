@@ -150,7 +150,7 @@ public class VirtualClient implements ClientForServer, Runnable {
 		synchronized (callQueue) { callQueue.add(new AbstractMap.SimpleEntry<String, Object>("changeGameState", gs)); }
 	}
 
-	@Override
+	//@Override
 	public void terminate() {
 		try {
 			Thread.sleep(1000/cmdRate);

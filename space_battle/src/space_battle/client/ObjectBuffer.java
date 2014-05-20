@@ -1,5 +1,13 @@
 package space_battle.client;
 
+/**
+ * This class holds the client side equivalents of the server objects. It contains fixed number
+ * of objects to take advantage of object reuse and thus reduce the overhead which would come from
+ * the continuous allocation-deallocation. 
+ * 
+ * @author András
+ *
+ */
 public class ObjectBuffer {
 	public static int maxNPC = 20;
 	public static int maxProjectile = 40;
@@ -10,21 +18,33 @@ public class ObjectBuffer {
 	public CProjectile[] proj = new CProjectile[maxProjectile];
 	public CModifier[] mod = new CModifier[maxModifier];
 	
+	/**
+	 * Server tick when this ObjectBuffer got assembled.
+	 */
 	public long currentTick;
+	
+	/**
+	 * Actual score.
+	 */
 	public int score;
 	
+	/**
+	 * Number of valid NPCs.
+	 */
 	public int npcCount;
-	public int playerCount;
-	public int projCount;
-	public int modCount;
 	
-	/*
-	ObjectBuffer(int npcs, int players, int projs, int mods)
-	{
-		npc = new CNPC[npcs];
-		player = new CPlayer[players];
-		proj = new CProjectile[projs];
-		mod = new CModifier[mods];
-	}
-	*/
+	/**
+	 * Number of valid players.
+	 */
+	public int playerCount;
+	
+	/**
+	 * Number of valid projectiles.
+	 */
+	public int projCount;
+	
+	/**
+	 * Number of valid modifiers.
+	 */
+	public int modCount;
 }

@@ -8,5 +8,4 @@ public interface ClientForServer {
 												// tulajdonságai, plusz a current server tick, tripla bufferelés!
 	public void playSound(SoundType sound);		// adott típusú hang lejátszása (#bridge)
 	public void changeGameState(GameState gs);	// Változott a játékállapot.
-	public void terminate();					// Zárul a program.
 }
